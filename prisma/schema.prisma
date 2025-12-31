@@ -24,6 +24,11 @@ model Business {
   mediaItems MediaItem[]
 }
 
+enum ReelType {
+  REEL
+  POST
+}
+
 model MediaItem {
   id         String   @id @default(cuid())
   businessId String
@@ -35,9 +40,10 @@ model MediaItem {
 }
 
 model GeneratedReel {
-  id         String   @id @default(cuid())
-  businessId String
-  url        String
-  createdAt  DateTime @default(now())
-  business   Business @relation(fields: [businessId], references: [id])
+  id             String    @id @default(cuid())
+  businessId     String
+  business       Business  @relation(fields: [businessId], references: [id])
+  url            String
+  type           ReelType  @default(REEL)
+  createdAt      DateTime  @default(now())
 }

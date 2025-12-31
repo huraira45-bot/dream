@@ -1,46 +1,69 @@
 import { prisma } from "@/lib/prisma"
+import { generateReelMetadata } from "@/lib/gemini"
 
 export async function processReelForBusiness(businessId: string) {
-    // 1. Fetch unprocessed media
-    const mediaItems = await prisma.mediaItem.findMany({
-        where: {
-            businessId,
-            processed: false,
-        },
+    // 1. Fetch unprocessed media including business details
+    const business = await prisma.business.findUnique({
+        where: { id: businessId },
+        include: {
+            mediaItems: {
+                where: { processed: false }
+            }
+        }
     })
 
-    if (mediaItems.length === 0) {
+    if (!business || business.mediaItems.length === 0) {
         return null
     }
 
-    // 2. (Mock) AI Processing / Stitching
-    // In a real app, we would send these URLs to a python service or use FFmpeg here.
-    // For now, we just pretend we made a video.
+    const mediaItems = business.mediaItems
 
-    console.log(`Processing ${mediaItems.length} items for business ${businessId}...`)
+    // 2. Calculate Reel Score
+    // Video = 2 pts, Image = 1 pt
+    let score = 0
+    let videoCount = 0
 
-    // Simulate delay
+    for (const item of mediaItems) {
+        if (item.type.startsWith('video')) {
+            score += 2
+            videoCount++
+        } else {
+            score += 1
+        }
+    }
+
+    // Decision Logic: > 10 points OR > 50% videos = REEL, else POST
+    const isReel = score > 10 || (videoCount > mediaItems.length / 2 && mediaItems.length > 3)
+
+    console.log(`Processing for ${business.name}: ${mediaItems.length} items. Score: ${score}. Type: ${isReel ? "REEL" : "POST"}`)
+
+    // 3. Generate Metadata with Gemini
+    const aiMetadata = await generateReelMetadata(business.name, mediaItems.length, isReel)
+
+    // Simulate Processing Delay (stitching would happen here)
     await new Promise(r => setTimeout(r, 2000))
+    const mockUrl = isReel ? "/uploads/demo-reel.mp4" : "/uploads/demo-post.jpg"
 
-    const mockVideoUrl = "/uploads/demo-reel.mp4" // Placeholder
-
-    // 3. Mark items as processed
+    // 4. Mark items as processed
     await prisma.mediaItem.updateMany({
         where: {
-            id: { in: mediaItems.map(m => m.id) },
+            id: { in: mediaItems.map((m: { id: string }) => m.id) },
         },
         data: {
             processed: true,
         },
     })
 
-    // 4. Create GeneratedReel record
+    // 5. Create GeneratedReel record
     const reel = await prisma.generatedReel.create({
         data: {
             businessId,
-            url: mockVideoUrl,
+            url: mockUrl,
+            type: isReel ? "REEL" : "POST",
+            // In a real app, we'd save the title/caption etc to the DB too. 
+            // For now we just return it to the UI.
         },
     })
 
-    return reel
+    return { ...reel, ...aiMetadata }
 }
