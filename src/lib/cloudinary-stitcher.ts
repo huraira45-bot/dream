@@ -32,15 +32,16 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
     mediaItems.slice(1).forEach((item) => {
         const publicId = getPublicId(item.url)
         const isVideo = item.type.toLowerCase().includes('video')
-
-        // Sequential concatenation using layers + fl_splice
         const layerId = publicId.replace(/\//g, ':')
 
+        // Transition syntax for splice
+        const transition = `transition_(name_fade;du_1.0)`
+
         if (isVideo) {
-            segments.push(`l_video:${layerId},c_fill,h_1280,w_720/fl_layer_apply,fl_splice`)
+            segments.push(`l_video:${layerId},c_fill,h_1280,w_720/fl_layer_apply,fl_splice,${transition}`)
         } else {
-            // Fixed duration for images (4s)
-            segments.push(`l:${layerId},c_fill,h_1280,w_720,du_4/fl_layer_apply,fl_splice`)
+            // Ken Burns (zoompan) + Fade transition
+            segments.push(`l:${layerId},c_fill,h_1280,w_720,e_zoompan,du_4/fl_layer_apply,fl_splice,${transition}`)
         }
     })
 
