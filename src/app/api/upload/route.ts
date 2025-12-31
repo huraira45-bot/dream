@@ -38,8 +38,11 @@ export async function POST(req: Request) {
         })
 
         return NextResponse.json(mediaItem)
-    } catch (error) {
+    } catch (error: any) {
         console.error("Upload Error:", error)
-        return new NextResponse("Upload Failed", { status: 500 })
+        return NextResponse.json(
+            { error: error.message || "Upload Failed", details: error },
+            { status: 500 }
+        )
     }
 }
