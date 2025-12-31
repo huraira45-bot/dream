@@ -8,20 +8,20 @@ export interface MusicTrack {
 export const MUSIC_LIBRARY: MusicTrack[] = [
     {
         id: "emotional-piano",
-        name: "Heartfelt Story",
-        url: "https://www.chosic.com/wp-content/uploads/2021/04/Emotional-Piano-Music.mp3", // Demo link, should be replaced with stable CDN in prod
+        name: "Emotional Inspiration",
+        url: "https://cdn.pixabay.com/audio/2023/10/24/audio_3d1f1f1d1f.mp3",
         mood: "Emotional"
     },
     {
-        id: "trendy-pop",
-        name: "Viral Energy",
-        url: "https://www.chosic.com/wp-content/uploads/2021/07/Upbeat-Pop.mp3",
+        id: "trendy-upbeat",
+        name: "Modern Trendy",
+        url: "https://cdn.pixabay.com/audio/2022/10/18/audio_313689f7a7.mp3",
         mood: "Trendy"
     },
     {
-        id: "premium-lounge",
-        name: "Luxury Living",
-        url: "https://www.chosic.com/wp-content/uploads/2021/09/Cinematic-Luxury.mp3",
+        id: "premium-cinematic",
+        name: "Luxury Cinematic",
+        url: "https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a1b1a1.mp3",
         mood: "Premium"
     }
 ]

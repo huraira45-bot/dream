@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { generateReelMetadata } from "@/lib/gemini"
 import { getMusicForMood } from "@/lib/music"
+import { generateStitchedVideoUrl } from "@/lib/cloudinary-stitcher"
 
 export async function processReelForBusiness(businessId: string) {
     // 1. Fetch unprocessed media including business details
@@ -56,14 +57,15 @@ export async function processReelForBusiness(businessId: string) {
 
     // 5. Create 3 GeneratedReel records (one for each creative direction)
     const reels = await Promise.all(aiOptions.map(async (option, index) => {
-        // High-end: Every option gets the FULL sequence of media to play with
-        // In the future, the UI will transition between these.
         const music = getMusicForMood(option.musicMood)
+
+        // Build a real concatenated video URL using Cloudinary splice
+        const stitchedUrl = generateStitchedVideoUrl(mediaItems, music.url)
 
         return prisma.generatedReel.create({
             data: {
                 businessId,
-                url: mediaItems[0].url, // Primary cover URL
+                url: stitchedUrl || mediaItems[0].url,
                 type: isReel ? "REEL" : "POST",
                 title: option.title,
                 caption: option.caption,

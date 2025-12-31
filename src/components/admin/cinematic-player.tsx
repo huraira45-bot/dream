@@ -176,12 +176,21 @@ export function CinematicPlayer({ mediaItems, musicUrl, title, caption }: Cinema
                             </div>
                             <div className="overflow-hidden">
                                 <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest leading-none">Original Audio</p>
-                                <p className="text-xs font-bold truncate">Syncing with mood...</p>
+                                <p className="text-xs font-bold truncate">Synced with AI production</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex flex-col gap-4">
+                        <a
+                            href={mediaItems[0].url} // For 'real' output, this is the stitched URL
+                            download="Dream-AI-Production.mp4"
+                            target="_blank"
+                            className="p-3 bg-purple-600 text-white rounded-2xl shadow-lg shadow-purple-900/40 border border-purple-400/50 hover:bg-purple-500 transition-all flex items-center justify-center"
+                            title="Download Final Video"
+                        >
+                            <Film className="w-6 h-6" />
+                        </a>
                         <button
                             onClick={() => setIsPlaying(!isPlaying)}
                             className="p-3 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 text-white hover:bg-white/20 transition-all"
