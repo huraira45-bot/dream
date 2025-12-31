@@ -23,9 +23,11 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
     const baseItem = mediaItems[0]
     const basePublicId = getPublicId(baseItem.url)
 
+    const isBaseVideo = baseItem.type.toLowerCase().includes('video')
+
     // 2. Build the transformation segments
-    // Start with a clean base transform
-    const baseTransform = `c_fill,h_1280,w_720`
+    // Start with a clean base transform. If base is image, MUST have duration.
+    const baseTransform = `c_fill,h_1280,w_720${isBaseVideo ? '' : ',du_4'}`
 
     let segments: string[] = []
 
