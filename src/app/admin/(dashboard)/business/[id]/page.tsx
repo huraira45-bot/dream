@@ -5,6 +5,7 @@ import { ArrowLeft, Film, Image as ImageIcon, Calendar, Play, Globe, QrCode, Wan
 import { cn } from "@/lib/utils"
 import { BusinessQRCode } from "@/components/admin/business-qr"
 import { GenerateButton } from "@/components/admin/generate-button"
+import { ResetMediaButton } from "@/components/admin/reset-media-button"
 
 export default async function BusinessDetail({
     params,
@@ -84,6 +85,7 @@ export default async function BusinessDetail({
                         <h2 className="text-2xl font-bold text-zinc-900">Media Gallery</h2>
                         <p className="text-sm text-zinc-500">Raw content uploaded by customers</p>
                     </div>
+                    <ResetMediaButton businessId={business.id} />
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
