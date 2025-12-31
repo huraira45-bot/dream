@@ -1,8 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
-import { writeFile, mkdir } from "fs/promises"
-import path from "path"
-import { randomUUID } from "crypto"
+import cloudinary from "@/lib/cloudinary"
 
 export async function POST(req: Request) {
     try {
@@ -15,28 +13,33 @@ export async function POST(req: Request) {
         }
 
         const buffer = Buffer.from(await file.arrayBuffer())
-        const filename = `${randomUUID()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "")}`
 
-        // Save to public/uploads
-        // Note: In production we use S3. Here simple local storage.
-        const uploadDir = path.join(process.cwd(), "public", "uploads", businessId)
-        await mkdir(uploadDir, { recursive: true })
-
-        const filePath = path.join(uploadDir, filename)
-        await writeFile(filePath, buffer)
+        // Upload to Cloudinary using a Promise wrapper around the stream
+        const uploadResult = await new Promise<any>((resolve, reject) => {
+            cloudinary.uploader.upload_stream(
+                {
+                    folder: `dream-app/${businessId}`,
+                    resource_type: "auto", // Auto-detect image or video
+                },
+                (error, result) => {
+                    if (error) reject(error)
+                    else resolve(result)
+                }
+            ).end(buffer)
+        })
 
         // DB Record
         const mediaItem = await prisma.mediaItem.create({
             data: {
                 businessId,
                 type: file.type.startsWith("video") ? "VIDEO" : "IMAGE",
-                url: `/uploads/${businessId}/${filename}`,
+                url: uploadResult.secure_url,
             },
         })
 
         return NextResponse.json(mediaItem)
     } catch (error) {
-        console.error(error)
-        return new NextResponse("Internal Error", { status: 500 })
+        console.error("Upload Error:", error)
+        return new NextResponse("Upload Failed", { status: 500 })
     }
 }
