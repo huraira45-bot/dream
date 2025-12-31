@@ -47,5 +47,7 @@ model GeneratedReel {
   type           ReelType  @default(REEL)
   title          String?
   caption        String?
+  musicUrl       String?
+  mediaItemIds   String[]  @default([])
   createdAt      DateTime  @default(now())
 }
