@@ -32,24 +32,52 @@ export function UploadForm({ businessId }: { businessId: string }) {
         if (!file) return
         setLoading(true)
 
-        const formData = new FormData()
-        formData.append("file", file)
-        formData.append("businessId", businessId)
-
         try {
-            const res = await fetch("/api/upload", {
+            // 1. Get Signature
+            const signRes = await fetch("/api/upload/sign", {
+                method: "POST",
+                body: JSON.stringify({ folder: `dream-app/${businessId}` })
+            })
+            if (!signRes.ok) throw new Error("Failed to sign upload")
+            const { signature, timestamp, cloudName, apiKey } = await signRes.json()
+
+            // 2. Upload to Cloudinary
+            const formData = new FormData()
+            formData.append("file", file)
+            formData.append("api_key", apiKey)
+            formData.append("timestamp", timestamp.toString())
+            formData.append("signature", signature)
+            formData.append("folder", `dream-app/${businessId}`)
+
+            const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
                 method: "POST",
                 body: formData
             })
 
-            if (res.ok) {
-                setUploaded(true)
-            } else {
-                alert("Upload failed")
+            if (!uploadRes.ok) {
+                const err = await uploadRes.json()
+                throw new Error(err.error?.message || "Upload to Cloudinary failed")
             }
-        } catch (e) {
+
+            const uploadData = await uploadRes.json()
+
+            // 3. Save to DB
+            const saveRes = await fetch("/api/upload", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    businessId,
+                    url: uploadData.secure_url,
+                    type: file.type.startsWith("video") ? "VIDEO" : "IMAGE"
+                })
+            })
+
+            if (!saveRes.ok) throw new Error("Failed to save record")
+
+            setUploaded(true)
+        } catch (e: any) {
             console.error(e)
-            alert("Error uploading")
+            alert(`Error: ${e.message || "Upload failed"}`)
         } finally {
             setLoading(false)
         }
