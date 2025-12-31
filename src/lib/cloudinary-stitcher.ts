@@ -26,8 +26,9 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
     const isBaseVideo = baseItem.type.toLowerCase().includes('video')
 
     // 2. Build the transformation segments
-    // Start with a clean base transform. If base is image, MUST have duration.
-    const baseTransform = `c_fill,h_1280,w_720${isBaseVideo ? '' : ',du_4'}`
+    // Start with a clean base transform.
+    // If base is image, MUST have duration. If video, MUTE it to match images (and we use bg music).
+    const baseTransform = `c_fill,h_1280,w_720${isBaseVideo ? ',e_volume:mute' : ',du_4'}`
 
     let segments: string[] = []
 
@@ -36,10 +37,10 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
         const isVideo = item.type.toLowerCase().includes('video')
         const layerId = publicId.replace(/\//g, ':')
 
-        // Simplified splicing: joining only, no complex transitions for now
+        // Simplified splicing: joining only
         if (isVideo) {
-            // Splicing a video segment
-            segments.push(`l_video:${layerId}/c_fill,h_1280,w_720/fl_layer_apply,fl_splice`)
+            // Splicing a video segment - MUTE it to prevent audio stream mismatch with images
+            segments.push(`l_video:${layerId}/c_fill,h_1280,w_720,e_volume:mute/fl_layer_apply,fl_splice`)
         } else {
             // Splicing an image segment (fixed 4s duration)
             segments.push(`l:${layerId}/c_fill,h_1280,w_720,du_4/fl_layer_apply,fl_splice`)
