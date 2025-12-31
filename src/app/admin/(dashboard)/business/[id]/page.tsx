@@ -150,10 +150,16 @@ export default async function BusinessDetail({
                                 </div>
                             </div>
                             <Link
-                                href={reel.url}
-                                className="px-4 py-2 bg-zinc-50 hover:bg-zinc-100 text-zinc-600 font-bold text-xs rounded-xl transition-all"
+                                href={reel.url.startsWith('/') ? '#' : reel.url}
+                                target={reel.url.startsWith('/') ? undefined : "_blank"}
+                                className={cn(
+                                    "px-4 py-2 font-bold text-xs rounded-xl transition-all",
+                                    reel.url.startsWith('/')
+                                        ? "bg-zinc-100 text-zinc-400 cursor-not-allowed"
+                                        : "bg-zinc-50 hover:bg-zinc-100 text-zinc-600"
+                                )}
                             >
-                                View Output
+                                {reel.url.startsWith('/') ? "Processing..." : "View Output"}
                             </Link>
                         </div>
                     ))}
