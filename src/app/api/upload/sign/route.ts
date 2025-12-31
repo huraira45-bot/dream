@@ -16,8 +16,8 @@ export async function POST(req: Request) {
         return NextResponse.json({
             signature,
             timestamp,
-            cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-            apiKey: process.env.CLOUDINARY_API_KEY
+            cloudName: process.env.CLOUDINARY_CLOUD_NAME?.trim(),
+            apiKey: process.env.CLOUDINARY_API_KEY?.trim()
         })
     } catch (error) {
         console.error("Signature Error:", error)
