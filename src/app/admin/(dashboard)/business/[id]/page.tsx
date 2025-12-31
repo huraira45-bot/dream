@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Film, Image as ImageIcon, Calendar, Play, Globe, QrCode, Wand2, Share2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { BusinessQRCode } from "@/components/admin/business-qr"
 import { GenerateButton } from "@/components/admin/generate-button"
 
@@ -76,7 +77,61 @@ export default async function BusinessDetail({
 
             {/* Stats & QR View ... remains same ... */}
 
-            {/* Generated Reels Section */}
+            {/* Media Gallery Section */}
+            <div className="pt-8 border-t border-zinc-100 space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold text-zinc-900">Media Gallery</h2>
+                        <p className="text-sm text-zinc-500">Raw content uploaded by customers</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    {business.mediaItems.map((item: any) => (
+                        <div key={item.id} className="group relative aspect-square bg-zinc-100 rounded-2xl overflow-hidden border border-zinc-200">
+                            {item.type === "IMAGE" ? (
+                                <img
+                                    src={item.url}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    alt="Customer upload"
+                                />
+                            ) : (
+                                <div className="w-full h-full relative">
+                                    <video src={item.url} className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                        <Play className="w-8 h-8 text-white/70 fill-white/20" />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Overlay Badge */}
+                            <div className="absolute top-2 right-2 flex gap-1">
+                                <div className={cn(
+                                    "px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border",
+                                    item.processed
+                                        ? "bg-green-500/10 text-green-600 border-green-500/20"
+                                        : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                )}>
+                                    {item.processed ? "Used" : "New"}
+                                </div>
+                            </div>
+
+                            {/* Type Icon Badge */}
+                            <div className="absolute bottom-2 left-2 p-1.5 bg-black/40 backdrop-blur-md rounded-lg border border-white/10 text-white">
+                                {item.type === "IMAGE" ? <ImageIcon className="w-3 h-3" /> : <Film className="w-3 h-3" />}
+                            </div>
+                        </div>
+                    ))}
+                    {business.mediaItems.length === 0 && (
+                        <div className="col-span-full py-12 flex flex-col items-center justify-center border-2 border-dashed border-zinc-100 rounded-[2rem] bg-zinc-50/50">
+                            <ImageIcon className="w-8 h-8 text-zinc-300 mb-2" />
+                            <p className="text-sm text-zinc-400 font-medium">No media uploaded yet</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Generated Content Section */}
             <div className="pt-8 border-t border-zinc-100 space-y-6">
                 <h2 className="text-2xl font-bold text-zinc-900">Generated Content</h2>
                 <div className="grid gap-6 md:grid-cols-2">
