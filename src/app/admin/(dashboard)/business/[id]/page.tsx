@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Film, Image as ImageIcon, Calendar, Play, Globe, QrCode } from "lucide-react"
+import { ArrowLeft, Film, Image as ImageIcon, Calendar, Play, Globe, QrCode, Wand2 } from "lucide-react"
 
 export default async function BusinessDetail({
     params,
@@ -26,8 +26,8 @@ export default async function BusinessDetail({
         notFound()
     }
 
-    const imagesCount = business.mediaItems.filter(m => m.type === "IMAGE").length
-    const videosCount = business.mediaItems.filter(m => m.type === "VIDEO").length
+    const imagesCount = business.mediaItems.filter((m: any) => m.type === "IMAGE").length
+    const videosCount = business.mediaItems.filter((m: any) => m.type === "VIDEO").length
 
     return (
         <div className="space-y-8">
@@ -102,7 +102,7 @@ export default async function BusinessDetail({
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {business.mediaItems.map((item) => (
+                    {business.mediaItems.map((item: any) => (
                         <div key={item.id} className="group relative aspect-square bg-zinc-100 rounded-[1.5rem] overflow-hidden border border-zinc-100">
                             {item.type === "VIDEO" ? (
                                 <div className="w-full h-full flex items-center justify-center bg-zinc-900">
@@ -138,7 +138,7 @@ export default async function BusinessDetail({
             <div className="pt-8 border-t border-zinc-100 space-y-6">
                 <h2 className="text-2xl font-bold text-zinc-900">Generated AI Reels</h2>
                 <div className="grid gap-6 md:grid-cols-2">
-                    {business.reels.map((reel) => (
+                    {business.reels.map((reel: any) => (
                         <div key={reel.id} className="p-6 bg-white rounded-[2rem] border border-zinc-100 shadow-sm flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600">
