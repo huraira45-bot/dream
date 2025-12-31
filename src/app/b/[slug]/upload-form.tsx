@@ -1,14 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { Upload, CheckCircle, Smartphone, X, Play, Loader2 } from "lucide-react"
+import { Upload, CheckCircle, Smartphone, X, Play, Loader2, Camera, Image as ImageIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { CustomCamera } from "@/components/camera-interface"
 
 export function UploadForm({ businessId }: { businessId: string }) {
     const [file, setFile] = useState<File | null>(null)
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
     const [uploaded, setUploaded] = useState(false)
+    const [showCamera, setShowCamera] = useState(false)
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selected = e.target.files?.[0]
@@ -73,12 +75,22 @@ export function UploadForm({ businessId }: { businessId: string }) {
         )
     }
 
+    const onCapture = (capturedFile: File) => {
+        setFile(capturedFile)
+        setPreviewUrl(URL.createObjectURL(capturedFile))
+        setShowCamera(false)
+    }
+
     return (
         <div className="flex flex-col items-center w-full">
-            <label
+            {showCamera && (
+                <CustomCamera onCapture={onCapture} onClose={() => setShowCamera(false)} />
+            )}
+
+            <div
                 className={cn(
-                    "group relative w-full h-[400px] border-2 border-dashed rounded-[2rem] flex flex-col items-center justify-center cursor-pointer transition-all duration-500 overflow-hidden",
-                    file ? "border-purple-500/50 bg-purple-500/5" : "border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-zinc-700"
+                    "group relative w-full h-[400px] border-2 border-dashed rounded-[2rem] flex flex-col items-center justify-center transition-all duration-500 overflow-hidden",
+                    file ? "border-purple-500/50 bg-purple-500/5" : "border-zinc-800 bg-zinc-900/50"
                 )}
             >
                 {previewUrl ? (
@@ -120,25 +132,39 @@ export function UploadForm({ businessId }: { businessId: string }) {
                         </div>
                     </div>
                 ) : (
-                    <div className="text-center p-8">
-                        <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-purple-600/20 group-hover:text-purple-500 transition-all duration-300">
-                            <Smartphone className="w-8 h-8 text-zinc-500 transition-colors group-hover:text-purple-500" />
+                    <div className="text-center p-8 space-y-8 w-full">
+                        <div className="space-y-2">
+                            <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                                <Smartphone className="w-8 h-8 text-zinc-500" />
+                            </div>
+                            <p className="text-xl font-bold text-white mb-2">Capture the Moment</p>
+                            <p className="text-zinc-500 text-sm leading-relaxed max-w-[200px] mx-auto">
+                                Record a video or take a photo of your vibe.
+                            </p>
                         </div>
-                        <p className="text-xl font-bold text-white mb-2">Capture the Moment</p>
-                        <p className="text-zinc-500 text-sm leading-relaxed max-w-[200px] mx-auto">
-                            Record a short video or snapshot of your food & vibe.
-                        </p>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                onClick={() => setShowCamera(true)}
+                                className="flex flex-col items-center gap-3 p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all text-white"
+                            >
+                                <Camera className="w-6 h-6" />
+                                <span className="text-xs font-bold uppercase tracking-wider">Camera</span>
+                            </button>
+                            <label className="flex flex-col items-center gap-3 p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all text-white cursor-pointer text-center justify-center">
+                                <ImageIcon className="w-6 h-6" />
+                                <span className="text-xs font-bold uppercase tracking-wider">Gallery</span>
+                                <input
+                                    type="file"
+                                    accept="image/*,video/*"
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                />
+                            </label>
+                        </div>
                     </div>
                 )}
-
-                <input
-                    type="file"
-                    accept="image/*,video/*"
-                    className="hidden"
-                    onChange={handleFileChange}
-                    capture="environment"
-                />
-            </label>
+            </div>
 
             <div className="w-full mt-8 space-y-4">
                 <button

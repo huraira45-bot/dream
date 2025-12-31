@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Film, Image as ImageIcon, Calendar, Play, Globe, QrCode, Wand2 } from "lucide-react"
+import { ArrowLeft, Film, Image as ImageIcon, Calendar, Play, Globe, QrCode, Wand2, Share2 } from "lucide-react"
+import { BusinessQRCode } from "@/components/admin/business-qr"
 
 export default async function BusinessDetail({
     params,
@@ -73,19 +74,30 @@ export default async function BusinessDetail({
                 </div>
             </div>
 
-            {/* Stats Quick View */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-8 bg-white rounded-[2rem] border border-zinc-100 shadow-sm">
-                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Total Moments</p>
-                    <p className="text-3xl font-black text-zinc-900">{business.mediaItems.length}</p>
+            {/* Stats & QR View */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="p-8 bg-white rounded-[2rem] border border-zinc-100 shadow-sm">
+                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Total Moments</p>
+                            <p className="text-3xl font-black text-zinc-900">{business.mediaItems.length}</p>
+                        </div>
+                        <div className="p-8 bg-white rounded-[2rem] border border-zinc-100 shadow-sm">
+                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Videos</p>
+                            <p className="text-3xl font-black text-zinc-900">{videosCount}</p>
+                        </div>
+                        <div className="p-8 bg-white rounded-[2rem] border border-zinc-100 shadow-sm md:col-span-2">
+                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Generated Reels</p>
+                            <p className="text-3xl font-black text-zinc-900">{business.reels.length}</p>
+                        </div>
+                    </div>
                 </div>
-                <div className="p-8 bg-white rounded-[2rem] border border-zinc-100 shadow-sm">
-                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Videos</p>
-                    <p className="text-3xl font-black text-zinc-900">{videosCount}</p>
-                </div>
-                <div className="p-8 bg-white rounded-[2rem] border border-zinc-100 shadow-sm">
-                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">Generated Reels</p>
-                    <p className="text-3xl font-black text-zinc-900">{business.reels.length}</p>
+
+                <div className="lg:col-span-1">
+                    <BusinessQRCode
+                        url={`https://dream-eta-ruddy.vercel.app/b/${business.slug}`}
+                        name={business.name}
+                    />
                 </div>
             </div>
 
