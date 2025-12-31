@@ -24,14 +24,25 @@ export default async function ReelViewer({
     }
 
     // Fetch all media items in the correct sequence
-    const mediaItems = await prisma.mediaItem.findMany({
-        where: {
-            id: { in: reel.mediaItemIds }
-        }
-    })
+    let sortedMedia = []
+    if (reel.mediaItemIds && reel.mediaItemIds.length > 0) {
+        const mediaItems = await prisma.mediaItem.findMany({
+            where: {
+                id: { in: reel.mediaItemIds }
+            }
+        })
+        // Sort to maintain chronological/curated order
+        sortedMedia = reel.mediaItemIds.map((id: string) => mediaItems.find((m: { id: string }) => m.id === id)).filter(Boolean) as any[]
+    }
 
-    // Sort to maintain chronological/curated order
-    const sortedMedia = reel.mediaItemIds.map((id: string) => mediaItems.find((m: { id: string }) => m.id === id)).filter(Boolean) as any[]
+    // Fallback for older reels or reels with no sequence
+    if (sortedMedia.length === 0) {
+        sortedMedia = [{
+            id: reel.id,
+            url: reel.url,
+            type: reel.type === 'REEL' ? 'video' : 'image'
+        }]
+    }
 
     return (
         <div className="min-h-screen bg-black text-white selection:bg-purple-500/30 overflow-hidden">

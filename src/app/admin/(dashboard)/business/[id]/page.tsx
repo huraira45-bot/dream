@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { BusinessQRCode } from "@/components/admin/business-qr"
 import { GenerateButton } from "@/components/admin/generate-button"
 import { ResetMediaButton } from "@/components/admin/reset-media-button"
+import { DeleteReelButton } from "@/components/admin/delete-reel-button"
 
 export default async function BusinessDetail({
     params,
@@ -151,18 +152,20 @@ export default async function BusinessDetail({
                                     <p className="text-[10px] text-zinc-400 mt-1">{new Date(reel.createdAt).toLocaleDateString()}</p>
                                 </div>
                             </div>
-                            <Link
-                                href={reel.url.startsWith('/') ? '#' : reel.url}
-                                target={reel.url.startsWith('/') ? undefined : "_blank"}
-                                className={cn(
-                                    "px-4 py-2 font-bold text-xs rounded-xl transition-all",
-                                    reel.url.startsWith('/')
-                                        ? "bg-zinc-100 text-zinc-400 cursor-not-allowed"
-                                        : "bg-zinc-50 hover:bg-zinc-100 text-zinc-600"
-                                )}
-                            >
-                                {reel.url.startsWith('/') ? "Processing..." : "View Output"}
-                            </Link>
+                            <div className="flex items-center gap-2">
+                                <Link
+                                    href={reel.url.startsWith('/') ? '#' : `/v/${reel.id}`}
+                                    className={cn(
+                                        "px-4 py-2 font-bold text-xs rounded-xl transition-all",
+                                        reel.url.startsWith('/')
+                                            ? "bg-zinc-100 text-zinc-400 cursor-not-allowed"
+                                            : "bg-zinc-50 hover:bg-zinc-100 text-zinc-600"
+                                    )}
+                                >
+                                    {reel.url.startsWith('/') ? "Processing..." : "View Output"}
+                                </Link>
+                                {!reel.url.startsWith('/') && <DeleteReelButton reelId={reel.id} />}
+                            </div>
                         </div>
                     ))}
                     {business.reels.length === 0 && (
