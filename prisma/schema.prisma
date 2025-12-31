@@ -45,5 +45,7 @@ model GeneratedReel {
   business       Business  @relation(fields: [businessId], references: [id])
   url            String
   type           ReelType  @default(REEL)
+  title          String?
+  caption        String?
   createdAt      DateTime  @default(now())
 }

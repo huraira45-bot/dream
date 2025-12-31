@@ -40,9 +40,8 @@ export async function processReelForBusiness(businessId: string) {
     // 3. Generate Metadata with Gemini
     const aiMetadata = await generateReelMetadata(business.name, mediaItems.length, isReel)
 
-    // Simulate Processing Delay (stitching would happen here)
-    await new Promise(r => setTimeout(r, 2000))
-    const mockUrl = isReel ? "/uploads/demo-reel.mp4" : "/uploads/demo-post.jpg"
+    // Use the first item's URL as the output for now (placeholder for stitched media)
+    const functionalUrl = mediaItems[0].url
 
     // 4. Mark items as processed
     await prisma.mediaItem.updateMany({
@@ -58,10 +57,10 @@ export async function processReelForBusiness(businessId: string) {
     const reel = await prisma.generatedReel.create({
         data: {
             businessId,
-            url: mockUrl,
+            url: functionalUrl,
             type: isReel ? "REEL" : "POST",
-            // In a real app, we'd save the title/caption etc to the DB too. 
-            // For now we just return it to the UI.
+            title: aiMetadata.title,
+            caption: aiMetadata.caption,
         },
     })
 
