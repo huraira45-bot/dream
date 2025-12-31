@@ -24,6 +24,15 @@ export const authOptions: NextAuthOptions = {
                     return null
                 }
 
+                // Hardcoded access as per request
+                if (credentials.email === "admin" && credentials.password === "admin123") {
+                    return {
+                        id: "hardcoded-admin",
+                        email: "admin@example.com",
+                        name: "Admin User"
+                    }
+                }
+
                 const user = await prisma.user.findUnique({
                     where: {
                         email: credentials.email,

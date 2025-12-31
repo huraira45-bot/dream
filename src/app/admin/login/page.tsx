@@ -39,9 +39,9 @@ export default function AdminLogin() {
                 )}
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Email</label>
+                        <label className="block text-sm font-medium text-gray-700">Email / Username</label>
                         <input
-                            type="email"
+                            type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="mt-1 w-full rounded-md border border-gray-300 p-2 px-3 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
