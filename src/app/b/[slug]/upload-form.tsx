@@ -41,6 +41,9 @@ export function UploadForm({ businessId }: { businessId: string }) {
             if (!signRes.ok) throw new Error("Failed to sign upload")
             const { signature, timestamp, cloudName, apiKey } = await signRes.json()
 
+            console.log("DEBUG: Cloudinary Config:", { cloudName, apiKey, timestamp })
+            console.log("DEBUG: Resource:", `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`)
+
             // 2. Upload to Cloudinary
             const formData = new FormData()
             formData.append("file", file)
@@ -74,6 +77,7 @@ export function UploadForm({ businessId }: { businessId: string }) {
 
             if (!saveRes.ok) throw new Error("Failed to save record")
 
+            console.log("DEBUG: Upload Success", uploadData.secure_url)
             setUploaded(true)
         } catch (e: any) {
             console.error(e)
