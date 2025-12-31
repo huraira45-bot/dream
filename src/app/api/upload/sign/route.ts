@@ -11,7 +11,7 @@ export async function POST(req: Request) {
         const signature = cloudinary.utils.api_sign_request({
             timestamp: timestamp,
             folder: folder || 'dream-app/uploads',
-        }, process.env.CLOUDINARY_API_SECRET!)
+        }, process.env.CLOUDINARY_API_SECRET?.trim()!)
 
         return NextResponse.json({
             signature,
