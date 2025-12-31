@@ -1,28 +1,29 @@
 export interface MusicTrack {
     id: string
     name: string
+    title: string
     url: string
     mood: string
 }
 
 export const MUSIC_LIBRARY: MusicTrack[] = [
     {
-        id: "emotional-piano",
-        name: "Emotional Inspiration",
-        url: "https://cdn.pixabay.com/audio/2023/10/24/audio_3d1f1f1d1f.mp3",
-        mood: "Emotional"
+        id: "emotional-1",
+        title: "Beautiful Dream",
+        url: "https://assets.mixkit.co/music/preview/mixkit-beautiful-dream-493.mp3",
+        mood: "emotional"
     },
     {
-        id: "trendy-upbeat",
-        name: "Modern Trendy",
-        url: "https://cdn.pixabay.com/audio/2022/10/18/audio_313689f7a7.mp3",
-        mood: "Trendy"
+        id: "high-energy-1",
+        title: "Tech House Vibes",
+        url: "https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3",
+        mood: "high-energy"
     },
     {
-        id: "premium-cinematic",
-        name: "Luxury Cinematic",
-        url: "https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a1b1a1.mp3",
-        mood: "Premium"
+        id: "elegant-1",
+        title: "Sun and Ocean",
+        url: "https://assets.mixkit.co/music/preview/mixkit-sun-and-ocean-585.mp3",
+        mood: "elegant"
     }
 ]
 

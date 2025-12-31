@@ -24,8 +24,8 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
     const basePublicId = getPublicId(baseItem.url)
 
     // 2. Build the transformation segments
-    // We resize everything to 720x1280 (9:16)
-    const baseTransform = `c_fill,h_1280,w_720,e_improve,e_vignette:20`
+    // Start with a clean base transform
+    const baseTransform = `c_fill,h_1280,w_720`
 
     let segments: string[] = []
 
@@ -34,14 +34,13 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
         const isVideo = item.type.toLowerCase().includes('video')
         const layerId = publicId.replace(/\//g, ':')
 
-        // Transition syntax for splice
-        const transition = `transition_(name_fade;du_1.0)`
-
+        // Simplified splicing: joining only, no complex transitions for now
         if (isVideo) {
-            segments.push(`l_video:${layerId},c_fill,h_1280,w_720/fl_layer_apply,fl_splice,${transition}`)
+            // Splicing a video segment
+            segments.push(`l_video:${layerId}/c_fill,h_1280,w_720/fl_layer_apply,fl_splice`)
         } else {
-            // Ken Burns (zoompan) + Fade transition
-            segments.push(`l:${layerId},c_fill,h_1280,w_720,e_zoompan,du_4/fl_layer_apply,fl_splice,${transition}`)
+            // Splicing an image segment (fixed 4s duration)
+            segments.push(`l:${layerId}/c_fill,h_1280,w_720,du_4/fl_layer_apply,fl_splice`)
         }
     })
 
@@ -49,5 +48,6 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim()
     const baseUrl = `https://res.cloudinary.com/${cloudName}/video/upload`
 
+    // We join segments with a slash. Note: Cloudinary processes transformations in the URL from left to right.
     return `${baseUrl}/${baseTransform}/${segments.join('/')}/${basePublicId}.mp4`
 }
