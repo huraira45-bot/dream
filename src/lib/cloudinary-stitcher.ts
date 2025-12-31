@@ -17,8 +17,8 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
     const isBaseVideo = baseItem.type.toLowerCase().includes('video')
 
     // 2. Build the transformation segments
-    // We resize everything to 720x1280 (9:16) for consistency
-    const baseTransform = `c_fill,h_1280,w_720`
+    // We resize everything to 720x1280 (9:16) and add pro effects
+    const baseTransform = `c_fill,h_1280,w_720,e_improve,e_vignette:20`
 
     let segments: string[] = []
 
@@ -27,12 +27,16 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
         const publicId = getPublicId(item.url)
         const isVideo = item.type.toLowerCase().includes('video')
 
+        // Transition: Crossfade (fade)
+        const transition = `transition_(name_fade;du_1.0)`
+
         // fl_splice concatenates instead of overlaying
         if (isVideo) {
-            segments.push(`fl_splice,l_video:${publicId.replace(/\//g, ':')},c_fill,h_1280,w_720/fl_layer_apply`)
+            segments.push(`fl_splice,${transition},l_video:${publicId.replace(/\//g, ':')},c_fill,h_1280,w_720/fl_layer_apply`)
         } else {
-            // images need a duration (e.g., 3 seconds)
-            segments.push(`du_3,fl_splice,l:${publicId.replace(/\//g, ':')},c_fill,h_1280,w_720/fl_layer_apply`)
+            // Images get Ken Burns (zoompan) + transitions
+            // Note: zoompan requires its own duration
+            segments.push(`du_4,e_zoompan,fl_splice,${transition},l:${publicId.replace(/\//g, ':')},c_fill,h_1280,w_720/fl_layer_apply`)
         }
     })
 

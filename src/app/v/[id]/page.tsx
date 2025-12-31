@@ -63,7 +63,7 @@ export default async function ReelViewer({
                 </button>
             </div>
 
-            {/* Cinematic Content Container */}
+            {/* Master Production Player */}
             <div className="relative h-[100dvh] w-full flex items-center justify-center">
                 {/* Background Blur Effect */}
                 <div
@@ -71,20 +71,54 @@ export default async function ReelViewer({
                 />
 
                 <div className="relative w-full max-w-[450px] aspect-[9/16] bg-zinc-900 rounded-[2.5rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 mx-4">
-                    <CinematicPlayer
-                        mediaItems={sortedMedia}
-                        musicUrl={reel.musicUrl}
-                        title={reel.title}
-                        caption={reel.caption}
-                    />
-                </div>
-            </div>
+                    <div className="w-full h-full relative group">
+                        <video
+                            src={reel.url}
+                            className="w-full h-full object-cover"
+                            autoPlay
+                            loop
+                            playsInline
+                            controls
+                        />
 
-            {/* Bottom Floating Branding */}
-            <div className="fixed bottom-10 inset-x-0 flex justify-center pointer-events-none z-50">
-                <div className="px-6 py-3 bg-white/5 backdrop-blur-3xl rounded-full border border-white/10 flex items-center gap-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
-                    <span className="text-xs font-bold tracking-widest uppercase opacity-40">AI Cinema Engine</span>
+                        {/* Pro Overlay Details */}
+                        <div className="absolute top-8 inset-x-0 px-8 pointer-events-none">
+                            <div className="flex items-center gap-3">
+                                <div className="px-3 py-1 bg-purple-500 rounded-lg text-[10px] font-black uppercase tracking-widest text-white shadow-lg">AI Master</div>
+                                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">4K Rendered</div>
+                            </div>
+                        </div>
+
+                        {/* Metadata Footer */}
+                        <div className="absolute bottom-0 inset-x-0 p-8 pb-12 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
+                            <div className="space-y-4">
+                                <div className="space-y-1">
+                                    <h1 className="text-xl font-black tracking-tight text-white drop-shadow-md">{reel.title}</h1>
+                                    <p className="text-sm text-white/80 line-clamp-2 drop-shadow-sm">{reel.caption}</p>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center animate-spin-slow">
+                                            <Music className="w-4 h-4 text-white" />
+                                        </div>
+                                        <div className="overflow-hidden">
+                                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest leading-none">Studio Audio</p>
+                                            <p className="text-xs font-bold text-white truncate">Pro Master Track</p>
+                                        </div>
+                                    </div>
+
+                                    <a
+                                        href={reel.url}
+                                        download="Dream-AI-Master.mp4"
+                                        target="_blank"
+                                        className="p-3 bg-purple-600 text-white rounded-2xl shadow-lg border border-purple-400/50 hover:bg-purple-500 transition-all pointer-events-auto"
+                                    >
+                                        <Share2 className="w-5 h-5" />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
