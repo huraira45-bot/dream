@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Share2, Play, Image as ImageIcon, Music, Heart } from "lucide-react"
+import { ArrowLeft, Share2, Play, Pause, Music, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { CinematicPlayer } from "@/components/admin/cinematic-player"
 
