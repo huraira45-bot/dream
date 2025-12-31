@@ -8,20 +8,20 @@ export interface MusicTrack {
 export const MUSIC_LIBRARY: MusicTrack[] = [
     {
         id: "emotional-1",
-        name: "Beautiful Dream",
-        url: "https://assets.mixkit.co/music/preview/mixkit-beautiful-dream-493.mp3",
+        name: "Emotional Inspiration",
+        url: "/music/emotional-1.mp3",
         mood: "emotional"
     },
     {
         id: "high-energy-1",
-        name: "Tech House Vibes",
-        url: "https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3",
+        name: "High Energy Vibes",
+        url: "/music/high-energy-1.mp3",
         mood: "high-energy"
     },
     {
         id: "elegant-1",
-        name: "Sun and Ocean",
-        url: "https://assets.mixkit.co/music/preview/mixkit-sun-and-ocean-585.mp3",
+        name: "Elegant Flow",
+        url: "/music/elegant-1.mp3",
         mood: "elegant"
     }
 ]
