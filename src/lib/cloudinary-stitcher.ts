@@ -1,15 +1,24 @@
+```typescript
 import { v2 as cloudinary } from 'cloudinary'
 
 export function generateStitchedVideoUrl(mediaItems: { url: string, type: string }[], musicUrl?: string | null): string {
     if (!mediaItems || mediaItems.length === 0) return ""
 
-    // 1. Extract Public IDs from Cloudinary URLs
-    // Example URL: https://res.cloudinary.com/demo/video/upload/v12345/business/abc.mp4
+    // 1. Extract Public IDs from Cloudinary URLs safely
     const getPublicId = (url: string) => {
-        const parts = url.split('/')
-        const fileName = parts.pop() || ""
-        const folder = parts.pop() || ""
-        return `${folder}/${fileName.split('.')[0]}`
+        const uploadIndex = url.indexOf('/upload/')
+        if (uploadIndex === -1) return ""
+        
+        const pathAfterUpload = url.substring(uploadIndex + 8)
+        const parts = pathAfterUpload.split('/')
+        
+        // Remove version if present (v123456)
+        if (parts[0].startsWith('v') && !isNaN(Number(parts[0].substring(1)))) {
+            parts.shift()
+        }
+        
+        // Rejoin and remove extension
+        return parts.join('/').split('.')[0]
     }
 
     const baseItem = mediaItems[0]
@@ -17,26 +26,23 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
     const isBaseVideo = baseItem.type.toLowerCase().includes('video')
 
     // 2. Build the transformation segments
-    // We resize everything to 720x1280 (9:16) and add pro effects
-    const baseTransform = `c_fill,h_1280,w_720,e_improve,e_vignette:20`
-
+    // We resize everything to 720x1280 (9:16)
+    const baseTransform = `c_fill, h_1280, w_720, e_improve, e_vignette: 20`
+    
     let segments: string[] = []
-
-    // Add subsequent items as spliced layers
+    
     mediaItems.slice(1).forEach((item) => {
         const publicId = getPublicId(item.url)
         const isVideo = item.type.toLowerCase().includes('video')
-
-        // Transition: Crossfade (fade)
-        const transition = `transition_(name_fade;du_1.0)`
-
-        // fl_splice concatenates instead of overlaying
+        
+        // Sequential concatenation using layers + fl_splice
+        const layerId = publicId.replace(/\//g, ':')
+        
         if (isVideo) {
-            segments.push(`fl_splice,${transition},l_video:${publicId.replace(/\//g, ':')},c_fill,h_1280,w_720/fl_layer_apply`)
+            segments.push(`l_video:${ layerId }, c_fill, h_1280, w_720 / fl_layer_apply, fl_splice`)
         } else {
-            // Images get Ken Burns (zoompan) + transitions
-            // Note: zoompan requires its own duration
-            segments.push(`du_4,e_zoompan,fl_splice,${transition},l:${publicId.replace(/\//g, ':')},c_fill,h_1280,w_720/fl_layer_apply`)
+            // Fixed duration for images (4s)
+            segments.push(`l:${ layerId }, c_fill, h_1280, w_720, du_4 / fl_layer_apply, fl_splice`)
         }
     })
 
@@ -52,5 +58,5 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim()
     const baseUrl = `https://res.cloudinary.com/${cloudName}/video/upload`
 
-    return `${baseUrl}/${baseTransform}/${segments.join('/')}/${basePublicId}.mp4`
+return `${baseUrl}/${baseTransform}/${segments.join('/')}/${basePublicId}.mp4`
 }
