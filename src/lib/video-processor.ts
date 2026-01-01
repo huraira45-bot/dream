@@ -110,12 +110,13 @@ export async function processReelForBusinessV2(businessId: string) {
             })
 
             variations.push(reel)
-        } catch (err) {
+        } catch (err: any) {
             console.error("Shotstack Error:", err)
             // Update to failed state so UI knows not to wait
+            const msg = err?.message || "Unknown Error"
             await prisma.generatedReel.update({
                 where: { id: reel.id },
-                data: { url: `failed` }
+                data: { url: `failed:${msg.substring(0, 100)}` }
             })
             variations.push(reel)
         }
