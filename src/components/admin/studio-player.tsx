@@ -147,13 +147,15 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
                     playsInline
                     onClick={() => setIsPlaying(!isPlaying)}
                 />
-            ) : status === 'failed' || finalUrl === 'failed' ? (
+            ) : status === 'failed' || (finalUrl && finalUrl.startsWith('failed')) ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20 p-6 text-center">
                     <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4 border border-red-500/20">
                         <Share2 className="w-8 h-8 text-red-500 rotate-180" />
                     </div>
                     <h3 className="text-white font-bold text-lg mb-2">Generation Failed</h3>
-                    <p className="text-white/60 text-sm mb-6">We couldn't generate this variation. Please delete it and try again.</p>
+                    <p className="text-white/60 text-sm mb-6 max-w-[200px] break-words">
+                        {finalUrl?.startsWith('failed:') ? finalUrl.split('failed:')[1] : "We couldn't generate this variation. Please delete it and try again."}
+                    </p>
                 </div>
             ) : (
                 <>
