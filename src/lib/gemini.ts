@@ -35,6 +35,10 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
     if (!model) return "No visual data available."
 
     try {
+        console.log("--------------------------------------------------")
+        console.log("🤖 AGENT: THE HARSH CRITIC (Gemini Vision)")
+        console.log(`Action: Analyzing ${imageUrls.length} media items...`)
+
         // Analyze up to 10 media items for quality filtering
         const mediaParts = await Promise.all(
             imageUrls.slice(0, 10).map(async (url) => {
@@ -64,7 +68,9 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
         Summary: (Detailed, technical, professional).`
 
         const result = await model.generateContent([prompt, ...mediaParts])
-        return result.response.text()
+        const analysis = result.response.text()
+        console.log("✅ CRITIC REPORT: Analysis complete.")
+        return analysis
     } catch (e) {
         console.error("Vision Error:", e)
         return "Visual analysis failed."

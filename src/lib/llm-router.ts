@@ -43,8 +43,16 @@ export async function processMultiLLMCreativeFlow(
     const visualReport = await describeMedia(mediaUrls);
 
     // Step 2: GPT-4o - Creative Production & Gen Z SMM Review
+    console.log("--------------------------------------------------")
+    console.log("🤖 AGENT: THE DYNAMIC DJ")
+    console.log(`Action: Fetching real-time trending music for ${region}...`)
     const trendingHits = await getTrendingSongsForRegion(region);
     const trendingSongs = trendingHits.join(", ");
+    console.log(`🎵 DJ PICKED: ${trendingHits.length} viral tracks found.`)
+
+    console.log("--------------------------------------------------")
+    console.log("🤖 AGENT: CREATIVE DIRECTOR (GPT-4o)")
+    console.log("Action: Brainstorming concepts with Stylist & SMM...")
 
     const prompt = `You are an AI Creative Production Team consisting of:
     - THE STYLIST: Expert in typography and minimal/aesthetic vibes.
@@ -96,6 +104,7 @@ export async function processMultiLLMCreativeFlow(
 
     try {
         const result = await generateJSONWithGPT4o<{ options: AIReelDataV3[] }>(prompt, {});
+        console.log("✅ CREATIVE TEAM: Generated 3 unique director cuts.")
         return result.options;
     } catch (openaiError: any) {
         console.warn("OpenAI Failed (Quota/Error), falling back to Gemini for Creative:", openaiError.message);

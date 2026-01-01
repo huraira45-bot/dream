@@ -43,7 +43,9 @@ export async function processReelForBusinessV2(businessId: string) {
 
     const isReel = score > 10 || (videoCount > mediaItems.length / 2 && mediaItems.length > 3)
 
-    console.log(`Cinematic Processing for ${business.name}: ${mediaItems.length} items. Score: ${score}. Type: ${isReel ? "REEL" : "POST"}`)
+    console.log("\n==================================================")
+    console.log(`🎬 STARTING AI ORCHESTRATION: ${business.name}`)
+    console.log(`📂 Input: ${mediaItems.length} media files. Detected Mode: ${isReel ? "REEL" : "POST"}`)
 
     const mediaTypes = mediaItems.map((m: { type: string }) => m.type)
     const allUrls = mediaItems.map((m: any) => m.url)

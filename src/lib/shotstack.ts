@@ -14,6 +14,10 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
         throw new Error("SHOTSTACK_API_KEY is not configured")
     }
 
+    console.log("--------------------------------------------------")
+    console.log("🤖 AGENT: THE EDITOR (Shotstack)")
+    console.log(`Action: Rendering "${metadata?.title || 'Untitled'}" with style "${style.name}"...`)
+
     // 1. Build the Video Tracks (Background & Foreground)
     let currentTime = 0
     const bgClips: any[] = []
