@@ -48,7 +48,12 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
 
     // 3. Construct the Final URL
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim()
-    const baseUrl = `https://res.cloudinary.com/${cloudName}/video/upload`
+
+    // CRITICAL FIX: Use the correct endpoint for the Base Resource Type
+    // If the base is an image, we MUST use /image/upload so Cloudinary finds it.
+    // The .mp4 extension and du_5 flag will then handle the conversion.
+    const resourceTypeEndpoint = isBaseVideo ? 'video' : 'image'
+    const baseUrl = `https://res.cloudinary.com/${cloudName}/${resourceTypeEndpoint}/upload`
 
     // The Base Resource is the first item's Public ID
     return `${baseUrl}/${baseTransform}/${segments.join('/')}/${basePublicId}.mp4`
