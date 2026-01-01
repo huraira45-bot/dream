@@ -63,6 +63,14 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
         return clip
     })
 
+    // Calculate total duration (last clip start + last clip length)
+    // We need to be careful with the overlap.
+    // Actually, simply: sum of all durations - (overlaps).
+    // Or easier: use the calculated `currentTime` + 1 (since we subtracted 1 for the last overlap that didn't happen? No.)
+    // Let's rely on the last clip's end time.
+    const lastClip = videoClips[videoClips.length - 1]
+    const totalDuration = lastClip ? lastClip.start + lastClip.length : 10
+
     // 2. Build Audio Track
     let audioSrc = musicUrl
     if (musicUrl && musicUrl.startsWith('/')) {
@@ -80,7 +88,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
                 src: audioSrc,
             },
             start: 0,
-            effect: "fadeOut"
+            length: totalDuration // Fix: Explicitly set length matches video
         }
     ] : []
 
