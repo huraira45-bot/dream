@@ -40,12 +40,21 @@ model MediaItem {
   business   Business @relation(fields: [businessId], references: [id])
 }
 
+enum ReelStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  DISCARDED
+}
+
 model GeneratedReel {
   id             String    @id @default(cuid())
   businessId     String
   business       Business  @relation(fields: [businessId], references: [id])
   url            String
   type           ReelType  @default(REEL)
+  status         ReelStatus @default(DRAFT)
+  scheduledAt    DateTime?
   title          String?
   caption        String?
   musicUrl       String? // The internal royalty-free track

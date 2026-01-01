@@ -90,6 +90,7 @@ export async function processMultiLLMCreativeFlow(
 
     DIRECTOR RULES:
     - NEGATIVE CONSTRAINT: DO NOT reuse angles or hooks from "Hooks Used Recently".
+    - DIVERSITY ENFORCEMENT: The 3 generated options MUST have completely different captions and hooks. If Option 1 is "Funny", Option 2 MUST be "Serious/Cinematic".
 
     EDITING RULES (Agent: THE DIRECTOR):
     - Choose a transitionType from ["fade", "wipeRight", "wipeLeft", "slideRight", "slideLeft", "zoom"].
