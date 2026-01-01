@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Play, Pause, Music, Share2, Image as ImageIcon } from "lucide-react"
+import { Play, Pause, Music, Share2, Image as ImageIcon, Download } from "lucide-react"
 
 interface MediaItem {
     id: string
@@ -245,42 +245,72 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
                                 {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-white" />}
                             </button>
                             {status === 'ready' && finalUrl && !finalUrl.startsWith('pending:') && (
-                                <button
-                                    onClick={async (e) => {
-                                        e.stopPropagation()
-                                        // Smart Share Logic
-                                        try {
-                                            if (navigator.share) {
-                                                const blob = await fetch(finalUrl).then(r => r.blob())
-                                                const file = new File([blob], 'reel.mp4', { type: 'video/mp4' })
-
-                                                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                                                    await navigator.share({
-                                                        files: [file],
-                                                        title: 'My Dream Reel',
-                                                        text: 'Check out this AI-generated reel! #DreamAI'
-                                                    })
-                                                    return
+                                <>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            let downloadUrl = finalUrl
+                                            if (downloadUrl.includes('cloudinary.com')) {
+                                                // Add fl_attachment to force download
+                                                if (downloadUrl.includes('/upload/')) {
+                                                    downloadUrl = downloadUrl.replace('/upload/', '/upload/fl_attachment/')
                                                 }
                                             }
-                                            // Fallback to Download
                                             const a = document.createElement('a')
-                                            a.href = finalUrl
-                                            a.download = "Dream-Instagram-Reel.mp4"
+                                            a.href = downloadUrl
+                                            a.download = "Dream-Reel.mp4"
                                             document.body.appendChild(a)
                                             a.click()
                                             document.body.removeChild(a)
-                                        } catch (err) {
-                                            console.error('Share failed:', err)
-                                            // Fallback on error
-                                            window.open(finalUrl, '_blank')
-                                        }
-                                    }}
-                                    className="p-3 bg-gradient-to-tr from-purple-500 to-pink-500 text-white rounded-2xl shadow-lg border border-white/20 hover:scale-105 transition-all flex items-center gap-2"
-                                >
-                                    <Share2 className="w-5 h-5" />
-                                    <span className="hidden sm:inline font-bold text-xs">Share</span>
-                                </button>
+                                        }}
+                                        className="p-3 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 text-white hover:bg-white/20 transition-all flex items-center gap-2"
+                                        title="Download Video"
+                                    >
+                                        <Download className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={async (e) => {
+                                            e.stopPropagation()
+                                            // Smart Share Logic
+                                            try {
+                                                if (navigator.share) {
+                                                    const blob = await fetch(finalUrl).then(r => r.blob())
+                                                    const file = new File([blob], 'reel.mp4', { type: 'video/mp4' })
+
+                                                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                                        await navigator.share({
+                                                            files: [file],
+                                                            title: 'My Dream Reel',
+                                                            text: 'Check out this AI-generated reel! #DreamAI'
+                                                        })
+                                                        return
+                                                    }
+                                                }
+                                                // Fallback to Download
+                                                let downloadUrl = finalUrl
+                                                if (downloadUrl.includes('cloudinary.com')) {
+                                                    if (downloadUrl.includes('/upload/')) {
+                                                        downloadUrl = downloadUrl.replace('/upload/', '/upload/fl_attachment/')
+                                                    }
+                                                }
+                                                const a = document.createElement('a')
+                                                a.href = downloadUrl
+                                                a.download = "Dream-Instagram-Reel.mp4"
+                                                document.body.appendChild(a)
+                                                a.click()
+                                                document.body.removeChild(a)
+                                            } catch (err) {
+                                                console.error('Share failed:', err)
+                                                // Fallback on error
+                                                window.open(finalUrl, '_blank')
+                                            }
+                                        }}
+                                        className="p-3 bg-gradient-to-tr from-purple-500 to-pink-500 text-white rounded-2xl shadow-lg border border-white/20 hover:scale-105 transition-all flex items-center gap-2"
+                                    >
+                                        <Share2 className="w-5 h-5" />
+                                        <span className="hidden sm:inline font-bold text-xs">Share</span>
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>
