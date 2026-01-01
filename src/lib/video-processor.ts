@@ -112,7 +112,11 @@ export async function processReelForBusinessV2(businessId: string) {
             variations.push(reel)
         } catch (err) {
             console.error("Shotstack Error:", err)
-            // Fallback to client-player compatible pending state (or fail)
+            // Update to failed state so UI knows not to wait
+            await prisma.generatedReel.update({
+                where: { id: reel.id },
+                data: { url: `failed` }
+            })
             variations.push(reel)
         }
     }
