@@ -49,9 +49,16 @@ export default async function AdminDashboard() {
                         </div>
 
                         <h2 className="text-xl font-bold text-zinc-900 mb-1">{business.name}</h2>
-                        <div className="flex items-center gap-1.5 text-zinc-400 text-sm mb-6">
-                            <Globe className="w-3.5 h-3.5" />
-                            <span>/{business.slug}</span>
+                        <div className="flex flex-wrap items-center gap-3 mb-6">
+                            <div className="flex items-center gap-1.5 text-zinc-400 text-sm">
+                                <Globe className="w-3.5 h-3.5" />
+                                <span>/{business.slug}</span>
+                            </div>
+                            {(business as any).region && (
+                                <span className="px-2 py-0.5 bg-zinc-100 text-zinc-500 text-[10px] font-bold rounded-md uppercase tracking-wide">
+                                    {(business as any).region}
+                                </span>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 pt-6 border-t border-zinc-50">

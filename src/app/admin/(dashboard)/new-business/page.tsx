@@ -8,6 +8,7 @@ import Link from "next/link"
 export default function NewBusiness() {
     const [name, setName] = useState("")
     const [slug, setSlug] = useState("")
+    const [region, setRegion] = useState("Pakistan")
     const router = useRouter()
     const [loading, setLoading] = useState(false)
 
@@ -18,7 +19,7 @@ export default function NewBusiness() {
         const res = await fetch("/api/businesses", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, slug }),
+            body: JSON.stringify({ name, slug, region }),
         })
 
         if (res.ok) {
@@ -71,6 +72,23 @@ export default function NewBusiness() {
                             className="w-full bg-zinc-50 border-none rounded-2xl p-4 text-zinc-900 placeholder:text-zinc-400 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none font-medium"
                             required
                         />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold text-zinc-700 flex items-center gap-2">
+                            <Globe className="w-4 h-4" />
+                            Business Region
+                        </label>
+                        <select
+                            value={region}
+                            onChange={(e) => setRegion(e.target.value)}
+                            className="w-full bg-zinc-50 border-none rounded-2xl p-4 text-zinc-900 focus:ring-2 focus:ring-purple-500/20 transition-all outline-none font-medium appearance-none"
+                        >
+                            <option value="Pakistan">Pakistan 🇵🇰</option>
+                        </select>
+                        <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest px-1">
+                            Used to find local trending songs for your reels.
+                        </p>
                     </div>
 
                     <div className="space-y-2">

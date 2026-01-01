@@ -1,6 +1,6 @@
 import { MusicTrack } from "./music"
 
-export type TransitionType = "fade" | "wipeRight" | "slideRight" | "wipe" | "orbit" | "zoom"
+export type TransitionType = "fade" | "wipeRight" | "wipeLeft" | "slideRight" | "slideLeft"
 export type EffectType = "zoomIn" | "zoomOut" | "slideLeft" | "slideRight" | "none"
 
 export interface DirectorStyle {
@@ -11,6 +11,11 @@ export interface DirectorStyle {
     transition: TransitionType
     effect: EffectType
     musicMood: "emotional" | "high-energy" | "elegant"
+    // Director 2.0 Enhancements
+    saturation?: number
+    brightness?: number
+    textOverlay?: boolean
+    audioDucking?: boolean
 }
 
 export const STYLES_CONFIG = {
@@ -18,25 +23,37 @@ export const STYLES_CONFIG = {
         name: "Cinematic Story",
         description: "Slow, emotional, and dramatic.",
         minDuration: 4,
-        transitions: ["fade", "zoom"],
+        transitions: ["fade", "slideRight"],
         effects: ["zoomIn", "zoomOut"],
-        mood: "emotional"
+        mood: "emotional",
+        saturation: 1.2,
+        brightness: 1.1,
+        textOverlay: true,
+        audioDucking: true
     },
     hype: {
         name: "Fast & Hype",
         description: "Fast-paced, high energy.",
         minDuration: 1.5,
-        transitions: ["wipeRight", "wipe", "zoom"],
+        transitions: ["wipeRight", "wipeLeft"],
         effects: ["zoomOut", "zoomIn"],
-        mood: "high-energy"
+        mood: "high-energy",
+        saturation: 1.5,
+        brightness: 1.2,
+        textOverlay: true,
+        audioDucking: true
     },
     modern: {
         name: "Modern Clean",
         description: "Balanced pacing with stylish slides.",
         minDuration: 3,
-        transitions: ["slideRight", "wipeRight"],
+        transitions: ["slideRight", "slideLeft"],
         effects: ["slideLeft", "slideRight"],
-        mood: "elegant"
+        mood: "elegant",
+        saturation: 1.0,
+        brightness: 1.0,
+        textOverlay: false,
+        audioDucking: true
     }
 }
 
@@ -53,6 +70,10 @@ export function getStyleForVariation(index: number): DirectorStyle {
         minDuration: config.minDuration,
         transition: config.transitions[Math.floor(Math.random() * config.transitions.length)] as TransitionType,
         effect: config.effects[Math.floor(Math.random() * config.effects.length)] as EffectType,
-        musicMood: config.mood as any
+        musicMood: config.mood as any,
+        saturation: (config as any).saturation,
+        brightness: (config as any).brightness,
+        textOverlay: (config as any).textOverlay,
+        audioDucking: (config as any).audioDucking
     }
 }

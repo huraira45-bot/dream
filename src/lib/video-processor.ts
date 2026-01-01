@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
-import { generateReelMetadata } from "@/lib/gemini"
+import { generateReelMetadata, describeMedia } from "@/lib/gemini"
+import { findAndConvertAudio } from './audio-finder'
 import { getMusicForMood, MUSIC_LIBRARY } from "@/lib/music"
 import { generateStitchedVideoUrl } from "@/lib/cloudinary-stitcher"
 import cloudinary from "@/lib/cloudinary"
@@ -44,9 +45,21 @@ export async function processReelForBusinessV2(businessId: string) {
     console.log(`Cinematic Processing for ${business.name}: ${mediaItems.length} items. Score: ${score}. Type: ${isReel ? "REEL" : "POST"}`)
 
     const mediaTypes = mediaItems.map((m: { type: string }) => m.type)
+    const sampleUrls = mediaItems.slice(0, 3).map((m: { url: string }) => m.url)
 
-    // 3. Generate 3 Metadata Options with Gemini
-    const aiOptions = await generateReelMetadata(business.name, mediaItems.length, isReel, mediaTypes)
+    // 3. Multimodal Analysis (Look at the actual clips)
+    const visualContext = await describeMedia(sampleUrls)
+    console.log(`Visual Context for ${business.name}: ${visualContext}`)
+
+    // 4. Generate 3 Metadata Options with Gemini (Using Visual Context)
+    const aiOptions = await generateReelMetadata(
+        business.name,
+        mediaItems.length,
+        isReel,
+        mediaTypes,
+        (business as any).region || "Pakistan",
+        visualContext
+    )
 
     // Ensure Base Canvas exists (Self-Healing)
     const baseCanvasId = "dream_canvas"
@@ -85,23 +98,33 @@ export async function processReelForBusinessV2(businessId: string) {
         const metadata = aiOptions[i] || aiOptions[0]
 
         // Intelligent Music Selection: Use Gemini's Content Analysis > Style Default
-        const musicTrack = getMusicForMood(metadata.musicMood)
+        let musicTrack = getMusicForMood(metadata.musicMood)
 
-        const reel = await prisma.generatedReel.create({
+        // REAL TRENDING UPGRADE: Try to find and use the exact song suggested by AI
+        if (metadata.trendingAudioTip) {
+            const realAudioUrl = await findAndConvertAudio(metadata.trendingAudioTip)
+            if (realAudioUrl) {
+                // Swap the royalty-free track with the real trending one
+                musicTrack = { ...musicTrack, url: realAudioUrl, name: metadata.trendingAudioTip }
+            }
+        }
+
+        const reel = await (prisma.generatedReel as any).create({
             data: {
                 businessId: business.id,
                 title: metadata.title, // Use AI Title
                 caption: metadata.caption, // Use AI Caption
                 url: `pending:init-${Date.now()}-${i}`,
                 musicUrl: musicTrack.url,
+                trendingAudioTip: metadata.trendingAudioTip, // Add trending audio tip
                 mediaItemIds: allMediaIds
             }
         })
 
         // Trigger Shotstack Render
         try {
-            // Post to Shotstack with specific style
-            const renderResponse = await postToShotstack(mediaItems, musicTrack.url, style)
+            // Post to Shotstack with specific style and metadata for text
+            const renderResponse = await postToShotstack(mediaItems, musicTrack.url, style, metadata)
             const renderId = renderResponse.id
 
             // Update URL to pending:RENDER_ID for polling

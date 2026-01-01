@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     }
 
     try {
-        const { name, slug } = await req.json()
+        const { name, slug, region } = await req.json()
 
         if (!name || !slug) {
             return new NextResponse("Name and Slug are required", { status: 400 })
@@ -29,6 +29,7 @@ export async function POST(req: Request) {
             data: {
                 name,
                 slug,
+                region: region || "Global"
             },
         })
 

@@ -230,6 +230,12 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
                             <div className="w-10 h-10 rounded-full bg-purple-500/20 backdrop-blur-md border border-purple-500/30 flex items-center justify-center animate-spin-slow">
                                 <Music className="w-5 h-5 text-purple-400" />
                             </div>
+                            {(reel as any).trendingAudioTip && (
+                                <div className="px-3 py-1.5 bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                                    <span className="text-[10px] font-bold text-white/90">IG TREND: {(reel as any).trendingAudioTip}</span>
+                                </div>
+                            )}
                         </div>
                         <div className="flex gap-2 pointer-events-auto">
                             <button

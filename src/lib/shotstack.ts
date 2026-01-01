@@ -8,7 +8,7 @@ import { DirectorStyle } from "./director"
 
 const SHOTSTACK_API_ENDPOINT = "https://api.shotstack.io/edit/stage/render"
 
-export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string | null, style: DirectorStyle) {
+export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string | null, style: DirectorStyle, metadata?: { title?: string, hook?: string }) {
     const apiKey = process.env.SHOTSTACK_API_KEY
     if (!apiKey) {
         throw new Error("SHOTSTACK_API_KEY is not configured")
@@ -18,87 +18,126 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
     let currentTime = 0
     const bgClips: any[] = []
     const fgClips: any[] = []
+    const textClips: any[] = []
 
-    mediaItems.forEach((item) => {
+    // 0. Viral Hook (Attention Grabber)
+    if (metadata?.hook) {
+        textClips.push({
+            asset: {
+                type: "text",
+                text: metadata.hook.toUpperCase(),
+                font: {
+                    family: "montserrat",
+                    size: 42,
+                    color: "#ffffff"
+                },
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                }
+            },
+            start: 0,
+            length: 1.5,
+            transition: { in: "zoom", out: "fade" }
+        })
+    }
+
+    mediaItems.forEach((item, index) => {
         const isVideo = item.type.toLowerCase().includes('video')
-        // Cap video duration to safeguard pacing
-        const duration = isVideo ? Math.min(10, style.minDuration * 2) : style.minDuration
+        const duration = isVideo ? Math.min(6, style.minDuration * 1.5) : style.minDuration
 
-        // Background Clip (Fill the screen, dimmed)
+        // Background Clip
         bgClips.push({
             asset: {
                 type: isVideo ? "video" : "image",
                 src: item.url,
-                ...(isVideo && { volume: 0 }) // Only add volume for videos
+                ...(isVideo && { volume: 0 }) // Volume goes inside ASSET for videos
             },
             start: currentTime,
             length: duration,
             fit: "cover",
-            opacity: 0.3, // Dimmed background
-            scale: 1.2, // Slight zoom to avoid edge artifacts
-            transition: {
-                in: "fade",
-                out: "fade"
-            }
+            opacity: 0.2,
+            scale: 1.3,
+            transition: { in: "fade", out: "fade" }
         })
 
-        // Foreground Clip (The actual content)
-        fgClips.push({
+        // Foreground Clip
+        const fgClip: any = {
             asset: {
                 type: isVideo ? "video" : "image",
                 src: item.url,
-                ...(isVideo && { volume: 0 }) // Only add volume for videos
+                ...(isVideo && { volume: (style.audioDucking ? 1 : 0) }) // Volume goes inside ASSET for videos
             },
             start: currentTime,
             length: duration,
-            fit: "contain", // Never stretch or cut
-            effect: isVideo ? undefined : style.effect,
-            transition: {
-                in: style.transition,
-                out: style.transition
-            }
-        })
+            fit: "contain",
+            transition: { in: style.transition, out: style.transition }
+        }
 
-        currentTime += duration - 1 // -1 for 1s overlap/transition
+        if (!isVideo && style.effect && style.effect !== "none") {
+            fgClip.effect = style.effect
+        }
+
+        if (style.saturation && style.saturation > 1.2) {
+            fgClip.filter = "boost"
+        }
+
+        fgClips.push(fgClip)
+
+        // TEXT OVERLAYS (Ultra-Visibility upgrade)
+        if (style.textOverlay && index % 2 === 0) {
+            const displayText = (index === 0 && metadata?.title) ? metadata.title : `#${index + 1}`
+            textClips.push({
+                asset: {
+                    type: "text",
+                    text: displayText,
+                    font: {
+                        family: "montserrat",
+                        size: 30,
+                        color: "#ffffff"
+                    },
+                    background: {
+                        color: "#000000",
+                        padding: 0.05,
+                        opacity: 0.6
+                    }
+                },
+                start: currentTime + (duration / 4),
+                length: duration / 2,
+                position: "bottom",
+                offset: { y: 0.15 },
+                transition: { in: "fade", out: "fade" }
+            })
+        }
+
+        currentTime += duration
     })
 
     const lastClip = fgClips[fgClips.length - 1]
     const totalDuration = lastClip ? lastClip.start + lastClip.length : 10
 
-    // 2. Build Audio Track
-    // ... (rest of audio logic matches existing, just ensure we copy it right if replacing)
-    let audioSrc = musicUrl
-    if (musicUrl && musicUrl.startsWith('/')) {
-        if (musicUrl.includes('emotional')) audioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-        else if (musicUrl.includes('energy')) audioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"
-        else if (musicUrl.includes('elegant')) audioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
-        else audioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+    // 2. Global Soundtrack (Cleaner than a track)
+    const soundtrack = {
+        src: musicUrl || "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+        effect: "fadeInFadeOut"
     }
 
-    const audioTrack = audioSrc ? [
-        {
-            asset: {
-                type: "audio",
-                src: audioSrc,
-            },
-            start: 0,
-            length: totalDuration
-        }
-    ] : []
-
     // 3. Construct Payload
+    const tracks = [
+        { clips: textClips },
+        { clips: fgClips },
+        { clips: bgClips }
+    ].filter(track => track.clips.length > 0)
+
     const timeline = {
         background: "#000000",
-        tracks: [
-            { clips: fgClips }, // Topmost visual layer (Foreground)
-            { clips: bgClips }, // Middle layer (Background)
-            { clips: audioTrack }  // Audio layer
-        ]
+        soundtrack,
+        tracks
     }
 
     const output = {
         format: "mp4",
-        resolution: "sd" // Save credits, use "hd" for production
+        resolution: "sd"
     }
 
     const payload = {
