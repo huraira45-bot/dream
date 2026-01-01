@@ -1,6 +1,6 @@
 import { MusicTrack } from "./music"
 
-export type TransitionType = "fade" | "wipe" | "orbit" | "zoom"
+export type TransitionType = "fade" | "wipeRight" | "slideRight" | "wipe" | "orbit" | "zoom"
 export type EffectType = "zoomIn" | "zoomOut" | "slideLeft" | "slideRight" | "none"
 
 export interface DirectorStyle {
@@ -28,7 +28,7 @@ export const DIRECTOR_STYLES: DirectorStyle[] = [
         name: "Fast & Hype",
         description: "Fast-paced, high energy, quick cuts.",
         minDuration: 1.5,
-        transition: "wipe",
+        transition: "wipeRight",
         effect: "zoomOut",
         musicMood: "high-energy"
     },
@@ -37,7 +37,7 @@ export const DIRECTOR_STYLES: DirectorStyle[] = [
         name: "Modern Clean",
         description: "Balanced pacing with stylish slides.",
         minDuration: 3,
-        transition: "orbit",
+        transition: "slideRight",
         effect: "slideLeft",
         musicMood: "elegant"
     }

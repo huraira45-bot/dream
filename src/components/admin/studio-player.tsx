@@ -78,7 +78,7 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
     // Master Mode: use if ready and url is valid MP4 (not pending)
     // Also ensure it is NOT an image file, to avoid crashes if DB has mismatched data
     const isImageFinal = finalUrl ? /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(finalUrl) : false
-    const isMasterMode = status === 'ready' && finalUrl && finalUrl !== 'failed' && !finalUrl.startsWith('pending:') && !finalUrl.startsWith('http://res.cloudinary.com/dummy') && !isImageFinal
+    const isMasterMode = status === 'ready' && finalUrl && !finalUrl.startsWith('failed') && !finalUrl.startsWith('pending:') && !finalUrl.startsWith('http://res.cloudinary.com/dummy') && !isImageFinal
 
     const [isPlaying, setIsPlaying] = useState(false)
     const [currentIndex, setCurrentIndex] = useState(0)

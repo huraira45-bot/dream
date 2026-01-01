@@ -11,9 +11,6 @@ const mockMediaItems = [
 // Mock Music
 const mockMusic = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
 
-// Mock Style
-const style = DIRECTOR_STYLES[0]
-
 async function test() {
     console.log("Testing Shotstack Integration...")
     console.log(`API Endpoint: https://api.shotstack.io/edit/stage/render`)
@@ -21,14 +18,16 @@ async function test() {
     // Set env var manually for this test if needed, or rely on .env
     // process.env.SHOTSTACK_API_KEY = "..." 
 
-    try {
-        const response = await postToShotstack(mockMediaItems, mockMusic, style)
-        console.log("SUCCESS!")
-        console.log("Render ID:", response.id)
-        console.log("Message:", response.message)
-    } catch (e) {
-        console.error("FAILURE:")
-        console.error(e)
+    for (const style of DIRECTOR_STYLES) {
+        console.log(`\nTesting Style: ${style.name} (Transition: ${style.transition}, Effect: ${style.effect})`)
+        try {
+            const response = await postToShotstack(mockMediaItems, mockMusic, style)
+            console.log("SUCCESS!")
+            console.log("Render ID:", response.id)
+        } catch (e: any) {
+            console.error("FAILURE:")
+            console.log(e.message || JSON.stringify(e))
+        }
     }
 }
 
