@@ -34,11 +34,11 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
         const layerId = publicId.replace(/\//g, ':')
 
         if (isVideo) {
-            // Splicing a video segment - MUTE it to prevent audio stream mismatch with images
-            segments.push(`l_video:${layerId}/c_fill,h_1280,w_720,e_volume:mute/fl_layer_apply,fl_splice`)
+            // Correct Syntax: fl_splice goes FIRST
+            segments.push(`fl_splice,l_video:${layerId}/c_fill,h_1280,w_720,e_volume:mute/fl_layer_apply`)
         } else {
-            // Splicing an image segment (fixed 4s duration)
-            segments.push(`l:${layerId}/c_fill,h_1280,w_720,du_4/fl_layer_apply,fl_splice`)
+            // Correct Syntax: fl_splice goes FIRST
+            segments.push(`fl_splice,l:${layerId}/c_fill,h_1280,w_720,du_4/fl_layer_apply`)
         }
     })
 
