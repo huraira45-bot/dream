@@ -80,7 +80,9 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
     const timerRef = useRef<NodeJS.Timeout | null>(null)
 
     const currentItem = mediaItems[currentIndex] || mediaItems[0]
-    const isVideo = currentItem?.type.toLowerCase().includes('video')
+    // Robust check: Trust extension over 'type' if conflicting
+    const isImageFile = currentItem?.url.match(/\.(jpg|jpeg|png|webp|gif)($|\?)/i)
+    const isVideo = currentItem?.type.toLowerCase().includes('video') && !isImageFile
 
     const handleNext = () => {
         setCurrentIndex((prev) => (prev + 1) % mediaItems.length)
