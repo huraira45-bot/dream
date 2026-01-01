@@ -223,15 +223,42 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
                                 {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-white" />}
                             </button>
                             {status === 'ready' && finalUrl && !finalUrl.startsWith('pending:') && (
-                                <a
-                                    href={finalUrl}
-                                    download="Dream-Master.mp4"
-                                    target="_blank"
-                                    className="p-3 bg-purple-600 text-white rounded-2xl shadow-lg border border-purple-400/50 hover:bg-purple-500 transition-all"
-                                    onClick={(e) => e.stopPropagation()}
+                                <button
+                                    onClick={async (e) => {
+                                        e.stopPropagation()
+                                        // Smart Share Logic
+                                        try {
+                                            if (navigator.share) {
+                                                const blob = await fetch(finalUrl).then(r => r.blob())
+                                                const file = new File([blob], 'reel.mp4', { type: 'video/mp4' })
+
+                                                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                                    await navigator.share({
+                                                        files: [file],
+                                                        title: 'My Dream Reel',
+                                                        text: 'Check out this AI-generated reel! #DreamAI'
+                                                    })
+                                                    return
+                                                }
+                                            }
+                                            // Fallback to Download
+                                            const a = document.createElement('a')
+                                            a.href = finalUrl
+                                            a.download = "Dream-Instagram-Reel.mp4"
+                                            document.body.appendChild(a)
+                                            a.click()
+                                            document.body.removeChild(a)
+                                        } catch (err) {
+                                            console.error('Share failed:', err)
+                                            // Fallback on error
+                                            window.open(finalUrl, '_blank')
+                                        }
+                                    }}
+                                    className="p-3 bg-gradient-to-tr from-purple-500 to-pink-500 text-white rounded-2xl shadow-lg border border-white/20 hover:scale-105 transition-all flex items-center gap-2"
                                 >
                                     <Share2 className="w-5 h-5" />
-                                </a>
+                                    <span className="hidden sm:inline font-bold text-xs">Share</span>
+                                </button>
                             )}
                         </div>
                     </div>
