@@ -63,10 +63,11 @@ export async function processMultiLLMCreativeFlow(
     AESTHETIC RULES (The Stylist):
     - Fonts: You MUST pick from these premium categories:
         - Calligraphy/Script: [Dancing Script, Pacifico, Pinyon Script].
-        - Bold/Vivid: [Shrikhand, Alfa Slab One, Alfa Slab One, Bungee].
-        - Abstract/Modern: [Syne ExtraBold, Righteous, Space Grotesk].
+        - Bold/Vivid: [Shrikhand, Alfa Slab One, Bungee].
+        - Abstract/Modern: [Syne, Righteous, Space Grotesk].
     - Styling: Use "Vivid" and high-contrast color pairings. Avoid boring white/black.
-    - Gen Z SMM Review: Hooks must have "Aura". No corporate talk.
+    - Gen Z SMM Review: Hooks must have "Aura". No corporate talk. Use slang correctly.
+    - SMM Gimmick: Provide a specific visual or audio editing idea (e.g., "Bass boost on the beat drop", "Glitch effect on the logo").
 
     MUSIC RULES (The Dynamic DJ):
     - Select EXACTLY from these hits: [${trendingSongs}]
