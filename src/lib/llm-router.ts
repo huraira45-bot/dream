@@ -70,32 +70,33 @@ export async function processMultiLLMCreativeFlow(
       - Songs Used Recently: [${usedSongs.join(", ")}]
       - Hooks Used Recently: [${usedHooks.join(", ")}]
 
-    YOUR TASK: Generate 3 UNIQUE production options. 
-    Each option must be distinct in font, music, and angle.
+    YOUR TASK: Generate EXACTLY 3 UNIQUE production options. 
+    Each option must be distinct in vibe, text, and music.
+
+    VARIATION SEEDS (Strict Enforcement):
+    - Option 1 [DRAMATIC/CINEMATIC]: High contrast, bold serif fonts, epic hook, intense music. 
+    - Option 2 [POV/VLOG]: Hand-written fonts, relatable/funny hook, "Day in life" vibe, chill/lofi music.
+    - Option 3 [HYPE/TREND]: Bright colors, bold rounded fonts, fast-paced hook, high-energy viral music.
 
     AESTHETIC RULES (The Stylist):
-    - Fonts: You MUST pick from these VIVID STREET fonts (Shotstack compatible):
-        - Handwritten/Marker: [Permanent Marker, Rock Salt, Gloria Hallelujah].
-        - Bold/Rounded: [Fredoka One, Titan One, Carter One].
-        - Editorial/Serif: [Abril Fatface, Prata, Ultra].
-    - Styling: Use "Vivid" and high-contrast color pairings. Avoid boring white/black.
-    - Gen Z SMM Review: Hooks must have "Aura". No corporate talk. Use slang correctly.
-    - SMM Gimmick: Provide a specific visual or audio editing idea (e.g., "Bass boost on the beat drop", "Glitch effect on the logo").
+    - Fonts: Pick EXACTLY one from these sets per variation:
+        - Handwritten: [Permanent Marker, Gloria Hallelujah]
+        - Bold: [Fredoka One, Titan One]
+        - Editorial: [Abril Fatface, Ultra]
+    - Styling: Match Font Color to the mood (e.g., Dramatic = Gold/White, Hype = Neon).
 
     MUSIC RULES (The Dynamic DJ):
     - Select EXACTLY from these hits: [${trendingSongs}]
-    - NEGATIVE CONSTRAINT: DO NOT use any song listed in "Songs Used Recently". Find a fresh hit.
-    - VARIETY POLICY: Do not pick the obvious #1 song every time. Pick the song that matches the *specific* micro-vibe.
-    - Diversity Check: Variations 1, 2, and 3 MUST use different songs.
+    - NEGATIVE CONSTRAINT: DO NOT use any song listed in "Songs Used Recently".
+    - UNIFORMITY FORBIDDEN: Variations 1, 2, and 3 MUST use different songs.
 
     DIRECTOR RULES:
-    - NEGATIVE CONSTRAINT: DO NOT reuse angles or hooks from "Hooks Used Recently".
-    - DIVERSITY ENFORCEMENT: The 3 generated options MUST have completely different captions and hooks. If Option 1 is "Funny", Option 2 MUST be "Serious/Cinematic".
+    - NEGATIVE CONSTRAINT: DO NOT reuse hooks from "Hooks Used Recently".
+    - CAPTION DIVERSITY: Captions must be completely different. No "Yum!" in every one. Write specific marketing copy for each mood.
 
-    EDITING RULES (Agent: THE DIRECTOR):
-    - Choose a transitionType from ["fade", "wipeRight", "wipeLeft", "slideRight", "slideLeft", "zoom"].
-    - Choose an effectType from ["zoomIn", "zoomOut", "slideLeft", "slideRight", "none"].
-    - Match the editing speed and style to the visual atmosphere.
+    EDITING RULES:
+    - Variation 1: Slow transitions (fade), ZoomIn on food.
+    - Variation 3: Fast transitions (wipe), Glitch/Slide effects.
 
     CRITICAL RULES:
     - Identify any media that should be SKIPPED based on the visual report (e.g., if there's a blurry or low-quality index mentioned). 

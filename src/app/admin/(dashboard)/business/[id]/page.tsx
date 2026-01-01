@@ -7,6 +7,8 @@ import { BusinessQRCode } from "@/components/admin/business-qr"
 import { GenerateButton } from "@/components/admin/generate-button"
 import { ResetMediaButton } from "@/components/admin/reset-media-button"
 import { DeleteReelButton } from "@/components/admin/delete-reel-button"
+import { ScheduleReelButton } from "@/components/admin/schedule-reel-button"
+import { Loader2 } from "lucide-react"
 
 export default async function BusinessDetail({
     params,
@@ -22,6 +24,9 @@ export default async function BusinessDetail({
                 orderBy: { createdAt: "desc" }
             },
             reels: {
+                where: {
+                    status: { not: "DISCARDED" }
+                },
                 orderBy: { createdAt: "desc" }
             }
         }
@@ -33,6 +38,9 @@ export default async function BusinessDetail({
 
     const imagesCount = business.mediaItems.filter((m: any) => m.type === "IMAGE").length
     const videosCount = business.mediaItems.filter((m: any) => m.type === "VIDEO").length
+
+    const drafts = business.reels.filter((r: any) => r.status === "DRAFT")
+    const scheduled = business.reels.filter((r: any) => r.status === "SCHEDULED")
 
     return (
         <div className="space-y-8">
@@ -134,42 +142,85 @@ export default async function BusinessDetail({
                 </div>
             </div>
 
-            {/* Generated Content Section */}
-            <div className="pt-8 border-t border-zinc-100 space-y-6">
-                <h2 className="text-2xl font-bold text-zinc-900">Generated Content</h2>
-                <div className="grid gap-6 md:grid-cols-2">
-                    {business.reels.map((reel: any) => (
-                        <div key={reel.id} className="p-6 bg-white rounded-[2rem] border border-zinc-100 shadow-sm flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${reel.type === 'POST' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
-                                    {reel.type === 'POST' ? <ImageIcon className="w-6 h-6" /> : <Wand2 className="w-6 h-6" />}
-                                </div>
-                                <div>
-                                    <p className="font-bold text-zinc-900">
-                                        {reel.title || (reel.type === 'POST' ? "Curated Post" : "AI Highlight Reel")}
-                                    </p>
-                                    {reel.caption && <p className="text-xs text-zinc-600 line-clamp-1 mt-0.5">{reel.caption}</p>}
-                                    <p className="text-[10px] text-zinc-400 mt-1">{new Date(reel.createdAt).toLocaleDateString()}</p>
+            {/* NEW: SCHEDULER TIMELINE */}
+            {scheduled.length > 0 && (
+                <div className="pt-12 border-t border-zinc-100 space-y-8">
+                    <div>
+                        <h2 className="text-2xl font-bold text-zinc-900 flex items-center gap-3 tracking-tight">
+                            <Calendar className="w-6 h-6 text-purple-600" /> Published & Scheduled
+                        </h2>
+                        <p className="text-zinc-500 text-sm mt-1">Your marketing calendar for this month</p>
+                    </div>
+
+                    <div className="flex gap-6 overflow-x-auto pb-6 -mx-6 px-6 scrollbar-hide">
+                        {scheduled.map((reel: any) => (
+                            <div key={reel.id} className="flex-shrink-0 w-[240px] space-y-4">
+                                <div className="aspect-[9/16] rounded-[2rem] bg-zinc-900 relative overflow-hidden group shadow-2xl shadow-purple-500/10 border-2 border-zinc-100">
+                                    <video src={reel.url} className="w-full h-full object-cover opacity-80" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                                    <div className="absolute bottom-6 left-6 right-6">
+                                        <div className="bg-purple-600 text-white text-[10px] font-black px-2 py-1 rounded-lg w-fit mb-2 uppercase tracking-tighter shadow-lg shadow-purple-600/50">
+                                            {new Date(reel.scheduledAt || reel.createdAt).toLocaleDateString()}
+                                        </div>
+                                        <p className="text-sm font-bold text-white line-clamp-2 leading-tight">{reel.title}</p>
+                                    </div>
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Link href={`/v/${reel.id}`} className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-black shadow-xl">
+                                            <Play className="w-5 h-5 fill-black ml-1" />
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Link
-                                    href={reel.url.startsWith('/') ? '#' : `/v/${reel.id}`}
-                                    className={cn(
-                                        "px-4 py-2 font-bold text-xs rounded-xl transition-all",
-                                        reel.url.startsWith('/')
-                                            ? "bg-zinc-100 text-zinc-400 cursor-not-allowed"
-                                            : "bg-zinc-50 hover:bg-zinc-100 text-zinc-600"
-                                    )}
-                                >
-                                    {reel.url.startsWith('/') ? "Processing..." : "View Output"}
-                                </Link>
-                                {!reel.url.startsWith('/') && <DeleteReelButton reelId={reel.id} />}
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* DRAFTS SECTION */}
+            <div className="pt-12 border-t border-zinc-100 space-y-8">
+                <div>
+                    <h2 className="text-2xl font-bold text-zinc-900 flex items-center gap-3 tracking-tight">
+                        <Wand2 className="w-6 h-6 text-pink-600 animate-pulse" /> New Drafts (Pick One)
+                    </h2>
+                    <p className="text-zinc-500 text-sm mt-1">Review the unique variations and schedule your favorite.</p>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {drafts.map((reel: any) => (
+                        <div key={reel.id} className="relative group bg-white rounded-[2.5rem] border border-zinc-100 p-8 shadow-sm hover:shadow-xl hover:shadow-zinc-200/50 transition-all duration-300">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="p-3 bg-zinc-50 rounded-2xl group-hover:bg-zinc-900 group-hover:text-white transition-all">
+                                    <Film className="w-6 h-6" />
+                                </div>
+                                <div className="px-3 py-1 bg-zinc-50 rounded-full text-[10px] font-black uppercase text-zinc-400 tracking-widest group-hover:bg-zinc-900/10">
+                                    {reel.trendingAudioTip ? "Music: Hit" : "Royalty Free"}
+                                </div>
+                            </div>
+
+                            <h3 className="text-xl font-bold text-zinc-900 mb-2 line-clamp-1">{reel.title}</h3>
+                            <p className="text-sm text-zinc-500 line-clamp-3 mb-8 leading-relaxed italic">"{reel.caption}"</p>
+
+                            <div className="flex items-center gap-3">
+                                {reel.url.startsWith('pending') ? (
+                                    <div className="w-full flex items-center justify-center gap-2 py-4 bg-zinc-50 rounded-2xl text-zinc-400 text-sm font-bold italic">
+                                        <Loader2 className="w-4 h-4 animate-spin" /> Rendering...
+                                    </div>
+                                ) : (
+                                    <>
+                                        <ScheduleReelButton reelId={reel.id} />
+                                        <Link href={`/v/${reel.id}`} className="flex-1 py-3 text-center bg-zinc-50 hover:bg-zinc-100 text-zinc-900 rounded-xl font-bold text-xs transition-all">
+                                            Preview
+                                        </Link>
+                                        <DeleteReelButton reelId={reel.id} />
+                                    </>
+                                )}
                             </div>
                         </div>
                     ))}
-                    {business.reels.length === 0 && (
-                        <p className="text-sm text-zinc-400 italic">No content generated yet.</p>
+                    {drafts.length === 0 && (
+                        <div className="col-span-full py-12 text-center bg-zinc-50 rounded-[2rem] border-2 border-dashed border-zinc-100">
+                            <p className="text-sm text-zinc-400 font-medium italic">No new drafts. Click "Generate Content" to start.</p>
+                        </div>
                     )}
                 </div>
             </div>
