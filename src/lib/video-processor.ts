@@ -93,7 +93,8 @@ export async function processReelForBusinessV2(businessId: string) {
                 caption: `AI Generated ${style.name} Reel. ${style.description}`,
                 url: `pending:init-${Date.now()}-${i}`, // Placeholder
                 // thumbnailUrl removed as it's not in schema
-                musicUrl: musicTrack.url
+                musicUrl: musicTrack.url,
+                mediaItemIds: allMediaIds
             }
         })
 
