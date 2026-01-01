@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { v2 as cloudinary } from "cloudinary"
+import { NextResponse } from "next/server"
+import cloudinary from "@/lib/cloudinary"
 
 export async function GET() {
     try {
