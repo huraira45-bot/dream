@@ -76,14 +76,23 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl?: string
     })
 
     // 2. Build Audio Track
-    const audioTrack = musicUrl ? [
+    let audioSrc = musicUrl
+    if (musicUrl && musicUrl.startsWith('/')) {
+        // Map local music to reliable public URLs for Shotstack
+        if (musicUrl.includes('emotional')) audioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        else if (musicUrl.includes('energy')) audioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"
+        else if (musicUrl.includes('elegant')) audioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
+        else audioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" // Default
+    }
+
+    const audioTrack = audioSrc ? [
         {
             asset: {
                 type: "audio",
-                src: musicUrl.startsWith('/') ? `https://dream-eta-ruddy.vercel.app${musicUrl}` : musicUrl, // Resolve local path
+                src: audioSrc,
             },
             start: 0,
-            effect: "fadeOut" // Fade out at end? We don't know total length easily.
+            effect: "fadeOut"
         }
     ] : []
 
