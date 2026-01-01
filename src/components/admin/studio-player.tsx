@@ -70,7 +70,9 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
     }, [pUrl, finalUrl, reel.id])
 
     // Master Mode: use if ready and url is valid MP4 (not pending)
-    const isMasterMode = status === 'ready' && finalUrl && !finalUrl.startsWith('pending:') && !finalUrl.startsWith('http://res.cloudinary.com/dummy') // checking for dummies if any
+    // Also ensure it is NOT an image file, to avoid crashes if DB has mismatched data
+    const isImageFinal = finalUrl ? /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(finalUrl) : false
+    const isMasterMode = status === 'ready' && finalUrl && !finalUrl.startsWith('pending:') && !finalUrl.startsWith('http://res.cloudinary.com/dummy') && !isImageFinal
 
     const [isPlaying, setIsPlaying] = useState(false)
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -80,9 +82,12 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
     const timerRef = useRef<NodeJS.Timeout | null>(null)
 
     const currentItem = mediaItems[currentIndex] || mediaItems[0]
+
     // Robust check: Trust extension over 'type' if conflicting
-    const isImageFile = currentItem?.url.match(/\.(jpg|jpeg|png|webp|gif)($|\?)/i)
-    const isVideo = currentItem?.type.toLowerCase().includes('video') && !isImageFile
+    const url = currentItem?.url || ""
+    const isImageExtension = /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(url)
+    const isVideoType = currentItem?.type.toLowerCase().includes('video')
+    const isVideo = isVideoType && !isImageExtension
 
     const handleNext = () => {
         setCurrentIndex((prev) => (prev + 1) % mediaItems.length)
