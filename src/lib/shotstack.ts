@@ -4,9 +4,11 @@ export interface MediaItem {
     type: string
 }
 
+import { DirectorStyle } from "./director"
+
 const SHOTSTACK_API_ENDPOINT = "https://api.shotstack.io/edit/stage/render"
 
-export async function postToShotstack(mediaItems: MediaItem[], musicUrl?: string | null) {
+export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string | null, style: DirectorStyle) {
     const apiKey = process.env.SHOTSTACK_API_KEY
     if (!apiKey) {
         throw new Error("SHOTSTACK_API_KEY is not configured")

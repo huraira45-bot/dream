@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { generateReelMetadata } from "@/lib/gemini"
-import { getMusicForMood } from "@/lib/music"
+import { getMusicForMood, MUSIC_LIBRARY } from "@/lib/music"
 import { generateStitchedVideoUrl } from "@/lib/cloudinary-stitcher"
 import cloudinary from "@/lib/cloudinary"
 import { postToShotstack } from "./shotstack"
@@ -84,7 +84,7 @@ export async function processReelForBusinessV2(businessId: string) {
         const style = getStyleForVariation(i)
 
         // Find music matching mood
-        const musicTrack = MUSIC_TRACKS.find(t => t.mood === style.musicMood) || MUSIC_TRACKS[0]
+        const musicTrack = MUSIC_LIBRARY.find(t => t.mood === style.musicMood) || MUSIC_LIBRARY[0]
 
         const reel = await prisma.generatedReel.create({
             data: {
@@ -92,7 +92,7 @@ export async function processReelForBusinessV2(businessId: string) {
                 title: `${style.name} - ${business.name}`,
                 caption: `AI Generated ${style.name} Reel. ${style.description}`,
                 url: `pending:init-${Date.now()}-${i}`, // Placeholder
-                thumbnailUrl: mediaItems[0]?.url || "",
+                // thumbnailUrl removed as it's not in schema
                 musicUrl: musicTrack.url
             }
         })
