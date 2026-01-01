@@ -13,37 +13,46 @@ export interface DirectorStyle {
     musicMood: "emotional" | "high-energy" | "elegant"
 }
 
-export const DIRECTOR_STYLES: DirectorStyle[] = [
-    {
-        id: "cinematic",
+export const STYLES_CONFIG = {
+    cinematic: {
         name: "Cinematic Story",
-        description: "Slow, emotional, and dramatic with smooth crossfades.",
+        description: "Slow, emotional, and dramatic.",
         minDuration: 4,
-        transition: "fade",
-        effect: "zoomIn",
-        musicMood: "emotional"
+        transitions: ["fade", "zoom"],
+        effects: ["zoomIn", "zoomOut"],
+        mood: "emotional"
     },
-    {
-        id: "hype",
+    hype: {
         name: "Fast & Hype",
-        description: "Fast-paced, high energy, quick cuts.",
+        description: "Fast-paced, high energy.",
         minDuration: 1.5,
-        transition: "wipeRight",
-        effect: "zoomOut",
-        musicMood: "high-energy"
+        transitions: ["wipeRight", "wipe", "zoom"],
+        effects: ["zoomOut", "zoomIn"],
+        mood: "high-energy"
     },
-    {
-        id: "modern",
+    modern: {
         name: "Modern Clean",
         description: "Balanced pacing with stylish slides.",
         minDuration: 3,
-        transition: "slideRight",
-        effect: "slideLeft",
-        musicMood: "elegant"
+        transitions: ["slideRight", "wipeRight"],
+        effects: ["slideLeft", "slideRight"],
+        mood: "elegant"
     }
-]
+}
 
 export function getStyleForVariation(index: number): DirectorStyle {
-    // Round-robin selection based on index (0, 1, 2)
-    return DIRECTOR_STYLES[index % DIRECTOR_STYLES.length]
+    const keys = Object.keys(STYLES_CONFIG) as Array<keyof typeof STYLES_CONFIG>
+    const key = keys[index % keys.length]
+    const config = STYLES_CONFIG[key]
+
+    // "Intelligent Agent" -> Randomize the specific transition/effect for this run
+    return {
+        id: key,
+        name: config.name,
+        description: config.description,
+        minDuration: config.minDuration,
+        transition: config.transitions[Math.floor(Math.random() * config.transitions.length)] as TransitionType,
+        effect: config.effects[Math.floor(Math.random() * config.effects.length)] as EffectType,
+        musicMood: config.mood as any
+    }
 }
