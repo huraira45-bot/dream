@@ -9,19 +9,19 @@ export const MUSIC_LIBRARY: MusicTrack[] = [
     {
         id: "emotional-1",
         name: "Emotional Inspiration",
-        url: "/music/emotional-1.mp3",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
         mood: "emotional"
     },
     {
         id: "high-energy-1",
         name: "High Energy Vibes",
-        url: "/music/high-energy-1.mp3",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
         mood: "high-energy"
     },
     {
         id: "elegant-1",
         name: "Elegant Flow",
-        url: "/music/elegant-1.mp3",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
         mood: "elegant"
     }
 ]
