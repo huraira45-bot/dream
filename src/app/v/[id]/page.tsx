@@ -37,11 +37,13 @@ export default async function ReelViewer({
 
     // Fallback for older reels or reels with no sequence
     if (sortedMedia.length === 0) {
-        sortedMedia = [{
-            id: reel.id,
-            url: reel.url,
-            type: reel.type === 'REEL' ? 'video' : 'image'
-        }]
+        if (reel.url.startsWith('http')) {
+            sortedMedia = [{
+                id: reel.id,
+                url: reel.url,
+                type: reel.type === 'REEL' ? 'video' : 'image'
+            }]
+        }
     }
 
     return (
