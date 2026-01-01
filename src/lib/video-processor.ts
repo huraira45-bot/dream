@@ -85,13 +85,12 @@ export async function processReelForBusinessV2(businessId: string) {
         },
     })
 
-    // 5. Generate 3 AI Variations
-    const variations = []
-    for (let i = 0; i < 3; i++) {
+    // 5. Generate 3 AI Variations (IN PARALLEL)
+    const variationPromises = Array.from({ length: 3 }).map(async (_, i) => {
         const style = getStyleForVariation(i)
         const metadata = aiOptions[i] || aiOptions[0]
 
-        // FILTER MEDIA: Remove items flagged for skipping by the Critic
+        // FILTER MEDIA
         const skipIndices = (metadata as any).skipMediaIndices || []
         const filteredMediaItems = mediaItems.filter((_: any, idx: number) => !skipIndices.includes(idx))
         const finalMediaForRender = filteredMediaItems.length > 0 ? filteredMediaItems : mediaItems
@@ -128,17 +127,18 @@ export async function processReelForBusinessV2(businessId: string) {
                 data: { url: `pending:${renderId}` }
             })
 
-            variations.push(reel)
+            return reel
         } catch (err: any) {
-            console.error("Shotstack Error:", err)
+            console.error(`Shotstack Error for Var ${i}:`, err)
             const msg = err?.message || "Unknown Error"
             await prisma.generatedReel.update({
                 where: { id: reel.id },
                 data: { url: `failed:${msg.substring(0, 100)}` }
             })
-            variations.push(reel)
+            return reel
         }
-    }
+    })
 
+    const variations = await Promise.all(variationPromises)
     return variations
 }

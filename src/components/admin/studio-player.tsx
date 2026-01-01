@@ -46,10 +46,7 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
 
         const renderId = pUrl.split(':')[1]
 
-        // Don't poll initialization IDs
-        if (renderId.startsWith('init')) {
-            return
-        }
+        // Smart polling will now handle 'init' IDs via the server-side bridge
 
         const interval = setInterval(async () => {
             try {
