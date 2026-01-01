@@ -3,7 +3,7 @@ import { generateReelMetadata } from "@/lib/gemini"
 import { getMusicForMood } from "@/lib/music"
 import { generateStitchedVideoUrl } from "@/lib/cloudinary-stitcher"
 
-export async function processReelForBusiness(businessId: string) {
+export async function processReelForBusinessV2(businessId: string) {
     // 1. Fetch unprocessed media including business details
     const business = await prisma.business.findUnique({
         where: { id: businessId },

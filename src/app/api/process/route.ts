@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
-import { processReelForBusiness } from "@/lib/video-processor"
+import { processReelForBusinessV2 } from "@/lib/video-processor"
 import { prisma } from "@/lib/prisma"
+
+export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
     try {
@@ -10,13 +12,13 @@ export async function POST(req: Request) {
             const businesses = await prisma.business.findMany()
             const results = []
             for (const b of businesses) {
-                const reel = await processReelForBusiness(b.id)
+                const reel = await processReelForBusinessV2(b.id)
                 if (reel) results.push(reel)
             }
             return NextResponse.json({ processed: results.length, reels: results })
         }
 
-        const reel = await processReelForBusiness(businessId)
+        const reel = await processReelForBusinessV2(businessId)
         return NextResponse.json(reel || { message: "No media to process" })
 
     } catch (error) {
