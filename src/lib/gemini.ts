@@ -28,21 +28,23 @@ export async function generateReelMetadata(
     - Format: ${isReel ? "Vertical Video Reel" : "Carousel Post"}
     - Media Available: ${mediaCount} items (${mediaTypes.join(", ")})
     
-    CRITICAL: Use the mix of media to create a narrative.
-    - If there are videos, make them the "hooks".
-    - If there are images, use them for detail and "vibe".
-    
+    CRITICAL: Analyze the business type and media to pick the perfect "Viral Audio Category".
+    - Gym / Cars / Sports -> Suggest "Phonk" or "High Energy"
+    - Cafe / Morning / Nature -> Suggest "Lo-Fi" or "Acoustic"
+    - Real Estate / Fashion / Art -> Suggest "Luxury" or "Deep House"
+    - General / Fun -> Suggest "Pop" or "Trending"
+
     Return ONLY a JSON array containing exactly 3 objects with these fields:
     - title: A catchy, short title (max 5 words)
     - caption: A trending, engaging caption with hashtags (max 280 chars)
-    - musicMood: Suggested music genre/vibe (e.g., "Lo-fi Chill", "Upbeat Pop", "Dark Techno")
-    - visualStyle: Description of the editing style (e.g., "Fast cuts", "Smooth transitions", "Minimalist")
+    - musicMood: ONE of these exact values: "Phonk", "Lo-Fi", "Luxury", "Pop", "Cinematic", "High Energy"
+    - visualStyle: Description of the editing style
     - narrative: A 1-sentence narrative arc why this option is unique.
 
     Direction for the 3 options:
-    Option 1: Emotional/Story-driven.
-    Option 2: High-energy/Trendy/Fast-paced.
-    Option 3: Elegant/Premium/Cinematic.
+    Option 1: The "Vibe" (Focus on atmosphere).
+    Option 2: The "Hype" (Focus on energy/viral potential).
+    Option 3: The "Story" (Focus on narrative/value).
 
     Return the final result as a raw JSON array. Do not include markdown formatting like \`\`\`json.
     `
