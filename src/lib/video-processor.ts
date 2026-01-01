@@ -45,11 +45,11 @@ export async function processReelForBusinessV2(businessId: string) {
     console.log(`Cinematic Processing for ${business.name}: ${mediaItems.length} items. Score: ${score}. Type: ${isReel ? "REEL" : "POST"}`)
 
     const mediaTypes = mediaItems.map((m: { type: string }) => m.type)
-    const sampleUrls = mediaItems.slice(0, 3).map((m: { url: string }) => m.url)
+    const sampleUrls = mediaItems.slice(0, 5).map((m: { url: string }) => m.url)
 
-    // 3. Multimodal Analysis (Look at the actual clips)
+    // 3. Deep Multimodal Analysis (The AI Creative Team "Sees" the collection)
     const visualContext = await describeMedia(sampleUrls)
-    console.log(`Visual Context for ${business.name}: ${visualContext}`)
+    console.log(`Visual Report for ${business.name}: ${visualContext}`)
 
     // 4. Generate 3 Metadata Options with Gemini (Using Visual Context)
     const aiOptions = await generateReelMetadata(

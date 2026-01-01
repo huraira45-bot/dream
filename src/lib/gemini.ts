@@ -34,7 +34,7 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
 
     try {
         const mediaParts = await Promise.all(
-            imageUrls.slice(0, 3).map(async (url) => {
+            imageUrls.slice(0, 5).map(async (url) => {
                 const response = await (fetch as any)(url)
                 const buffer = await response.arrayBuffer()
                 return {
@@ -46,7 +46,14 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
             })
         )
 
-        const prompt = "Briefly describe what is visible in these images for a social media video. Focus on specific objects, vibe, and colors. 1 sentence total."
+        const prompt = `Analyze these ${imageUrls.length} media items for a high-end social media video. 
+        Provide a detailed "Observation Report" including:
+        1. Visual Atmosphere (Lighting, mood, color palette).
+        2. Specific Objects/Subjects (e.g., "A modern cafe interior", "Action shots of lifting weights").
+        3. Energy Level (Calm, Busy, Explosive, Elegant).
+        4. Target Audience (Who would stop for this?).
+        Keep it to 2-3 dense sentences focusing on detail over generalities.`
+
         const result = await model.generateContent([prompt, ...mediaParts])
         return result.response.text()
     } catch (e) {
@@ -67,52 +74,41 @@ export async function generateReelMetadata(
     const format = isReel ? "high-energy dynamic video reel" : "sleek, curated carousel post"
     const trendingSongs = getTrendingSongsForRegion(region).join(", ")
 
-    const prompt = `You are an AI Creative Production Team consisting of 4 specialist agents:
-    1. THE CRITIC: Analyzes the visual vibe and sets the quality bar.
-    2. THE DJ: Matches the energy with the perfect Pakistani trending audio.
-    3. THE STYLIST: Chooses high-impact typography, colors, and the viral hook.
-    4. THE DIRECTOR: Orchestrates the story and ensures everything is "Viral Ready".
+    const prompt = `You are an AI Creative Production Team (Critic, DJ, Stylist, Director).
+    Your goal is to create 3 UNIQUE video production scripts for "${businessName}" that are EXCLUSIVELY derived from the visual content provided.
+    
+    CRITICAL: DO NOT use generic templates. Every hook, color, and music choice must be a direct reaction to the "Visual Observation Report".
 
-    Project Context:
-    - Business: ${businessName} (Market: Pakistan 🇵🇰)
-    - Visual Analysis: ${visualContext || "General business content"}
-    - Media: ${mediaCount} items (${mediaTypes.join(", ")})
+    Project Data:
+    - Business: ${businessName} (Pakistan Market)
+    - Visual Observation Report: ${visualContext}
+    - Media Specs: ${mediaCount} files (${mediaTypes.join(", ")})
 
-    YOUR TASK: Generate 3 DISTINCT production options. 
+    STYLING RULES (Agent: The Stylist):
+    - Fonts: Pick ONE (Luxury: "Playfair Display", "Cinzel" | Hype: "Bebas Neue", "Anton" | Modern: "Montserrat", "Outfit").
+    - Colors: Pick high-contrast Hex codes that match or compliment the visual atmosphere.
+    - Positioning: "top", "center", or "bottom" (Decide based on the video subjects).
 
-    STYLING RULES (For the Stylist):
-    - Font Selection: 
-        * LUXURY: "Playfair Display", "Cinzel"
-        * HYPE: "Bebas Neue", "Anton"
-        * MODERN: "Montserrat", "Outfit"
-    - Color Selection: Use bold, high-contrast combinations (e.g., Red/White, Gold/Black, Neon Green/Black).
-    - Text Position: "top", "center", or "bottom" based on where it best fits the vibe.
+    MUSIC RULES (Agent: THE DJ):
+    - Select EXACTLY from these hits: [${trendingSongs}]
+    - Match the energy of the "Visual Observation Report".
 
-    MUSIC RULES (For the DJ):
-    - Select from these EXACT Pakistani Trending Songs: [${trendingSongs}]
+    DIVERSITY CHECK:
+    - All 3 variations MUST have completely different Hooks, Fonts, Colors, and Positioning.
+    - Variation 1 should be the most literal and atmospheric.
+    - Variation 2 should be the most aggressive and high-energy version of the visuals.
+    - Variation 3 should be a creative "out-of-the-box" storytelling angle.
 
-    Return ONLY a JSON array containing exactly 3 "AIReelData" objects with these fields:
-    - hook: Viral, high-impact hook (max 6 words).
-    - title: Catchy title (max 5 words).
-    - caption: Engaging caption with hashtags (max 280 chars).
-    - fontFamily: One from the Font Selection list.
-    - fontColor: Hex code for the text.
-    - textBackgroundColor: Hex code for the box behind text.
-    - textPosition: "top", "center", or "bottom".
-    - musicMood: ONE of: "Phonk", "Lo-Fi", "Luxury", "Pop", "Cinematic", "High Energy".
-    - trendingAudioTip: EXACT name from the Pakistani list.
-    - musicRationale: 1-sentence why the DJ picked this.
-    - vibeScore: 1-10 based on visual quality perception.
-    - energyLevel: "chill", "moderate", "high", or "extreme".
-    - visualStyle: Editing style description.
-    - narrative: 1-sentence core story.
+    Return ONLY a JSON array of 3 AIReelData objects:
+    - hook (max 6 words)
+    - title (max 5 words)
+    - caption (max 280 chars)
+    - fontFamily, fontColor, textBackgroundColor, textPosition
+    - musicMood, trendingAudioTip, musicRationale
+    - vibeScore (1-10), energyLevel ("chill", "moderate", "high", "extreme")
+    - visualStyle, narrative
 
-    Options:
-    1. THE TREND-SETTER (Hype, Fast, Viral Hooks)
-    2. THE LUXE-VIBE (Cinematic, Slow, Elegant)
-    3. THE STORY-TELLER (Narrative-focused, Authentic)
-
-    Return raw JSON. No markdown. No explanations.
+    Return raw JSON array.
     `
 
     try {
