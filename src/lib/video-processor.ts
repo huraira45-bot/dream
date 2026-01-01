@@ -3,6 +3,7 @@ import { generateReelMetadata } from "@/lib/gemini"
 import { getMusicForMood } from "@/lib/music"
 import { generateStitchedVideoUrl } from "@/lib/cloudinary-stitcher"
 import cloudinary from "@/lib/cloudinary"
+import { postToShotstack } from "@/lib/shotstack"
 
 export async function processReelForBusinessV2(businessId: string) {
     // 1. Fetch unprocessed media including business details
@@ -80,13 +81,30 @@ export async function processReelForBusinessV2(businessId: string) {
     const reels = await Promise.all(aiOptions.map(async (option, index) => {
         const music = getMusicForMood(option.musicMood)
 
-        // Pass 'dream_canvas' as the enforced base ID
-        const stitchedUrl = generateStitchedVideoUrl(mediaItems, music.url, baseCanvasId)
+        let finalUrl = mediaItems[0].url // Fallback to first item
+
+        // Try Shotstack Rendering
+        try {
+            // We only try this if we have a key, logic inside lib handles throw
+            const shotstackResponse = await postToShotstack(mediaItems, music.url)
+            // Store pending ID. Ideally we'd have a status field.
+            // We'll use a specific format: "pending:RENDER_ID"
+            if (shotstackResponse && shotstackResponse.id) {
+                finalUrl = `pending:${shotstackResponse.id}`
+                console.log(`Shotstack Render Queued: ${shotstackResponse.id}`)
+            }
+        } catch (e) {
+            console.error("Shotstack generation failed (fallback to client player):", e)
+            // If Shotstack fails (e.g. no key), we essentially just want the Client Player to work.
+            // The URL field is less critical for the Client Player since it uses mediaItemIds.
+            // We can fallback to the Cloudinary stitch (which is broken) or just the first item.
+            // Let's use the first item as the "URL" so it's not empty.
+        }
 
         return prisma.generatedReel.create({
             data: {
                 businessId,
-                url: stitchedUrl || mediaItems[0].url,
+                url: finalUrl,
                 type: isReel ? "REEL" : "POST",
                 title: option.title,
                 caption: option.caption,
