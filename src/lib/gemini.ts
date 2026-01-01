@@ -49,13 +49,19 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
             })
         )
 
-        const prompt = `You are THE CRITIC. Analyze these ${imageUrls.length} media items.
-        1. Rate each item for quality (Lighting, Focus, Vibe).
-        2. Identify any indices (0 to ${imageUrls.length - 1}) that are BLURRY, LOW-QUALITY, or OFF-THEME and should be SKIPPED.
-        3. Provide a detailed summary of the remaining high-quality media: atmosphere, colors, energy, and specific objects.
+        const prompt = `You are THE HARSH CRITIC (Chief Creative Officer). Analyze these ${imageUrls.length} media items with zero tolerance for "mid" content.
         
-        Indices to skip notation: [SKIP: 2, 5] (if any).
-        Keep the summary dense and professional. FOCUS ON AESTHETICS.`
+        CRITIQUE CRITERIA:
+        - Composition: Is it amateurish? (e.g., cut off heads, bad framing).
+        - Technical: Is it blurry, grainy, or under-exposed? 
+        - Vibe: Does it look premium? Throw out anything that looks like a "bad WhatsApp photo".
+        
+        YOUR TASK:
+        1. Identify exactly which indices (0 to ${imageUrls.length - 1}) are SUB-PAR and MUST be SKIPPED.
+        2. For the high-quality items, provide a technical visual summary using terms like: "High dynamic range", "Deep bokeh", "Vibrant saturation", "Symmetry", "Product-focused".
+        
+        Format: [SKIP: indices]
+        Summary: (Detailed, technical, professional).`
 
         const result = await model.generateContent([prompt, ...mediaParts])
         return result.response.text()

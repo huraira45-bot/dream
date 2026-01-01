@@ -27,7 +27,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
                 type: "text",
                 text: metadata.hook.toUpperCase(),
                 font: {
-                    family: metadata.fontFamily?.toLowerCase().replace(/\s/g, "-") || "montserrat",
+                    family: (metadata.fontFamily || "montserrat").toLowerCase().trim().replace(/\s+/g, '-'),
                     size: 42,
                     color: metadata.fontColor || "#ffffff"
                 },

@@ -59,10 +59,18 @@ export async function processMultiLLMCreativeFlow(
     YOUR TASK: Generate 3 UNIQUE production options. 
     Each option must be distinct in font, music, and angle.
 
-    AESTHETIC RULES:
-    - Fonts: Pick from [Bodoni Moda, Space Grotesk, Syne, Montserrat, Bebas Neue, Anton].
-    - Gen Z SMM: Make the hooks and captions hit different. Use trend-aware language without being cringey.
-    - Diversity Check: Ensure Variation 1, 2, and 3 are completely unique.
+    AESTHETIC RULES (The Stylist):
+    - Fonts: You MUST pick from these premium categories:
+        - Calligraphy/Script: [Dancing Script, Pacifico, Pinyon Script].
+        - Bold/Vivid: [Shrikhand, Alfa Slab One, Alfa Slab One, Bungee].
+        - Abstract/Modern: [Syne ExtraBold, Righteous, Space Grotesk].
+    - Styling: Use "Vivid" and high-contrast color pairings. Avoid boring white/black.
+    - Gen Z SMM Review: Hooks must have "Aura". No corporate talk.
+
+    MUSIC RULES (The Dynamic DJ):
+    - Select EXACTLY from these hits: [${trendingSongs}]
+    - VARIETY POLICY: Do not pick the obvious #1 song every time. Pick the song that matches the *specific* micro-vibe.
+    - Diversity Check: Variations 1, 2, and 3 MUST use different songs.
 
     EDITING RULES (Agent: THE DIRECTOR):
     - Choose a transitionType from ["fade", "wipeRight", "wipeLeft", "slideRight", "slideLeft", "zoom"].
