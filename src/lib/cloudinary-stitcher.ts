@@ -20,24 +20,19 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
         return parts.join('/').split('.')[0]
     }
 
-    const baseItem = mediaItems[0]
-    const basePublicId = getPublicId(baseItem.url)
-
-    const isBaseVideo = baseItem.type.toLowerCase().includes('video')
-
     // 2. Build the transformation segments
-    // Start with a clean base transform.
-    // If base is image, MUST have duration. If video, MUTE it to match images (and we use bg music).
-    const baseTransform = `c_fill,h_1280,w_720${isBaseVideo ? ',e_volume:mute' : ',du_4'}`
+    // Strategy: Use a "Blank Canvas" (color:black) as the base video.
+    // This avoids "Resource Not Found" errors when the first item is an image.
+    const baseTransform = `c_fill,h_1280,w_720,du_0.1,e_volume:mute`
 
     let segments: string[] = []
 
-    mediaItems.slice(1).forEach((item) => {
+    // Process ALL items (no slice)
+    mediaItems.forEach((item) => {
         const publicId = getPublicId(item.url)
         const isVideo = item.type.toLowerCase().includes('video')
         const layerId = publicId.replace(/\//g, ':')
 
-        // Simplified splicing: joining only
         if (isVideo) {
             // Splicing a video segment - MUTE it to prevent audio stream mismatch with images
             segments.push(`l_video:${layerId}/c_fill,h_1280,w_720,e_volume:mute/fl_layer_apply,fl_splice`)
@@ -51,6 +46,6 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim()
     const baseUrl = `https://res.cloudinary.com/${cloudName}/video/upload`
 
-    // We join segments with a slash. Note: Cloudinary processes transformations in the URL from left to right.
-    return `${baseUrl}/${baseTransform}/${segments.join('/')}/${basePublicId}.mp4`
+    // We use 'color:black' as the generated base resource
+    return `${baseUrl}/${baseTransform}/${segments.join('/')}/color:black.mp4`
 }
