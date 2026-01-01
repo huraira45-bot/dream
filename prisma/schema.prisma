@@ -53,3 +53,12 @@ model GeneratedReel {
   mediaItemIds   String[]  @default([])
   createdAt      DateTime  @default(now())
 }
+model MusicTrend {
+  id        String   @id @default(cuid())
+  region    String
+  songTitle String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@unique([region, songTitle])
+}

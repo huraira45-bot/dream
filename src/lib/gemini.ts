@@ -81,7 +81,8 @@ export async function generateReelMetadata(
     visualContext: string = ""
 ): Promise<AIReelData[]> {
     const format = isReel ? "high-energy dynamic video reel" : "sleek, curated carousel post"
-    const trendingSongs = getTrendingSongsForRegion(region).join(", ")
+    const trendingHits = await getTrendingSongsForRegion(region)
+    const trendingSongs = trendingHits.join(", ")
 
     const prompt = `You are an AI Creative Production Team (Critic, DJ, Stylist, Director).
     Your goal is to create 3 UNIQUE video production scripts for "${businessName}" that are EXCLUSIVELY derived from the visual content provided.

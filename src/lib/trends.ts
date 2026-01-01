@@ -1,26 +1,23 @@
-
-/**
- * REGIONAL TRENDING AUDIO DATABASE
- * This map provides real-time trending songs for specific regions.
- * In a production app, this would be fetched from a TikTok/Instagram Trends API.
- */
+import { getTrendingMusicFromDatabase } from "./trends-service";
 
 export const REGIONAL_TRENDS: Record<string, string[]> = {
     "Pakistan": [
+        "Maanu & Annural Khalid - Jhol",
+        "Afusic & Ali Soomro - Pal Pal",
         "Asim Azhar - Meri Zindagi Hai Tu",
-        "Sabat Batin, Rackstar - Gal Sun",
-        "Talha Yunus & Talha Anjum - Dawgs",
-        "Talha Anjum - Departure Lane",
-        "Amna Riaz - Kya Sach Ho Tum",
-        "Naqaabposh - Qabza",
-        "Kaifi Khalil - Kahani Suno 2.0",
-        "Abdul Hannan - Iraaday",
-        "Hasan Raheem - Joona",
-        "Ali Sethi - Pasoori"
+        "Zain Zohaib - Ranjheya Ve",
+        "Ali & Shjr - Heer",
+        "Hasan Raheem, Umair & Talwiinder - Wishes",
+        "Talha Anjum & Umair - Departure Lane",
+        "Faheem Abdullah - Ishq",
+        "Bayaan & Hasan Raheem - Maand",
+        "Abdul Hannan - Bikhra",
+        "Asim Azhar - Baat",
+        "Kaifi Khalil - Kahani Suno 2.0"
     ]
 }
 
-export function getTrendingSongsForRegion(region: string | null | undefined): string[] {
-    // Strictly Pakistan only as per user request
-    return REGIONAL_TRENDS["Pakistan"];
+export async function getTrendingSongsForRegion(region: string | null | undefined): Promise<string[]> {
+    const targetRegion = region || "Pakistan";
+    return await getTrendingMusicFromDatabase(targetRegion);
 }

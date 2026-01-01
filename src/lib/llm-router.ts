@@ -43,7 +43,8 @@ export async function processMultiLLMCreativeFlow(
     const visualReport = await describeMedia(mediaUrls);
 
     // Step 2: GPT-4o - Creative Production & Gen Z SMM Review
-    const trendingSongs = getTrendingSongsForRegion(region).join(", ");
+    const trendingHits = await getTrendingSongsForRegion(region);
+    const trendingSongs = trendingHits.join(", ");
 
     const prompt = `You are an AI Creative Production Team consisting of:
     - THE STYLIST: Expert in typography and minimal/aesthetic vibes.
