@@ -37,7 +37,9 @@ export async function processMultiLLMCreativeFlow(
     businessName: string,
     mediaUrls: string[],
     isReel: boolean,
-    region: string = "Pakistan"
+    region: string = "Pakistan",
+    usedSongs: string[] = [],
+    usedHooks: string[] = []
 ): Promise<AIReelDataV3[]> {
     // Step 1: Gemini 1.5 Pro - Visual Analysis & Filtering
     const visualReport = await describeMedia(mediaUrls);
@@ -64,23 +66,30 @@ export async function processMultiLLMCreativeFlow(
     - Visual Observation Report from Gemini: ${visualReport}
     - Media Count: ${mediaUrls.length}
     - Trending Songs (Pakistan): [${trendingSongs}]
+    - MEMORY (AVOID THESE):
+      - Songs Used Recently: [${usedSongs.join(", ")}]
+      - Hooks Used Recently: [${usedHooks.join(", ")}]
 
     YOUR TASK: Generate 3 UNIQUE production options. 
     Each option must be distinct in font, music, and angle.
 
     AESTHETIC RULES (The Stylist):
-    - Fonts: You MUST pick from these premium categories:
-        - Calligraphy/Script: [Dancing Script, Pacifico, Pinyon Script].
-        - Bold/Vivid: [Shrikhand, Alfa Slab One, Bungee].
-        - Abstract/Modern: [Syne, Righteous, Space Grotesk].
+    - Fonts: You MUST pick from these VIVID STREET fonts (Shotstack compatible):
+        - Handwritten/Marker: [Permanent Marker, Rock Salt, Gloria Hallelujah].
+        - Bold/Rounded: [Fredoka One, Titan One, Carter One].
+        - Editorial/Serif: [Abril Fatface, Prata, Ultra].
     - Styling: Use "Vivid" and high-contrast color pairings. Avoid boring white/black.
     - Gen Z SMM Review: Hooks must have "Aura". No corporate talk. Use slang correctly.
     - SMM Gimmick: Provide a specific visual or audio editing idea (e.g., "Bass boost on the beat drop", "Glitch effect on the logo").
 
     MUSIC RULES (The Dynamic DJ):
     - Select EXACTLY from these hits: [${trendingSongs}]
+    - NEGATIVE CONSTRAINT: DO NOT use any song listed in "Songs Used Recently". Find a fresh hit.
     - VARIETY POLICY: Do not pick the obvious #1 song every time. Pick the song that matches the *specific* micro-vibe.
     - Diversity Check: Variations 1, 2, and 3 MUST use different songs.
+
+    DIRECTOR RULES:
+    - NEGATIVE CONSTRAINT: DO NOT reuse angles or hooks from "Hooks Used Recently".
 
     EDITING RULES (Agent: THE DIRECTOR):
     - Choose a transitionType from ["fade", "wipeRight", "wipeLeft", "slideRight", "slideLeft", "zoom"].

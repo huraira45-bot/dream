@@ -50,12 +50,27 @@ export async function processReelForBusinessV2(businessId: string) {
     const mediaTypes = mediaItems.map((m: { type: string }) => m.type)
     const allUrls = mediaItems.map((m: any) => m.url)
 
-    // 3. Multi-LLM Creative Flow: Gemini (Vision) -> GPT-4o (Aesthetic + Gen Z SMM)
+    // 3. Fetch Reel History for "Memory" (Unique Assets)
+    const pastReels = await prisma.generatedReel.findMany({
+        where: { businessId },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        select: { trendingAudioTip: true, title: true }
+    })
+
+    const usedSongs = pastReels.map(r => r.trendingAudioTip).filter(Boolean) as string[]
+    const usedHooks = pastReels.map(r => r.title).filter(Boolean) as string[]
+
+    console.log(`🧠 MEMORY: Found ${usedSongs.length} past songs and ${usedHooks.length} past hooks to avoid.`)
+
+    // 4. Multi-LLM Creative Flow: Gemini (Vision) -> GPT-4o (Aesthetic + Gen Z SMM)
     const aiOptions = await processMultiLLMCreativeFlow(
         business.name,
         allUrls,
         isReel,
-        (business as any).region || "Pakistan"
+        (business as any).region || "Pakistan",
+        usedSongs,
+        usedHooks
     )
 
     // ... (Canvas self-healing logic remains same) ...

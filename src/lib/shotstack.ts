@@ -56,6 +56,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
         const duration = isVideo ? Math.min(6, style.minDuration * 1.5) : style.minDuration
 
         // Background Clip
+        // Background Clip (Blurred & Dynamic)
         bgClips.push({
             asset: {
                 type: isVideo ? "video" : "image",
@@ -65,8 +66,9 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
             start: currentTime,
             length: duration,
             fit: "cover",
-            opacity: 0.2,
-            scale: 1.3,
+            scale: 1.5, // Zoom in more to lose edges
+            effect: "blurLight", // Built-in Shotstack blur
+            opacity: 1.0, // Full visibility for the blur to work
             transition: { in: "fade", out: "fade" }
         })
 
