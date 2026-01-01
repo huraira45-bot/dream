@@ -126,3 +126,21 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl?: string
     // data.response.message is "Render Successfully Queued"
     return data.response
 }
+
+export async function getRenderStatus(renderId: string) {
+    const apiKey = process.env.SHOTSTACK_API_KEY
+    if (!apiKey) throw new Error("No API Key")
+
+    const res = await fetch(`${SHOTSTACK_API_ENDPOINT}/${renderId}`, {
+        headers: {
+            "x-api-key": apiKey
+        }
+    })
+
+    if (!res.ok) {
+        throw new Error("Failed to check status")
+    }
+
+    const data = await res.json()
+    return data.response
+}
