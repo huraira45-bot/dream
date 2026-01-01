@@ -29,7 +29,32 @@ interface AIReelData {
     narrative: string
 }
 
-// ... (describeMedia remains similar)
+export async function describeMedia(imageUrls: string[]): Promise<string> {
+    if (!model) return "No visual data available."
+
+    try {
+        const mediaParts = await Promise.all(
+            imageUrls.slice(0, 3).map(async (url) => {
+                const response = await (fetch as any)(url)
+                const buffer = await response.arrayBuffer()
+                return {
+                    inlineData: {
+                        data: Buffer.from(buffer).toString("base64"),
+                        mimeType: "image/jpeg"
+                    }
+                }
+            })
+        )
+
+        const prompt = "Briefly describe what is visible in these images for a social media video. Focus on specific objects, vibe, and colors. 1 sentence total."
+        const result = await model.generateContent([prompt, ...mediaParts])
+        return result.response.text()
+    } catch (e) {
+        console.error("Vision Error:", e)
+        return "Visual analysis failed."
+    }
+}
+
 
 export async function generateReelMetadata(
     businessName: string,
