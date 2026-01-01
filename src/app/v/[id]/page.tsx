@@ -64,7 +64,7 @@ export default async function ReelViewer({
             </div>
 
             {/* Master Production Player Interface (Client Component) */}
-            <StudioPlayer reel={reel} />
+            <StudioPlayer reel={reel} mediaItems={sortedMedia} />
         </div>
     )
 }

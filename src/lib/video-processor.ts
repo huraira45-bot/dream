@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { generateReelMetadata } from "@/lib/gemini"
 import { getMusicForMood } from "@/lib/music"
 import { generateStitchedVideoUrl } from "@/lib/cloudinary-stitcher"
+import cloudinary from "@/lib/cloudinary"
 
 export async function processReelForBusinessV2(businessId: string) {
     // 1. Fetch unprocessed media including business details
@@ -45,15 +46,19 @@ export async function processReelForBusinessV2(businessId: string) {
     // 3. Generate 3 Metadata Options with Gemini
     const aiOptions = await generateReelMetadata(business.name, mediaItems.length, isReel, mediaTypes)
 
-    // Ensure Base Canvas exists (Lazy Upload)
-    const baseCanvasId = "dream_canvas" // This should match a real uploaded video
+    // Ensure Base Canvas exists (Self-Healing)
+    const baseCanvasId = "dream_canvas"
     try {
-        // Quick check if it needs upload (naive check: just upload if missing logic handled by Cloudinary mostly, 
-        // but here we just ensure we PASS the ID to the stitcher, assuming setup route or manual run).
-        // Better: We rely on the stitcher to use a valid base. 
-        // Best: We actually run the ensure-logic here if we can import cloudinary.
+        await cloudinary.api.resource(baseCanvasId, { resource_type: "video" })
     } catch (e) {
-        console.error("Canvas check failed", e)
+        console.log("Canvas missing, self-healing upload...")
+        // Reliable 1-sec black video
+        const BLACK_VIDEO_URL = "https://raw.githubusercontent.com/mathiasbynens/small/master/black.mp4"
+        await cloudinary.uploader.upload(BLACK_VIDEO_URL, {
+            public_id: baseCanvasId,
+            resource_type: "video",
+            overwrite: true
+        })
     }
 
     // 4. Mark items as processed
