@@ -20,25 +20,29 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
         return parts.join('/').split('.')[0]
     }
 
+    const baseItem = mediaItems[0]
+    const basePublicId = getPublicId(baseItem.url)
+    const isBaseVideo = baseItem.type.toLowerCase().includes('video')
+
     // 2. Build the transformation segments
-    // Strategy: Use a "Blank Canvas" (color:black) as the base video.
-    // This avoids "Resource Not Found" errors when the first item is an image.
-    const baseTransform = `c_fill,h_1280,w_720,du_0.1,e_volume:mute`
+    // CRITICAL FIX: If base is image, we MUST add duration (du_5) to make it a video container.
+    // If base is video, we MUST mute it (e_volume:mute) to match silent images.
+    const baseTransform = `c_fill,h_1280,w_720${isBaseVideo ? ',e_volume:mute' : ',du_5'}`
 
     let segments: string[] = []
 
-    // Process ALL items (no slice)
-    mediaItems.forEach((item) => {
+    // Process items starting from the SECOND one (slice 1)
+    mediaItems.slice(1).forEach((item) => {
         const publicId = getPublicId(item.url)
         const isVideo = item.type.toLowerCase().includes('video')
         const layerId = publicId.replace(/\//g, ':')
 
         if (isVideo) {
-            // Correct Syntax: fl_layer_apply,fl_splice (Apply layer, THEN splice it)
+            // Video: Mute it, Apply, Splice
             segments.push(`l_video:${layerId}/c_fill,h_1280,w_720,e_volume:mute/fl_layer_apply,fl_splice`)
         } else {
-            // Correct Syntax: fl_layer_apply,fl_splice
-            segments.push(`l:${layerId}/c_fill,h_1280,w_720,du_4/fl_layer_apply,fl_splice`)
+            // Image: Set duration, Apply, Splice
+            segments.push(`l:${layerId}/c_fill,h_1280,w_720,du_5/fl_layer_apply,fl_splice`)
         }
     })
 
@@ -46,6 +50,6 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim()
     const baseUrl = `https://res.cloudinary.com/${cloudName}/video/upload`
 
-    // We use 'color:black' as the generated base resource
-    return `${baseUrl}/${baseTransform}/${segments.join('/')}/color:black.mp4`
+    // The Base Resource is the first item's Public ID
+    return `${baseUrl}/${baseTransform}/${segments.join('/')}/${basePublicId}.mp4`
 }
