@@ -29,7 +29,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
             asset: {
                 type: isVideo ? "video" : "image",
                 src: item.url,
-                volume: 0 // Mute background
+                ...(isVideo && { volume: 0 }) // Only add volume for videos
             },
             start: currentTime,
             length: duration,
@@ -47,7 +47,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
             asset: {
                 type: isVideo ? "video" : "image",
                 src: item.url,
-                volume: 0 // Mute foreground video too (rely on music)
+                ...(isVideo && { volume: 0 }) // Only add volume for videos
             },
             start: currentTime,
             length: duration,

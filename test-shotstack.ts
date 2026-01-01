@@ -1,6 +1,6 @@
 
 import { postToShotstack } from "./src/lib/shotstack"
-import { DIRECTOR_STYLES } from "./src/lib/director"
+import { getStyleForVariation } from "./src/lib/director"
 
 // Mock Media Items
 const mockMediaItems = [
@@ -12,18 +12,19 @@ const mockMediaItems = [
 const mockMusic = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
 
 async function test() {
-    console.log("Testing Shotstack Integration...")
-    console.log(`API Endpoint: https://api.shotstack.io/edit/stage/render`)
+    console.log("Testing Shotstack Integration (Intelligent Director)...")
+    console.log("---------------------------------------------------")
 
-    // Set env var manually for this test if needed, or rely on .env
-    // process.env.SHOTSTACK_API_KEY = "..." 
+    for (let i = 0; i < 3; i++) {
+        // This will pick a random variation of the style
+        const style = getStyleForVariation(i)
+        console.log(`\nTesting Style ${i}: [${style.name}]`)
+        console.log(`- Transition: ${style.transition}`)
+        console.log(`- Effect: ${style.effect}`)
 
-    for (const style of DIRECTOR_STYLES) {
-        console.log(`\nTesting Style: ${style.name} (Transition: ${style.transition}, Effect: ${style.effect})`)
         try {
             const response = await postToShotstack(mockMediaItems, mockMusic, style)
-            console.log("SUCCESS!")
-            console.log("Render ID:", response.id)
+            console.log("SUCCESS! Render ID:", response.id)
         } catch (e: any) {
             console.error("FAILURE:")
             console.log(e.message || JSON.stringify(e))
