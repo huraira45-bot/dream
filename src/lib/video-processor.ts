@@ -49,16 +49,21 @@ export async function processReelForBusinessV2(businessId: string) {
     // Ensure Base Canvas exists (Self-Healing)
     const baseCanvasId = "dream_canvas"
     try {
-        await cloudinary.api.resource(baseCanvasId, { resource_type: "video" })
+        // Attempt to verify/upload canvas, but DO NOT block generation if it fails.
+        // We prioritize creating the Reel record for the Client Player.
+        try {
+            await cloudinary.api.resource(baseCanvasId, { resource_type: "video" })
+        } catch (resourceError) {
+            console.log("Canvas missing, self-healing upload...")
+            const BLACK_VIDEO_URL = "https://raw.githubusercontent.com/mathiasbynens/small/master/black.mp4"
+            await cloudinary.uploader.upload(BLACK_VIDEO_URL, {
+                public_id: baseCanvasId,
+                resource_type: "video",
+                overwrite: true
+            })
+        }
     } catch (e) {
-        console.log("Canvas missing, self-healing upload...")
-        // Reliable 1-sec black video
-        const BLACK_VIDEO_URL = "https://raw.githubusercontent.com/mathiasbynens/small/master/black.mp4"
-        await cloudinary.uploader.upload(BLACK_VIDEO_URL, {
-            public_id: baseCanvasId,
-            resource_type: "video",
-            overwrite: true
-        })
+        console.error("Non-fatal error in canvas setup:", e)
     }
 
     // 4. Mark items as processed

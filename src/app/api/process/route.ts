@@ -22,7 +22,10 @@ export async function POST(req: Request) {
         return NextResponse.json(reel || { message: "No media to process" })
 
     } catch (error) {
-        console.error(error)
-        return new NextResponse("Internal Error", { status: 500 })
+        console.error("API Error:", error)
+        return NextResponse.json(
+            { error: "Internal Server Error", details: String(error) },
+            { status: 500 }
+        )
     }
 }
