@@ -14,71 +14,65 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
         throw new Error("SHOTSTACK_API_KEY is not configured")
     }
 
-    // 1. Build the Video Track
-    // We calculate start times sequentially.
+    // 1. Build the Video Tracks (Background & Foreground)
     let currentTime = 0
-    const videoClips = mediaItems.map((item) => {
+    const bgClips: any[] = []
+    const fgClips: any[] = []
+
+    mediaItems.forEach((item) => {
         const isVideo = item.type.toLowerCase().includes('video')
-        // Default duration for images is 4s, videos use 'auto' or we strictly assume input video length?
-        // Shotstack needs explicit length for images. For videos, if we leave it out, it might default to full source?
-        // Actually, for videos, it's safer to specify 'length' if we know it. 
-        // But we don't know exact video lengths on server side easily.
-        // Shotstack allows 'trim' but we might just let it play.
-        // Constraint: For sequential playback we NEED to know length to set the NEXT clip's start time.
-        // If we don't know video length, we can't place the next clip correcty on the timeline!
-        // THIS IS A TRICKY PART with generic external URLs.
-        // Cloudinary handles this by stitching. Shotstack usually requires knowing duration.
-        // Exception: If we just put them on ONE track, strict sequence... 
-        // Actually, Shotstack's JSON requires "start".
-
-        // workaround: For this MVP, we might treat videos as fixed duration (e.g. 10s) OR 
-        // we accept that we can't do perfect sequential mix of unknown-length videos without probing them first.
-        // Cloudinary "info" API could give us duration. 
-
-        // REVISION: I will use a reasonable fixed duration for images (4s).
-        // For videos, I will unfortunately have to assume a default length OR 
-        // check if Shotstack has an 'auto' sequence feature.
-        // Shotstack DOES NOT have auto-sequence in the basic edit API. You must define start times.
-
-        // Use style duration for images, keep videos natural (or cap them?)
-        // let's cap videos at 2x style duration to keep pacing
+        // Cap video duration to safeguard pacing
         const duration = isVideo ? Math.min(10, style.minDuration * 2) : style.minDuration
 
-        const clip = {
+        // Background Clip (Fill the screen, dimmed)
+        bgClips.push({
             asset: {
                 type: isVideo ? "video" : "image",
                 src: item.url,
+                volume: 0 // Mute background
             },
             start: currentTime,
             length: duration,
             fit: "cover",
+            opacity: 0.3, // Dimmed background
+            scale: 1.2, // Slight zoom to avoid edge artifacts
+            transition: {
+                in: "fade",
+                out: "fade"
+            }
+        })
+
+        // Foreground Clip (The actual content)
+        fgClips.push({
+            asset: {
+                type: isVideo ? "video" : "image",
+                src: item.url,
+                volume: 0 // Mute foreground video too (rely on music)
+            },
+            start: currentTime,
+            length: duration,
+            fit: "contain", // Never stretch or cut
             effect: isVideo ? undefined : style.effect,
             transition: {
                 in: style.transition,
                 out: style.transition
             }
-        }
+        })
 
         currentTime += duration - 1 // -1 for 1s overlap/transition
-        return clip
     })
 
-    // Calculate total duration (last clip start + last clip length)
-    // We need to be careful with the overlap.
-    // Actually, simply: sum of all durations - (overlaps).
-    // Or easier: use the calculated `currentTime` + 1 (since we subtracted 1 for the last overlap that didn't happen? No.)
-    // Let's rely on the last clip's end time.
-    const lastClip = videoClips[videoClips.length - 1]
+    const lastClip = fgClips[fgClips.length - 1]
     const totalDuration = lastClip ? lastClip.start + lastClip.length : 10
 
     // 2. Build Audio Track
+    // ... (rest of audio logic matches existing, just ensure we copy it right if replacing)
     let audioSrc = musicUrl
     if (musicUrl && musicUrl.startsWith('/')) {
-        // Map local music to reliable public URLs for Shotstack
         if (musicUrl.includes('emotional')) audioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
         else if (musicUrl.includes('energy')) audioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"
         else if (musicUrl.includes('elegant')) audioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
-        else audioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" // Default
+        else audioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
     }
 
     const audioTrack = audioSrc ? [
@@ -88,7 +82,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
                 src: audioSrc,
             },
             start: 0,
-            length: totalDuration // Fix: Explicitly set length matches video
+            length: totalDuration
         }
     ] : []
 
@@ -96,7 +90,8 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
     const timeline = {
         background: "#000000",
         tracks: [
-            { clips: videoClips }, // Topmost visual layer
+            { clips: fgClips }, // Topmost visual layer (Foreground)
+            { clips: bgClips }, // Middle layer (Background)
             { clips: audioTrack }  // Audio layer
         ]
     }
