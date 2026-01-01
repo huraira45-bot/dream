@@ -3,7 +3,8 @@ import { generateReelMetadata } from "@/lib/gemini"
 import { getMusicForMood } from "@/lib/music"
 import { generateStitchedVideoUrl } from "@/lib/cloudinary-stitcher"
 import cloudinary from "@/lib/cloudinary"
-import { postToShotstack } from "@/lib/shotstack"
+import { postToShotstack } from "./shotstack"
+import { getStyleForVariation } from "./director"
 
 export async function processReelForBusinessV2(businessId: string) {
     // 1. Fetch unprocessed media including business details
@@ -77,6 +78,46 @@ export async function processReelForBusinessV2(businessId: string) {
         },
     })
 
+    // 3. Generate 3 AI Variations with "Director" logic
+    const variations = []
+    for (let i = 0; i < 3; i++) {
+        const style = getStyleForVariation(i)
+
+        // Find music matching mood
+        const musicTrack = MUSIC_TRACKS.find(t => t.mood === style.musicMood) || MUSIC_TRACKS[0]
+
+        const reel = await prisma.generatedReel.create({
+            data: {
+                businessId: business.id,
+                title: `${style.name} - ${business.name}`,
+                caption: `AI Generated ${style.name} Reel. ${style.description}`,
+                url: `pending:init-${Date.now()}-${i}`, // Placeholder
+                thumbnailUrl: mediaItems[0]?.url || "",
+                musicUrl: musicTrack.url
+            }
+        })
+
+        // Trigger Shotstack Render
+        try {
+            // Post to Shotstack with specific style
+            const renderResponse = await postToShotstack(mediaItems, musicTrack.url, style)
+            const renderId = renderResponse.id
+
+            // Update URL to pending:RENDER_ID for polling
+            await prisma.generatedReel.update({
+                where: { id: reel.id },
+                data: { url: `pending:${renderId}` }
+            })
+
+            variations.push(reel)
+        } catch (err) {
+            console.error("Shotstack Error:", err)
+            // Fallback to client-player compatible pending state (or fail)
+            variations.push(reel)
+        }
+    }
+
+    return variations
     // 5. Create 3 GeneratedReel records (one for each creative direction)
     const reels = await Promise.all(aiOptions.map(async (option, index) => {
         const music = getMusicForMood(option.musicMood)

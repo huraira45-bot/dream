@@ -38,23 +38,9 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl?: string
         // check if Shotstack has an 'auto' sequence feature.
         // Shotstack DOES NOT have auto-sequence in the basic edit API. You must define start times.
 
-        // OK, I will fallback to a simplified logic: 
-        // Images = 5s. 
-        // Videos = we will default to 10s for now, or we rely on the implementation plan which implied we might have metadata.
-        // We DO NOT have metadata in DB for duration.
-        // This is a risk.
-
-        // HOWEVER, since the user already has the "Client Player" which works, 
-        // sending to Shotstack is a "Pro" feature. 
-        // I will implement a PROBE check for videos if possible? 
-        // No, that's slow.
-
-        // Alternative: Use Shotstack "Ingest" but that's async.
-
-        // Hack for now: Images 5s. Videos 10s.
-        // This is imperfect but allows testing.
-
-        const duration = isVideo ? 10 : 5 // 10s assumption for videos, 5s for images
+        // Use style duration for images, keep videos natural (or cap them?)
+        // let's cap videos at 2x style duration to keep pacing
+        const duration = isVideo ? Math.min(10, style.minDuration * 2) : style.minDuration
 
         const clip = {
             asset: {
@@ -64,10 +50,10 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl?: string
             start: currentTime,
             length: duration,
             fit: "cover",
-            effect: isVideo ? undefined : "zoomIn", // Ken Burns for images
+            effect: isVideo ? undefined : style.effect,
             transition: {
-                in: "fade",
-                out: "fade"
+                in: style.transition,
+                out: style.transition
             }
         }
 
