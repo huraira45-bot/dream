@@ -77,6 +77,28 @@ export async function processMultiLLMCreativeFlow(
     - visualStyle, narrative
     `;
 
-    const result = await generateJSONWithGPT4o<{ options: AIReelDataV3[] }>(prompt, {});
-    return result.options;
+    try {
+        const result = await generateJSONWithGPT4o<{ options: AIReelDataV3[] }>(prompt, {});
+        return result.options;
+    } catch (openaiError: any) {
+        console.warn("OpenAI Failed (Quota/Error), falling back to Gemini for Creative:", openaiError.message);
+
+        // Fallback to Gemini 1.5 Pro/Flash for the creative part
+        const geminiOptions = await generateReelMetadata(
+            businessName,
+            mediaUrls.length,
+            isReel,
+            [], // types not critical here
+            region,
+            visualReport
+        );
+
+        // Map AIReelData to AIReelDataV3
+        return geminiOptions.map(opt => ({
+            ...opt,
+            skipMediaIndices: [], // Gemini's metadata generator doesn't do this yet
+            smmAura: "Vibe checked by Gemini",
+            smmGimmick: "Classic storytelling"
+        })) as AIReelDataV3[];
+    }
 }

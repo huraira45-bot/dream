@@ -3,7 +3,7 @@ import { getTrendingSongsForRegion } from "./trends"
 
 const apiKey = process.env.GEMINI_API_KEY
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
-const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) : null
+const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" }) : null
 
 interface AIReelData {
     // 1. The Hook Maker & Stylist
@@ -33,8 +33,9 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
     if (!model) return "No visual data available."
 
     try {
+        // Analyze up to 10 media items for quality filtering
         const mediaParts = await Promise.all(
-            imageUrls.slice(0, 5).map(async (url) => {
+            imageUrls.slice(0, 10).map(async (url) => {
                 const response = await (fetch as any)(url)
                 const buffer = await response.arrayBuffer()
                 return {
@@ -46,13 +47,13 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
             })
         )
 
-        const prompt = `Analyze these ${imageUrls.length} media items for a high-end social media video. 
-        Provide a detailed "Observation Report" including:
-        1. Visual Atmosphere (Lighting, mood, color palette).
-        2. Specific Objects/Subjects (e.g., "A modern cafe interior", "Action shots of lifting weights").
-        3. Energy Level (Calm, Busy, Explosive, Elegant).
-        4. Target Audience (Who would stop for this?).
-        Keep it to 2-3 dense sentences focusing on detail over generalities.`
+        const prompt = `You are THE CRITIC. Analyze these ${imageUrls.length} media items.
+        1. Rate each item for quality (Lighting, Focus, Vibe).
+        2. Identify any indices (0 to ${imageUrls.length - 1}) that are BLURRY, LOW-QUALITY, or OFF-THEME and should be SKIPPED.
+        3. Provide a detailed summary of the remaining high-quality media: atmosphere, colors, energy, and specific objects.
+        
+        Indices to skip notation: [SKIP: 2, 5] (if any).
+        Keep the summary dense and professional. FOCUS ON AESTHETICS.`
 
         const result = await model.generateContent([prompt, ...mediaParts])
         return result.response.text()

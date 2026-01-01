@@ -75,8 +75,8 @@ export async function processReelForBusinessV2(businessId: string) {
         const metadata = aiOptions[i] || aiOptions[0]
 
         // FILTER MEDIA: Remove items flagged for skipping by the Critic
-        const skipIndices = metadata.skipMediaIndices || []
-        const filteredMediaItems = mediaItems.filter((_, idx) => !skipIndices.includes(idx))
+        const skipIndices = (metadata as any).skipMediaIndices || []
+        const filteredMediaItems = mediaItems.filter((_: any, idx: number) => !skipIndices.includes(idx))
         const finalMediaForRender = filteredMediaItems.length > 0 ? filteredMediaItems : mediaItems
 
         // Intelligent Music Selection
@@ -97,7 +97,7 @@ export async function processReelForBusinessV2(businessId: string) {
                 url: `pending:init-${Date.now()}-${i}`,
                 musicUrl: musicTrack.url,
                 trendingAudioTip: metadata.trendingAudioTip,
-                mediaItemIds: finalMediaForRender.map(m => m.id)
+                mediaItemIds: finalMediaForRender.map((m: any) => m.id)
             }
         })
 
