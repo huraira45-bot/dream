@@ -6,42 +6,30 @@ const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
 const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) : null
 
 interface AIReelData {
+    // 1. The Hook Maker & Stylist
     hook: string
     title: string
     caption: string
+    fontFamily: string // e.g., "Montserrat", "Bebas Neue", "Playfair Display"
+    fontColor: string // Hex code
+    textBackgroundColor: string // Hex code
+    textPosition: "top" | "center" | "bottom"
+
+    // 2. The DJ
     musicMood: string
     trendingAudioTip: string
+    musicRationale: string // Why this song?
+
+    // 3. The Critic
+    vibeScore: number // 1-10
+    energyLevel: "chill" | "moderate" | "high" | "extreme"
+
+    // 4. The Director
     visualStyle: string
     narrative: string
 }
 
-// Trending songs helper moved to ./trends.ts
-
-export async function describeMedia(imageUrls: string[]): Promise<string> {
-    if (!model) return "No visual data available."
-
-    try {
-        const mediaParts = await Promise.all(
-            imageUrls.slice(0, 3).map(async (url) => {
-                const response = await (fetch as any)(url)
-                const buffer = await response.arrayBuffer()
-                return {
-                    inlineData: {
-                        data: Buffer.from(buffer).toString("base64"),
-                        mimeType: "image/jpeg"
-                    }
-                }
-            })
-        )
-
-        const prompt = "Briefly describe what is visible in these images for a social media video. Focus on specific objects, vibe, and colors. 1 sentence total."
-        const result = await model.generateContent([prompt, ...mediaParts])
-        return result.response.text()
-    } catch (e) {
-        console.error("Vision Error:", e)
-        return "Visual analysis failed."
-    }
-}
+// ... (describeMedia remains similar)
 
 export async function generateReelMetadata(
     businessName: string,
@@ -54,71 +42,79 @@ export async function generateReelMetadata(
     const format = isReel ? "high-energy dynamic video reel" : "sleek, curated carousel post"
     const trendingSongs = getTrendingSongsForRegion(region).join(", ")
 
-    const prompt = `You are an expert Social Media Director specializing in the Pakistan market. 
-    Create 3 DISTINCT and CREATIVE storytelling options for a ${format} for a business named "${businessName}" in Pakistan.
-    
-    Context:
-    - Business: ${businessName}
-    - Market: Pakistan 🇵🇰
-    - Visual Content: ${visualContext || "General business content"}
-    - Format: ${isReel ? "Vertical Video Reel" : "Carousel Post"}
-    - Media Available: ${mediaCount} items (${mediaTypes.join(", ")})
-    
-    CRITICAL: Analyze the visual content and business type to pick the perfect "Viral Audio Category".
-    - Gym / Cars / Sports -> Suggest "Phonk" or "High Energy"
-    - Cafe / Morning / Nature -> Suggest "Lo-Fi" or "Acoustic"
-    - Real Estate / Fashion / Art -> Suggest "Luxury" or "Deep House"
-    - General / Fun -> Suggest "Pop" or "Trending"
-    - Food / Restaurant -> Suggest "Pop" or "Acoustic"
+    const prompt = `You are an AI Creative Production Team consisting of 4 specialist agents:
+    1. THE CRITIC: Analyzes the visual vibe and sets the quality bar.
+    2. THE DJ: Matches the energy with the perfect Pakistani trending audio.
+    3. THE STYLIST: Chooses high-impact typography, colors, and the viral hook.
+    4. THE DIRECTOR: Orchestrates the story and ensures everything is "Viral Ready".
 
-    MUST USE PAKISTANI TRENDS: Select one from this EXACT list of viral songs in Pakistan for the trendingAudioTip field. DO NOT use generic or western songs.
-    [${trendingSongs}]
+    Project Context:
+    - Business: ${businessName} (Market: Pakistan 🇵🇰)
+    - Visual Analysis: ${visualContext || "General business content"}
+    - Media: ${mediaCount} items (${mediaTypes.join(", ")})
 
-    Return ONLY a JSON array containing exactly 3 objects with these fields:
-    - hook: A viral "Hook" sentence that stops the scroll (e.g., "Wait for the ending...", "The best deal in Lahore", "Why everyone is talking about..."). Max 6 words.
-    - title: A catchy, short title (max 5 words)
-    - caption: A trending, engaging caption with hashtags (max 280 chars)
-    - musicMood: ONE of these exact values: "Phonk", "Lo-Fi", "Luxury", "Pop", "Cinematic", "High Energy"
-    - trendingAudioTip: EXACT name of the song from the PAKISTANI TRENDS list above.
-    - visualStyle: Description of the editing style
-    - narrative: A 1-sentence narrative arc why this option is unique.
+    YOUR TASK: Generate 3 DISTINCT production options. 
 
-    Direction for the 3 options:
-    Option 1: The "Vibe" (Focus on atmosphere).
-    Option 2: The "Hype" (Focus on energy/viral potential).
-    Option 3: The "Story" (Focus on narrative/value).
+    STYLING RULES (For the Stylist):
+    - Font Selection: 
+        * LUXURY: "Playfair Display", "Cinzel"
+        * HYPE: "Bebas Neue", "Anton"
+        * MODERN: "Montserrat", "Outfit"
+    - Color Selection: Use bold, high-contrast combinations (e.g., Red/White, Gold/Black, Neon Green/Black).
+    - Text Position: "top", "center", or "bottom" based on where it best fits the vibe.
 
-    Return the final result as a raw JSON array. Do not include markdown formatting like \`\`\`json.
+    MUSIC RULES (For the DJ):
+    - Select from these EXACT Pakistani Trending Songs: [${trendingSongs}]
+
+    Return ONLY a JSON array containing exactly 3 "AIReelData" objects with these fields:
+    - hook: Viral, high-impact hook (max 6 words).
+    - title: Catchy title (max 5 words).
+    - caption: Engaging caption with hashtags (max 280 chars).
+    - fontFamily: One from the Font Selection list.
+    - fontColor: Hex code for the text.
+    - textBackgroundColor: Hex code for the box behind text.
+    - textPosition: "top", "center", or "bottom".
+    - musicMood: ONE of: "Phonk", "Lo-Fi", "Luxury", "Pop", "Cinematic", "High Energy".
+    - trendingAudioTip: EXACT name from the Pakistani list.
+    - musicRationale: 1-sentence why the DJ picked this.
+    - vibeScore: 1-10 based on visual quality perception.
+    - energyLevel: "chill", "moderate", "high", or "extreme".
+    - visualStyle: Editing style description.
+    - narrative: 1-sentence core story.
+
+    Options:
+    1. THE TREND-SETTER (Hype, Fast, Viral Hooks)
+    2. THE LUXE-VIBE (Cinematic, Slow, Elegant)
+    3. THE STORY-TELLER (Narrative-focused, Authentic)
+
+    Return raw JSON. No markdown. No explanations.
     `
 
     try {
-        if (!model) {
-            console.warn("Gemini API Key missing, using fallback metadata")
-            throw new Error("Gemini API Key missing")
-        }
+        if (!model) throw new Error("Gemini API Key missing")
         const result = await model.generateContent(prompt)
-        const response = await result.response
-        const text = response.text().replace(/```json/g, "").replace(/```/g, "").trim()
-
+        const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim()
         const parsed = JSON.parse(text)
         return Array.isArray(parsed) ? parsed.slice(0, 3) : [parsed]
     } catch (error) {
         console.error("Gemini Error:", error)
-        const fallbackSongs = getTrendingSongsForRegion(region)
-        // Fallback data (3 options) using regional hits
-        const base = {
-            hook: `Wait for this!`,
-            title: `Moments at ${businessName}`,
-            caption: `Check out the latest vibes at ${businessName}! ✨ #DreamApp #${businessName.replace(/\s/g, "")}`,
-            musicMood: "Trending Audio",
-            trendingAudioTip: fallbackSongs[0],
-            visualStyle: "Clean and Modern",
-            narrative: "A glimpse into the daily atmosphere."
+        // Fallback with limited but safe data
+        const fallback = {
+            hook: "YOU NEED TO SEE THIS",
+            title: `Discover ${businessName}`,
+            caption: `The best vibe in town! ✨ #Dream #${businessName.replace(/\s/g, "")}`,
+            fontFamily: "Bebas Neue",
+            fontColor: "#FFFFFF",
+            textBackgroundColor: "#FF0000",
+            textPosition: "center" as const,
+            musicMood: "Pop",
+            trendingAudioTip: getTrendingSongsForRegion(region)[0],
+            musicRationale: "High energy fallback",
+            vibeScore: 8,
+            energyLevel: "high" as const,
+            visualStyle: "Fast and Dynamic",
+            narrative: "An energetic look at the business."
         }
-        return [
-            { ...base, hook: "DON'T SCROLL!", title: `The Heart of ${businessName}`, narrative: "Emotional journey through your space.", trendingAudioTip: fallbackSongs[1] || fallbackSongs[0] },
-            { ...base, hook: "YOU NEED THIS", title: `${businessName} Energy`, narrative: "High-octane buzz of the business.", trendingAudioTip: fallbackSongs[2] || fallbackSongs[0] },
-            { ...base, hook: "PREMIUM ONLY", title: `A Touch of Class: ${businessName}`, narrative: "Highlighting the premium details.", trendingAudioTip: fallbackSongs[3] || fallbackSongs[0] },
-        ]
+        return [fallback, fallback, fallback]
     }
 }

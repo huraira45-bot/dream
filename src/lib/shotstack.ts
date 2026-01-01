@@ -8,7 +8,7 @@ import { DirectorStyle } from "./director"
 
 const SHOTSTACK_API_ENDPOINT = "https://api.shotstack.io/edit/stage/render"
 
-export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string | null, style: DirectorStyle, metadata?: { title?: string, hook?: string }) {
+export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string | null, style: DirectorStyle, metadata?: any) {
     const apiKey = process.env.SHOTSTACK_API_KEY
     if (!apiKey) {
         throw new Error("SHOTSTACK_API_KEY is not configured")
@@ -20,20 +20,25 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
     const fgClips: any[] = []
     const textClips: any[] = []
 
-    // 0. Viral Hook (Attention Grabber)
+    // 0. Viral Hook (Attention Grabber - Stylist Upgrade)
     if (metadata?.hook) {
         textClips.push({
             asset: {
                 type: "text",
                 text: metadata.hook.toUpperCase(),
                 font: {
-                    family: "montserrat",
+                    family: metadata.fontFamily?.toLowerCase() || "montserrat",
                     size: 42,
-                    color: "#ffffff"
+                    color: metadata.fontColor || "#ffffff"
                 },
                 alignment: {
                     horizontal: "center",
                     vertical: "center"
+                },
+                background: {
+                    color: metadata.textBackgroundColor || "#ff0000",
+                    padding: 0.1,
+                    opacity: 1
                 }
             },
             start: 0,
@@ -51,7 +56,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
             asset: {
                 type: isVideo ? "video" : "image",
                 src: item.url,
-                ...(isVideo && { volume: 0 }) // Volume goes inside ASSET for videos
+                ...(isVideo && { volume: 0 })
             },
             start: currentTime,
             length: duration,
@@ -66,7 +71,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
             asset: {
                 type: isVideo ? "video" : "image",
                 src: item.url,
-                ...(isVideo && { volume: (style.audioDucking ? 1 : 0) }) // Volume goes inside ASSET for videos
+                ...(isVideo && { volume: (style.audioDucking ? 1 : 0) })
             },
             start: currentTime,
             length: duration,
@@ -84,7 +89,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
 
         fgClips.push(fgClip)
 
-        // TEXT OVERLAYS (Ultra-Visibility upgrade)
+        // TEXT OVERLAYS (Stylist & Director Upgrade)
         if (style.textOverlay && index % 2 === 0) {
             const displayText = (index === 0 && metadata?.title) ? metadata.title : `#${index + 1}`
             textClips.push({
@@ -92,20 +97,20 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
                     type: "text",
                     text: displayText,
                     font: {
-                        family: "montserrat",
+                        family: metadata.fontFamily?.toLowerCase() || "montserrat",
                         size: 30,
-                        color: "#ffffff"
+                        color: metadata.fontColor || "#ffffff"
                     },
                     background: {
-                        color: "#000000",
+                        color: metadata.textBackgroundColor || "#000000",
                         padding: 0.05,
-                        opacity: 0.6
+                        opacity: 0.8
                     }
                 },
                 start: currentTime + (duration / 4),
                 length: duration / 2,
-                position: "bottom",
-                offset: { y: 0.15 },
+                position: metadata.textPosition || "bottom",
+                offset: metadata.textPosition === "center" ? { y: 0 } : (metadata.textPosition === "top" ? { y: -0.3 } : { y: 0.15 }),
                 transition: { in: "fade", out: "fade" }
             })
         }
