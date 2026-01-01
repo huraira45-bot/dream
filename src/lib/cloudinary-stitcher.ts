@@ -34,11 +34,11 @@ export function generateStitchedVideoUrl(mediaItems: { url: string, type: string
         const layerId = publicId.replace(/\//g, ':')
 
         if (isVideo) {
-            // Correct Syntax: fl_splice goes FIRST
-            segments.push(`fl_splice,l_video:${layerId}/c_fill,h_1280,w_720,e_volume:mute/fl_layer_apply`)
+            // Correct Syntax: fl_layer_apply,fl_splice (Apply layer, THEN splice it)
+            segments.push(`l_video:${layerId}/c_fill,h_1280,w_720,e_volume:mute/fl_layer_apply,fl_splice`)
         } else {
-            // Correct Syntax: fl_splice goes FIRST
-            segments.push(`fl_splice,l:${layerId}/c_fill,h_1280,w_720,du_4/fl_layer_apply`)
+            // Correct Syntax: fl_layer_apply,fl_splice
+            segments.push(`l:${layerId}/c_fill,h_1280,w_720,du_4/fl_layer_apply,fl_splice`)
         }
     })
 
