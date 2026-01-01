@@ -82,17 +82,17 @@ export async function processReelForBusinessV2(businessId: string) {
     const variations = []
     for (let i = 0; i < 3; i++) {
         const style = getStyleForVariation(i)
+        const metadata = aiOptions[i] || aiOptions[0]
 
-        // Find music matching mood
-        const musicTrack = MUSIC_LIBRARY.find(t => t.mood === style.musicMood) || MUSIC_LIBRARY[0]
+        // Intelligent Music Selection: Use Gemini's Content Analysis > Style Default
+        const musicTrack = getMusicForMood(metadata.musicMood)
 
         const reel = await prisma.generatedReel.create({
             data: {
                 businessId: business.id,
-                title: `${style.name} - ${business.name}`,
-                caption: `AI Generated ${style.name} Reel. ${style.description}`,
-                url: `pending:init-${Date.now()}-${i}`, // Placeholder
-                // thumbnailUrl removed as it's not in schema
+                title: metadata.title, // Use AI Title
+                caption: metadata.caption, // Use AI Caption
+                url: `pending:init-${Date.now()}-${i}`,
                 musicUrl: musicTrack.url,
                 mediaItemIds: allMediaIds
             }
