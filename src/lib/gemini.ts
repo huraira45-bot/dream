@@ -144,7 +144,7 @@ export async function generateReelMetadata(
             textBackgroundColor: "#FF0000",
             textPosition: "center" as const,
             musicMood: "Pop",
-            trendingAudioTip: getTrendingSongsForRegion(region)[0],
+            trendingAudioTip: trendingHits[0] || "Asim Azhar - Meri Zindagi Hai Tu",
             musicRationale: "High energy fallback",
             vibeScore: 8,
             energyLevel: "high" as const,
