@@ -67,6 +67,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
         })
 
         // Foreground Clip
+        const transitionType = metadata?.transitionType || style.transition
         const fgClip: any = {
             asset: {
                 type: isVideo ? "video" : "image",
@@ -76,11 +77,12 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
             start: currentTime,
             length: duration,
             fit: "contain",
-            transition: { in: style.transition, out: style.transition }
+            transition: { in: transitionType, out: transitionType }
         }
 
-        if (!isVideo && style.effect && style.effect !== "none") {
-            fgClip.effect = style.effect
+        const effectType = metadata?.effectType || style.effect
+        if (!isVideo && effectType && effectType !== "none") {
+            fgClip.effect = effectType
         }
 
         if (style.saturation && style.saturation > 1.2) {

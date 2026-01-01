@@ -29,6 +29,8 @@ export interface AIReelDataV3 {
     // 5. The Director
     visualStyle: string
     narrative: string
+    transitionType: "fade" | "wipeRight" | "wipeLeft" | "slideRight" | "slideLeft" | "zoom"
+    effectType: "zoomIn" | "zoomOut" | "slideLeft" | "slideRight" | "none"
 }
 
 export async function processMultiLLMCreativeFlow(
@@ -62,6 +64,11 @@ export async function processMultiLLMCreativeFlow(
     - Gen Z SMM: Make the hooks and captions hit different. Use trend-aware language without being cringey.
     - Diversity Check: Ensure Variation 1, 2, and 3 are completely unique.
 
+    EDITING RULES (Agent: THE DIRECTOR):
+    - Choose a transitionType from ["fade", "wipeRight", "wipeLeft", "slideRight", "slideLeft", "zoom"].
+    - Choose an effectType from ["zoomIn", "zoomOut", "slideLeft", "slideRight", "none"].
+    - Match the editing speed and style to the visual atmosphere.
+
     CRITICAL RULES:
     - Identify any media that should be SKIPPED based on the visual report (e.g., if there's a blurry or low-quality index mentioned). 
       (Note: indices are 0 to ${mediaUrls.length - 1}).
@@ -74,7 +81,7 @@ export async function processMultiLLMCreativeFlow(
     - musicMood, trendingAudioTip, musicRationale
     - vibeScore (1-10), energyLevel, skipMediaIndices (array of numbers)
     - smmAura (Gen Z vibe summary), smmGimmick (creative gimmick)
-    - visualStyle, narrative
+    - visualStyle, narrative, transitionType, effectType
     `;
 
     try {
@@ -98,7 +105,9 @@ export async function processMultiLLMCreativeFlow(
             ...opt,
             skipMediaIndices: [], // Gemini's metadata generator doesn't do this yet
             smmAura: "Vibe checked by Gemini",
-            smmGimmick: "Classic storytelling"
+            smmGimmick: "Classic storytelling",
+            transitionType: (opt as any).transitionType || "fade",
+            effectType: (opt as any).effectType || "zoomIn"
         })) as AIReelDataV3[];
     }
 }

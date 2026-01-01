@@ -27,6 +27,8 @@ interface AIReelData {
     // 4. The Director
     visualStyle: string
     narrative: string
+    transitionType: "fade" | "wipeRight" | "wipeLeft" | "slideRight" | "slideLeft" | "zoom"
+    effectType: "zoomIn" | "zoomOut" | "slideLeft" | "slideRight" | "none"
 }
 
 export async function describeMedia(imageUrls: string[]): Promise<string> {
@@ -100,6 +102,11 @@ export async function generateReelMetadata(
     - Variation 2 should be the most aggressive and high-energy version of the visuals.
     - Variation 3 should be a creative "out-of-the-box" storytelling angle.
 
+    EDITING RULES (Agent: THE DIRECTOR):
+    - Choose a transitionType from ["fade", "wipeRight", "wipeLeft", "slideRight", "slideLeft", "zoom"].
+    - Choose an effectType from ["zoomIn", "zoomOut", "slideLeft", "slideRight", "none"].
+    - Match the editing speed and style to the visual atmosphere.
+
     Return ONLY a JSON array of 3 AIReelData objects:
     - hook (max 6 words)
     - title (max 5 words)
@@ -107,7 +114,7 @@ export async function generateReelMetadata(
     - fontFamily, fontColor, textBackgroundColor, textPosition
     - musicMood, trendingAudioTip, musicRationale
     - vibeScore (1-10), energyLevel ("chill", "moderate", "high", "extreme")
-    - visualStyle, narrative
+    - visualStyle, narrative, transitionType, effectType
 
     Return raw JSON array.
     `
@@ -135,7 +142,9 @@ export async function generateReelMetadata(
             vibeScore: 8,
             energyLevel: "high" as const,
             visualStyle: "Fast and Dynamic",
-            narrative: "An energetic look at the business."
+            narrative: "An energetic look at the business.",
+            transitionType: "fade" as const,
+            effectType: "zoomIn" as const
         }
         return [fallback, fallback, fallback]
     }
