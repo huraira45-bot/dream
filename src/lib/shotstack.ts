@@ -67,7 +67,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
             length: duration,
             fit: "cover",
             scale: 1.5, // Zoom in more to lose edges
-            effect: "blurLight", // Built-in Shotstack blur
+            filter: "blur", // Corrected from 'effect: blurLight'
             opacity: 1.0, // Full visibility for the blur to work
             transition: { in: "fade", out: "fade" }
         })
