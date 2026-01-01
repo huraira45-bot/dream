@@ -45,6 +45,12 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
         if (!pUrl || finalUrl) return
 
         const renderId = pUrl.split(':')[1]
+
+        // Don't poll initialization IDs
+        if (renderId.startsWith('init')) {
+            return
+        }
+
         const interval = setInterval(async () => {
             try {
                 const res = await fetch('/api/reels/status', {

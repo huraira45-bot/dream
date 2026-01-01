@@ -31,8 +31,8 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ status: "processing" })
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Status Check Error:", error)
-        return new NextResponse("Internal Error", { status: 500 })
+        return NextResponse.json({ status: "failed", error: error.message || "Internal Error" }, { status: 500 })
     }
 }
