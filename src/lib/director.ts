@@ -21,39 +21,42 @@ export interface DirectorStyle {
 export const STYLES_CONFIG = {
     cinematic: {
         name: "Cinematic Story",
-        description: "Slow, emotional, and dramatic.",
+        description: "Slow, emotional, and high-end aesthetic.",
         minDuration: 4,
         transitions: ["fade", "slideRight"],
         effects: ["zoomIn", "zoomOut"],
         mood: "emotional",
-        saturation: 1.2,
-        brightness: 1.1,
+        saturation: 1.1,
+        brightness: 1.05,
         textOverlay: true,
-        audioDucking: true
+        audioDucking: true,
+        preferredFonts: ["Bodoni Moda", "Playfair Display"]
     },
     hype: {
         name: "Fast & Hype",
-        description: "Fast-paced, high energy.",
-        minDuration: 1.5,
+        description: "Fast-paced, high energy, bold visuals.",
+        minDuration: 2.0,
         transitions: ["wipeRight", "wipeLeft"],
         effects: ["zoomOut", "zoomIn"],
         mood: "high-energy",
-        saturation: 1.5,
-        brightness: 1.2,
+        saturation: 1.4,
+        brightness: 1.15,
         textOverlay: true,
-        audioDucking: true
+        audioDucking: true,
+        preferredFonts: ["Syne", "Anton", "Archivo Black"]
     },
     modern: {
         name: "Modern Clean",
-        description: "Balanced pacing with stylish slides.",
-        minDuration: 3,
+        description: "Minimalist, sleek, and trend-focused.",
+        minDuration: 3.5,
         transitions: ["slideRight", "slideLeft"],
         effects: ["slideLeft", "slideRight"],
         mood: "elegant",
         saturation: 1.0,
         brightness: 1.0,
-        textOverlay: false,
-        audioDucking: true
+        textOverlay: true,
+        audioDucking: true,
+        preferredFonts: ["Space Grotesk", "Outfit", "Montserrat"]
     }
 }
 

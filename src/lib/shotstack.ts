@@ -27,7 +27,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
                 type: "text",
                 text: metadata.hook.toUpperCase(),
                 font: {
-                    family: metadata.fontFamily?.toLowerCase() || "montserrat",
+                    family: metadata.fontFamily?.toLowerCase().replace(/\s/g, "-") || "montserrat",
                     size: 42,
                     color: metadata.fontColor || "#ffffff"
                 },
@@ -42,7 +42,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
                 }
             },
             start: 0,
-            length: 1.5,
+            length: 3.0, // Increased duration for readability
             transition: { in: "zoom", out: "fade" }
         })
     }
