@@ -38,7 +38,7 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
     try {
         console.log("--------------------------------------------------")
         console.log("🤖 AGENT: THE HARSH CRITIC (Gemini Vision)")
-        console.log(`Action: Analyzing ${imageUrls.length} media items...`)
+        console.log(`Action: Analyzing first ${Math.min(imageUrls.length, 6)} media items (out of ${imageUrls.length})...`)
 
         // Analyze up to 6 media items for quality filtering (reduced from 10 to save memory)
         const mediaParts = await Promise.all(
