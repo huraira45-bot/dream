@@ -92,10 +92,9 @@ export async function processReelForBusinessV2(businessId: string) {
         },
     })
 
-    // 5. Generate 3 AI Variations (IN PARALLEL)
-    const variationPromises = Array.from({ length: 3 }).map(async (_, i) => {
+    // 5. Generate AI Variations (IN PARALLEL)
+    const variationPromises = aiOptions.map(async (metadata, i) => {
         const style = getStyleForVariation(i)
-        const metadata = aiOptions[i] || aiOptions[0]
 
         // FILTER MEDIA
         const skipIndices = (metadata as any).skipMediaIndices || []

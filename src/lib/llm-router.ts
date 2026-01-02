@@ -44,7 +44,12 @@ export async function processMultiLLMCreativeFlow(
 ): Promise<AIReelDataV3[]> {
     logger.info(`Analyzing ${mediaUrls.length} media items with Gemini v2.1...`)
     const visualReport = await describeMedia(mediaUrls);
-    logger.info(`Visual report generated successfully.`)
+    if (visualReport.includes("Visual analysis failed")) {
+        console.log("--------------------------------------------------")
+        console.log("⚠️  AGENT: THE HARSH CRITIC (FAILED)")
+        console.log("Action: Vision failure detected. Reducing variations and forbidding trending tracks to avoid 'Safety Bias'.")
+        console.log("--------------------------------------------------")
+    }
 
     // Step 2: GPT-4o - Creative Production & Gen Z SMM Review
     console.log("--------------------------------------------------")
@@ -61,13 +66,21 @@ export async function processMultiLLMCreativeFlow(
     ];
     const pickedSpice = creativeSpice[Math.floor(Math.random() * creativeSpice.length)];
 
-    const variationMix = [
+    let variationMix = [
         { type: "DRAMATIC/CINEMATIC", style: "High contrast, bold serif fonts, epic hook, intense music" },
         { type: "POV/VLOG", style: "Hand-written fonts, relatable/funny hook, 'Day in life' vibe, chill/lofi music" },
         { type: "HYPE/TREND", style: "Bright colors, bold rounded fonts, fast-paced hook, high-energy viral music" },
         { type: "MINIMALIST/AESTHETIC", style: "Clean typography, soft lighting, quiet hooks, atmospheric sounds" },
         { type: "CHAOTIC/FAST", style: "Glitches, neon colors, aggressive hooks, hard-hitting bass" }
     ].sort(() => 0.5 - Math.random()).slice(0, 3);
+
+    if (visualReport.includes("Visual analysis failed")) {
+        console.log("--------------------------------------------------")
+        console.log("⚠️  AGENT: THE HARSH CRITIC (FAILED)")
+        console.log("Action: Vision failure detected. Reducing variations to 1 to avoid repetitive 'safety bias'.")
+        console.log("--------------------------------------------------")
+        variationMix = variationMix.slice(0, 1); // Only 1 "Safe" variation
+    }
 
     console.log("--------------------------------------------------")
     console.log("🗣️  AGENT: THE HARSH CRITIC (Gemini Vision)")
@@ -93,7 +106,7 @@ export async function processMultiLLMCreativeFlow(
     - Songs Used Recently: [${usedSongs.join(", ")}]
     - Hooks Used Recently: [${usedHooks.join(", ")}]
 
-    YOUR TASK: Generate EXACTLY 3 UNIQUE production options. 
+    YOUR TASK: Generate EXACTLY ${variationMix.length} UNIQUE production options. 
     Each option must be distinct in vibe, text, and music.
 
     VARIATION SEEDS (Strict Enforcement):
@@ -110,6 +123,43 @@ export async function processMultiLLMCreativeFlow(
         - Funky: [Bungee, Monoton, Creepster]
     - Styling: Match Font Color to the mood and the theme. Use vibrant, unexpected combinations.
 
+    FORBIDDEN_BLOCKLIST (CONTRACT VIOLATION IF USED):
+    - RECENT_SONGS: [${usedSongs.join(", ")}]
+    - RECENT_HOOKS: [${usedHooks.join(", ")}]
+    - OVERLAP: Using any song or hook from this list will result in the entire batch being REJECTED.
+
+    VARIATION DIVERGENCE CONTRACT:
+    You are generating 3 "Reel archetypes". They MUST fundamentally diverge:
+    
+    1. ARYCHETYPE: THE VIRAL SAFE-BET (Var 1)
+       - Style: Follows the "${pickedSpice}" theme religiously.
+       - Vibe: High energy, safe, viral potential.
+       - Creative Risk: Low.
+    
+    2. ARCHETYPE: THE EXPERIMENTAL TRENDSETTER (Var 2)
+       - Style: Challenges the theme with a twist.
+       - Vibe: Edgy, unconventional, pattern-interrupting.
+       - Creative Risk: Medium.
+    
+    3. ARCHETYPE: THE "WEIRD" BOLD MOVE (Var 3)
+       - Style: Permission to be unusual. If it's for ${businessName}, think "What would a Gen Z creator do if they didn't care about rules?".
+       - Vibe: Abstract, aggressive transitions, "Post-ironic" or highly emotive.
+       - Creative Risk: MAXIMUM.
+
+    DIVERGENCE RULES:
+    - [SONG]: EVERY variation MUST use a DIFFERENT song from the trending list.
+    - [HOOK]: EVERY variation MUST use a DIFFERENT Opus.pro formula.
+    - [STYLE]: EVERY variation MUST use a DIFFERENT font and color palette.
+    - If Var 1 is "Cinematic", Var 2 CANNOT be "Cinematic".
+
+    AESTHETIC RULES (The Stylist):
+    - Tone: Incorporate the "${pickedSpice}" theme into your color choices and copywriting.
+    - Fonts: Pick EXACTLY one from these per variation (NO REUSE across the 3):
+        - Handwritten: [Permanent Marker, Gloria Hallelujah]
+        - Bold: [Fredoka One, Titan One]
+        - Editorial: [Abril Fatface, Ultra]
+        - Funky: [Bungee, Monoton, Creepster]
+
     MUSIC RULES (The Dynamic DJ):
     - Select EXACTLY from these hits: [${trendingSongs}]
     - CRITICAL: NO REPETITION. Variation 1, 2, and 3 MUST each have a UNIQUE song from the list.
@@ -122,34 +172,62 @@ export async function processMultiLLMCreativeFlow(
     - CAPTION DIVERSITY: Captions must be completely different. No "Yum!" in every one. Write specific marketing copy for each mood. Use emojis liberally for HYPE, but be sober for DRAMATIC.
 
     HOOK FORMULAS (Opus.pro Standard):
-    You MUST use one of these formulas for EVERY hook:
-    1. THE CONTRARIAN: "Everyone says [Common Belief], but [Your Take]" or "Stop [Doing X] and do this instead".
-    2. THE MISTAKE: "Don't make the mistake I made with [Topic]" or "I wasted [Time/Money] until I learned this".
-    3. THE NUMBERED LIST: "[3-7] [Things/Secrets/Ways] that [Specific Outcome]".
-    4. THE TIME-BASED: "How I [Achieved Result] in [Short Time]" or "What [Time Period] of [Activity] taught me".
-    5. THE QUESTION: "Are you [Doing Something Wrong]?" or "What if [Provocative Scenario]?"
+    You MUST use a UNIQUE formula for EACH variation:
+    1. THE CONTRARIAN: "Everyone says [X], but [Y]"
+    2. THE MISTAKE: "Don't make the mistake I made with [Topic]"
+    3. THE NUMBERED LIST: "[3-7] [Things] that [Outcome]"
+    4. THE TIME-BASED: "How I [Result] in [Short Time]"
+    5. THE QUESTION: "Are you [Doing Something Wrong]?"
 
     CRITICAL RULES:
     - Identify any media that should be SKIPPED based on the visual report (e.g., if there's a blurry or low-quality index mentioned). 
       (Note: indices are 0 to ${mediaUrls.length - 1}).
 
-    Return ONLY a JSON object with a key "options" containing an array of 3 AIReelDataV3 objects.
-    Fields per object:
-    - hook (viral, max 6 words)
-    - title, caption
-    - fontFamily (PICK FROM: "Permanent Marker", "Bungee", "Monoton", "Creepster", "Bebas Neue", "Montserrat", "Playfair Display")
-    - fontColor (Vibrant Hex), textBackgroundColor (Contrast Hex), textPosition
-    - musicMood, trendingAudioTip (MUST BE UNIQUE ACROSS ALL 3 OPTIONS), musicRationale
-    - vibeScore (1-10), energyLevel, skipMediaIndices (array of numbers)
-    - smmAura (Gen Z vibe summary), smmGimmick (creative gimmick)
-    - visualStyle, narrative, transitionType, effectType
+    Return ONLY a JSON object with a key "options" containing an array of ${variationMix.length} AIReelDataV3 objects.
+    Fields: hook, title, caption, fontFamily, fontColor, textBackgroundColor, textPosition, musicMood, trendingAudioTip (UNIQUE), musicRationale, vibeScore, energyLevel, skipMediaIndices, smmAura, smmGimmick, visualStyle, narrative, transitionType, effectType.
     `;
 
     try {
-        const result = await generateJSONWithGPT4o<{ options: AIReelDataV3[] }>(prompt, {}, { temperature: 1.0 });
+        let attempts = 0;
+        let result = await generateJSONWithGPT4o<{ options: AIReelDataV3[] }>(prompt, {}, { temperature: 1.0 });
+
+        // SIMILARITY CHECK (The Diversity Engine)
+        while (attempts < 2) {
+            // Only perform similarity check if there are at least 2 options
+            if (result.options.length < 2) {
+                break; // Not enough options to check for similarity between multiple variations
+            }
+
+            const h1 = result.options[0].hook.toLowerCase();
+            const h2 = result.options[1].hook.toLowerCase();
+
+            let overlap12 = 0;
+            if (h1.split(" ").length > 0 && h2.split(" ").length > 0) {
+                overlap12 = h1.split(" ").filter(w => h2.includes(w)).length / Math.max(h1.split(" ").length, h2.split(" ").length);
+            }
+
+            let overlap23 = 0;
+            if (result.options.length > 2) {
+                const h3 = result.options[2].hook.toLowerCase();
+                if (h2.split(" ").length > 0 && h3.split(" ").length > 0) {
+                    overlap23 = h2.split(" ").filter(w => h3.includes(w)).length / Math.max(h2.split(" ").length, h3.split(" ").length);
+                }
+            }
+
+            const songs = result.options.map(o => o.trendingAudioTip);
+            const uniqueSongs = new Set(songs).size === songs.length;
+
+            if ((overlap12 > 0.6 || overlap23 > 0.6) || !uniqueSongs) {
+                console.log(`⚠️  DIVERSITY CHECK FAILED (Attempt ${attempts + 1}). Retrying with higher entropy...`);
+                result = await generateJSONWithGPT4o<{ options: AIReelDataV3[] }>(prompt + "\n\nCRITICAL: YOUR PREVIOUS OUTPUT WAS TOO SIMILAR. TRY AGAIN BUT BE BOLDER AND MORE UNIQUE.", {}, { temperature: 1.2 });
+                attempts++;
+            } else {
+                break;
+            }
+        }
 
         console.log("--------------------------------------------------")
-        console.log("✅ PRODUCTION PLAN COMPLETE")
+        console.log("✅ PRODUCTION PLAN COMPLETE (Diversity Secured)")
         result.options.forEach((opt, idx) => {
             console.log(`🎬 Variation ${idx + 1}: [${opt.visualStyle}]`)
             console.log(`   🪝 Hook: "${opt.hook}"`)
