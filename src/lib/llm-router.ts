@@ -3,6 +3,12 @@ import { generateJSONWithGPT4o } from "./openai";
 import { getTrendingSongsForRegion } from "./trends";
 import { logger } from "./logger";
 
+enum CreativeMode {
+    FULL_VISION = "FULL_VISION",
+    PARTIAL_VISION = "PARTIAL_VISION",
+    NO_VISION = "NO_VISION"
+}
+
 export interface AIReelDataV3 {
     // 1. The Hook Maker & Stylist (GPT-4o)
     hook: string
@@ -44,24 +50,30 @@ export async function processMultiLLMCreativeFlow(
 ): Promise<AIReelDataV3[]> {
     logger.info(`Analyzing ${mediaUrls.length} media items with Gemini v2.1...`)
     const visualReport = await describeMedia(mediaUrls);
+
+    let mode = CreativeMode.FULL_VISION;
     if (visualReport.includes("Visual analysis failed")) {
+        mode = CreativeMode.NO_VISION;
         console.log("--------------------------------------------------")
         console.log("⚠️  AGENT: THE HARSH CRITIC (FAILED)")
-        console.log("Action: Vision failure detected. Reducing variations and forbidding trending tracks to avoid 'Safety Bias'.")
+        console.log("Action: Entering NO_VISION mode. Generic hooks and viral clichés are now FORBIDDEN.")
         console.log("--------------------------------------------------")
+    } else if (visualReport.length < 100) {
+        mode = CreativeMode.PARTIAL_VISION;
     }
 
     // Step 2: GPT-4o - Creative Production & Gen Z SMM Review
     console.log("--------------------------------------------------")
     console.log("🤖 AGENT: THE DYNAMIC DJ")
     console.log(`Action: Fetching real-time trending music for ${region}...`)
-    let trendingHits = (await getTrendingSongsForRegion(region)).sort(() => Math.random() - 0.5);
+    const allHits = await getTrendingSongsForRegion(region);
+    const unusedHits = allHits.filter(s => !usedSongs.includes(s)).sort(() => Math.random() - 0.5);
+    const recentlyUsedHits = allHits.filter(s => usedSongs.includes(s)).sort(() => Math.random() - 0.5);
 
-    if (visualReport.includes("Visual analysis failed")) {
-        console.log("--------------------------------------------------")
-        console.log("⚠️  AGENT: THE HARSH CRITIC (FAILED)")
-        console.log("Action: Vision failure detected. Reducing variations and filtering out top trending tracks to avoid 'Safety Bias'.")
-        console.log("--------------------------------------------------")
+    // Trend Cooldown: Prioritize fresh tracks, use previously seen ones only as backup
+    let trendingHits = [...unusedHits, ...recentlyUsedHits];
+
+    if (mode === CreativeMode.NO_VISION) {
         // Forbid the top 50% of trending hits to avoid the "Safety Bias" of picking rank #1
         trendingHits = trendingHits.slice(Math.floor(trendingHits.length / 2));
     }
@@ -84,8 +96,8 @@ export async function processMultiLLMCreativeFlow(
         { type: "CHAOTIC/FAST", style: "Glitches, neon colors, aggressive hooks, hard-hitting bass" }
     ].sort(() => 0.5 - Math.random()).slice(0, 3);
 
-    if (visualReport.includes("Visual analysis failed")) {
-        variationMix = variationMix.slice(0, 1); // Only 1 "Safe" variation
+    if (mode === CreativeMode.NO_VISION) {
+        variationMix = variationMix.slice(0, 1); // Only 1 variation in Blind Mode
     }
 
     console.log("--------------------------------------------------")
@@ -111,6 +123,14 @@ export async function processMultiLLMCreativeFlow(
     - MEMORY (AVOID THESE):
     - Songs Used Recently: [${usedSongs.join(", ")}]
     - Hooks Used Recently: [${usedHooks.join(", ")}]
+    - CURRENT MODE: ${mode}
+    
+    ${mode === CreativeMode.NO_VISION ? `
+    🚨 NO_VISION CRITICAL RULE:
+    - You are BLIND. Do NOT use generic hooks like "Discover...", "Welcome to...", or "See the magic...".
+    - Avoid literal descriptions of the business name.
+    - Focus on abstracts, curiosity, and high-entropy storytelling.
+    ` : ""}
 
     YOUR TASK: Generate EXACTLY ${variationMix.length} UNIQUE production options. 
     Each option must be distinct in vibe, text, and music.
@@ -202,17 +222,36 @@ ${variationMix.map((v, i) => `    - Option ${i + 1} [${v.type}]: ${v.style}.`).j
                 break; // Not enough options to check for similarity between multiple variations
             }
 
+            let overlap12 = 0;
+            let overlap23 = 0;
+            let diff12 = 0;
+            let diff23 = 0;
+
             const h1 = result.options[0].hook.toLowerCase();
             const h2 = result.options[1].hook.toLowerCase();
+            const s1 = result.options[0].trendingAudioTip;
+            const s2 = result.options[1].trendingAudioTip;
+            const v1 = result.options[0].visualStyle.toLowerCase();
+            const v2 = result.options[1].visualStyle.toLowerCase();
 
-            let overlap12 = 0;
+            // Dimensional Divergence Check
+            if (h1 !== h2) diff12++;
+            if (s1 !== s2) diff12++;
+            if (v1 !== v2) diff12++;
+
             if (h1.split(" ").length > 0 && h2.split(" ").length > 0) {
                 overlap12 = h1.split(" ").filter(w => h2.includes(w)).length / Math.max(h1.split(" ").length, h2.split(" ").length);
             }
 
-            let overlap23 = 0;
             if (result.options.length > 2) {
                 const h3 = result.options[2].hook.toLowerCase();
+                const s3 = result.options[2].trendingAudioTip;
+                const v3 = result.options[2].visualStyle.toLowerCase();
+
+                if (h2 !== h3) diff23++;
+                if (s2 !== s3) diff23++;
+                if (v2 !== v3) diff23++;
+
                 if (h2.split(" ").length > 0 && h3.split(" ").length > 0) {
                     overlap23 = h2.split(" ").filter(w => h3.includes(w)).length / Math.max(h2.split(" ").length, h3.split(" ").length);
                 }
@@ -221,9 +260,24 @@ ${variationMix.map((v, i) => `    - Option ${i + 1} [${v.type}]: ${v.style}.`).j
             const songs = result.options.map(o => o.trendingAudioTip);
             const uniqueSongs = new Set(songs).size === songs.length;
 
-            if ((overlap12 > 0.6 || overlap23 > 0.6) || !uniqueSongs) {
-                console.log(`⚠️  DIVERSITY CHECK FAILED (Attempt ${attempts + 1}). Retrying with higher entropy...`);
-                result = await generateJSONWithGPT4o<{ options: AIReelDataV3[] }>(prompt + "\n\nCRITICAL: YOUR PREVIOUS OUTPUT WAS TOO SIMILAR. TRY AGAIN BUT BE BOLDER AND MORE UNIQUE.", {}, { temperature: 1.2 });
+            // HARD REJECTION LOGIC (The Bad Cop)
+            const hasForbiddenHook = result.options.some(opt =>
+                usedHooks.some(used => opt.hook.toLowerCase().includes(used.toLowerCase()))
+            );
+            const hasForbiddenSong = result.options.some(opt =>
+                usedSongs.includes(opt.trendingAudioTip)
+            );
+            const isGeneric = result.options.some(opt =>
+                opt.hook.toLowerCase().includes("discover") ||
+                opt.hook.toLowerCase().includes("welcome") ||
+                opt.hook.toLowerCase().includes(businessName.toLowerCase())
+            );
+
+            const lowDivergence = (result.options.length > 1 && diff12 < 2) || (result.options.length > 2 && diff23 < 2);
+
+            if ((overlap12 > 0.6 || overlap23 > 0.6) || !uniqueSongs || hasForbiddenHook || hasForbiddenSong || (mode === CreativeMode.NO_VISION && isGeneric) || lowDivergence) {
+                console.log(`⚠️  HARD REJECTION (Attempt ${attempts + 1}). Reasons: ${!uniqueSongs ? 'Non-unique songs ' : ''}${hasForbiddenHook ? 'Forbidden hook ' : ''}${hasForbiddenSong ? 'Forbidden song ' : ''}${isGeneric ? 'Generic hook detected ' : ''}${lowDivergence ? 'Low divergence ' : ''}${overlap12 > 0.6 ? 'Similarity overlap ' : ''}`);
+                result = await generateJSONWithGPT4o<{ options: AIReelDataV3[] }>(prompt + "\n\nCRITICAL: YOUR PREVIOUS OUTPUT WAS REJECTED. IT WAS TOO SIMILAR TO HISTORY, TOO GENERIC, OR HAD LOW DIVERGENCE (dimensions must differ). BE BOLDER.", {}, { temperature: 1.2 });
                 attempts++;
             } else {
                 break;

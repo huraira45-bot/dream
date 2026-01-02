@@ -4,7 +4,7 @@ import { logger } from "./logger"
 
 const apiKey = process.env.GEMINI_API_KEY
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
-const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }) : null
+const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) : null
 
 interface AIReelData {
     // 1. The Hook Maker & Stylist
@@ -138,7 +138,7 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    model: "llama-3.2-11b-vision-preview",
+                    model: "llama-3.2-11b-vision-instant",
                     messages: [
                         {
                             role: "user",
