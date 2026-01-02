@@ -104,7 +104,7 @@ export async function processMultiLLMCreativeFlow(
     console.log("🗣️  AGENT: THE HARSH CRITIC (Gemini Vision)")
     console.log(`Report: ${visualReport.substring(0, 150)}...`)
     console.log("--------------------------------------------------")
-    console.log("🤖 AGENT: CREATIVE DIRECTOR (GPT-4o)")
+    console.log("🤖 AGENT: CREATIVE DIRECTOR (Llama 3.3 via Groq)")
     console.log(`Action: Brainstorming concepts (Spice: ${pickedSpice})`)
     console.log(`Variation Mix: ${variationMix.map(m => m.type).join(", ")}`)
 
@@ -287,6 +287,13 @@ ${variationMix.map((v, i) => `    - Option ${i + 1} [${v.type}]: ${v.style}.`).j
         console.log("--------------------------------------------------")
         console.log("✅ PRODUCTION PLAN COMPLETE (Diversity Secured)")
         result.options.forEach((opt, idx) => {
+            // SHOTSTACK SANITIZATION (The Safety Guard)
+            const validTransitions = ["fade", "wipeRight", "wipeLeft", "slideRight", "slideLeft", "zoom", "none"];
+            if (!validTransitions.includes(opt.transitionType)) opt.transitionType = "fade";
+
+            const validEffects = ["zoomIn", "zoomOut", "slideLeft", "slideRight", "none"];
+            if (!validEffects.includes(opt.effectType)) opt.effectType = "none";
+
             console.log(`🎬 Variation ${idx + 1}: [${opt.visualStyle}]`)
             console.log(`   🪝 Hook: "${opt.hook}"`)
             console.log(`   🎨 Style: Font=${opt.fontFamily}, Color=${opt.fontColor}`)
@@ -295,10 +302,10 @@ ${variationMix.map((v, i) => `    - Option ${i + 1} [${v.type}]: ${v.style}.`).j
         });
         console.log("--------------------------------------------------")
 
-        logger.info("Creative Team: Generated 3 unique production options via GPT-4o.")
+        logger.info("Creative Team: Generated unique production options via Llama 3.3.")
         return result.options;
     } catch (openaiError: any) {
-        logger.warn(`OpenAI Failed: ${openaiError.message}. Falling back to Gemini...`);
+        logger.warn(`LLM Pipeline Failed: ${openaiError.message}. Falling back to Gemini...`);
 
         // Fallback to Gemini 1.5 Pro/Flash for the creative part
         const geminiOptions = await generateReelMetadata(

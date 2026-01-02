@@ -4,7 +4,7 @@ import { logger } from "./logger"
 
 const apiKey = process.env.GEMINI_API_KEY
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
-const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) : null
+const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-pro" }) : null
 
 interface AIReelData {
     // 1. The Hook Maker & Stylist
@@ -114,57 +114,8 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
         logger.info("Critic Report: Analysis complete.")
         return analysis
     } catch (e: any) {
-        logger.error(`Gemini Vision Error: ${e.message}. Attempting Groq fallback...`)
-
-        const groqKey = process.env.GROQ_API_KEY;
-        if (!groqKey) {
-            logger.warn("GROQ_API_KEY missing, skipping fallback.");
-            return "Visual analysis failed."
-        }
-
-        try {
-            console.log("--------------------------------------------------")
-            console.log("🤖 AGENT: THE SECONDARY CRITIC (Groq Vision)")
-            console.log("Action: Running fallback analysis with Llama 3.2 Vision...")
-
-            const prompt = `You are THE HARSH CRITIC (Chief Creative Officer). Analyze these media items.
-            Provide a technically rich and VIBE-FOCUSED summary. Mention specific colors, lighting styles, and the "main character".
-            Format: [SKIP: indices] Summary: (Descriptive).`;
-
-            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${groqKey}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: "llama-3.2-11b-vision-instant",
-                    messages: [
-                        {
-                            role: "user",
-                            content: [
-                                { type: "text", text: prompt },
-                                ...validParts.map(p => ({
-                                    type: "image_url",
-                                    image_url: { url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` }
-                                }))
-                            ]
-                        }
-                    ],
-                    temperature: 0.7
-                })
-            });
-
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error?.message || "Groq API error");
-
-            const analysis = data.choices[0].message.content;
-            logger.info("Groq Critic Report: Fallback analysis complete.");
-            return analysis;
-        } catch (groqErr: any) {
-            logger.error(`Groq Vision Error: ${groqErr.message}`);
-            return "Visual analysis failed."
-        }
+        logger.error(`Gemini Vision Error: ${e.message}.`);
+        return "Visual analysis failed."
     }
 }
 
