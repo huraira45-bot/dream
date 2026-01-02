@@ -114,8 +114,58 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
         logger.info("Critic Report: Analysis complete.")
         return analysis
     } catch (e: any) {
-        logger.error(`Gemini Vision Error: ${e.message}.`);
-        return "Visual analysis failed."
+        logger.error(`Gemini Vision Error: ${e.message}. Attempting SambaNova fallback...`)
+
+        const sambaKey = process.env.SAMBANOVA_API_KEY;
+        if (!sambaKey) {
+            logger.warn("SAMBANOVA_API_KEY missing, skipping fallback.");
+            return "Visual analysis failed."
+        }
+
+        try {
+            console.log("--------------------------------------------------")
+            console.log("🤖 AGENT: THE SECONDARY CRITIC (SambaNova Vision)")
+            console.log("Action: Running fallback analysis with Llama 3.2 11B Vision...")
+
+            const promptText = `You are THE HARSH CRITIC (Chief Creative Officer). Analyze these media items.
+            Provide a technically rich and VIBE-FOCUSED summary. Mention specific colors, lighting styles, and the "main character".
+            Format: [SKIP: indices] Summary: (Descriptive).`;
+
+            const response = await fetch("https://api.sambanova.ai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${sambaKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "Llama-3.2-11B-Vision-Instruct",
+                    messages: [
+                        {
+                            role: "user",
+                            content: [
+                                { type: "text", text: promptText },
+                                ...validParts.map(p => ({
+                                    type: "image_url",
+                                    image_url: { url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` }
+                                }))
+                            ]
+                        }
+                    ],
+                    temperature: 0.1,
+                    top_p: 0.1
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error?.message || "SambaNova API error");
+
+            const analysis = data.choices[0].message.content;
+            logger.info("SambaNova Critic Report: Fallback analysis complete.");
+            return analysis;
+        } catch (sambaErr: any) {
+            logger.error(`SambaNova Vision Error: ${sambaErr.message}`);
+            return "Visual analysis failed."
+        }
     }
 }
 
