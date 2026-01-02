@@ -70,8 +70,12 @@ export async function processMultiLLMCreativeFlow(
     ].sort(() => 0.5 - Math.random()).slice(0, 3);
 
     console.log("--------------------------------------------------")
+    console.log("🗣️  AGENT: THE HARSH CRITIC (Gemini Vision)")
+    console.log(`Report: ${visualReport.substring(0, 150)}...`)
+    console.log("--------------------------------------------------")
     console.log("🤖 AGENT: CREATIVE DIRECTOR (GPT-4o)")
-    console.log(`Action: Brainstorming concepts with Stylist & SMM (Spice: ${pickedSpice})...`)
+    console.log(`Action: Brainstorming concepts (Spice: ${pickedSpice})`)
+    console.log(`Variation Mix: ${variationMix.map(m => m.type).join(", ")}`)
 
     const prompt = `You are an AI Creative Production Team consisting of:
     - THE STYLIST: Expert in typography and minimal/aesthetic vibes.
@@ -108,8 +112,9 @@ export async function processMultiLLMCreativeFlow(
 
     MUSIC RULES (The Dynamic DJ):
     - Select EXACTLY from these hits: [${trendingSongs}]
+    - CRITICAL: NO REPETITION. Variation 1, 2, and 3 MUST each have a UNIQUE song from the list.
     - NEGATIVE CONSTRAINT: DO NOT use any song listed in "Songs Used Recently".
-    - UNIFORMITY FORBIDDEN: Variations 1, 2, and 3 MUST use different songs.
+    - If you repeat a song, the entire batch is invalid.
 
     DIRECTOR RULES:
     - NEGATIVE CONSTRAINT: DO NOT reuse hooks from "Hooks Used Recently".
@@ -123,15 +128,28 @@ export async function processMultiLLMCreativeFlow(
     Fields per object:
     - hook (viral, max 6 words)
     - title, caption
-    - fontFamily, fontColor, textBackgroundColor, textPosition
-    - musicMood, trendingAudioTip, musicRationale
+    - fontFamily (PICK FROM: "Permanent Marker", "Bungee", "Monoton", "Creepster", "Bebas Neue", "Montserrat", "Playfair Display")
+    - fontColor (Vibrant Hex), textBackgroundColor (Contrast Hex), textPosition
+    - musicMood, trendingAudioTip (MUST BE UNIQUE ACROSS ALL 3 OPTIONS), musicRationale
     - vibeScore (1-10), energyLevel, skipMediaIndices (array of numbers)
     - smmAura (Gen Z vibe summary), smmGimmick (creative gimmick)
     - visualStyle, narrative, transitionType, effectType
     `;
 
     try {
-        const result = await generateJSONWithGPT4o<{ options: AIReelDataV3[] }>(prompt, {}, { temperature: 0.9 });
+        const result = await generateJSONWithGPT4o<{ options: AIReelDataV3[] }>(prompt, {}, { temperature: 1.0 });
+
+        console.log("--------------------------------------------------")
+        console.log("✅ PRODUCTION PLAN COMPLETE")
+        result.options.forEach((opt, idx) => {
+            console.log(`🎬 Variation ${idx + 1}: [${opt.visualStyle}]`)
+            console.log(`   🪝 Hook: "${opt.hook}"`)
+            console.log(`   🎨 Style: Font=${opt.fontFamily}, Color=${opt.fontColor}`)
+            console.log(`   🎵 DJ: ${opt.trendingAudioTip} (${opt.musicMood})`)
+            console.log(`   ✨ Aura: ${opt.smmAura}`)
+        });
+        console.log("--------------------------------------------------")
+
         logger.info("Creative Team: Generated 3 unique production options via GPT-4o.")
         return result.options;
     } catch (openaiError: any) {

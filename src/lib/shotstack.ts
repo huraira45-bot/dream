@@ -55,8 +55,7 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
         const isVideo = item.type.toLowerCase().includes('video')
         const duration = isVideo ? Math.min(6, style.minDuration * 1.5) : style.minDuration
 
-        // Background Clip
-        // Background Clip (Blurred & Dynamic)
+        // Background Clip (Premium Blurred Backdrop)
         bgClips.push({
             asset: {
                 type: isVideo ? "video" : "image",
@@ -66,9 +65,9 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
             start: currentTime,
             length: duration,
             fit: "cover",
-            scale: 2.0, // Increased zoom to hide borders and maximize blur texture
-            filter: "blur",
-            opacity: 1.0,
+            scale: 3.5, // Extreme zoom for bokeh effect
+            filter: "blur", // Shotstack built-in blur
+            opacity: 0.35, // Darken significantly to make foreground pop
             transition: { in: "fade", out: "fade" }
         })
 
@@ -150,7 +149,10 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
 
     const output = {
         format: "mp4",
-        resolution: "sd"
+        size: {
+            width: 1080,
+            height: 1920
+        }
     }
 
     const payload = {

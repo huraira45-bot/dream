@@ -62,7 +62,12 @@ export async function processReelForBusinessV2(businessId: string) {
     const usedSongs = pastReels.map(r => r.trendingAudioTip).filter(Boolean) as string[]
     const usedHooks = pastReels.map(r => r.title).filter(Boolean) as string[]
 
-    console.log(`🧠 MEMORY: Found ${usedSongs.length} past songs and ${usedHooks.length} past hooks to avoid.`)
+    console.log("--------------------------------------------------")
+    console.log("🧠 AGENT: THE MEMORY KEEPER")
+    console.log(`Action: Checking history for ${business.name}...`)
+    console.log(`Avoid Songs: ${usedSongs.length > 0 ? usedSongs.join(", ") : "None"}`)
+    console.log(`Avoid Hooks: ${usedHooks.length > 0 ? usedHooks.join(", ") : "None"}`)
+    console.log("--------------------------------------------------")
 
     logger.info(`Starting Multi-LLM Creative Flow...`)
     const aiOptions = await processMultiLLMCreativeFlow(
@@ -129,9 +134,10 @@ export async function processReelForBusinessV2(businessId: string) {
                 data: { url: `pending:${renderId}` }
             })
 
+            console.log(`🎬 Variation ${i + 1}: Render Queued -> ${renderId}`)
             return reel
         } catch (err: any) {
-            console.error(`Shotstack Error for Var ${i}:`, err)
+            console.error(`❌ Variation ${i + 1}: Shotstack Error ->`, err.message)
             const msg = err?.message || "Unknown Error"
             await prisma.generatedReel.update({
                 where: { id: reel.id },
