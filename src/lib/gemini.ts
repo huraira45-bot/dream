@@ -4,7 +4,7 @@ import { logger } from "./logger"
 
 const apiKey = process.env.GEMINI_API_KEY
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
-const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }) : null
+const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash" }, { apiVersion: "v1" }) : null
 
 interface AIReelData {
     // 1. The Hook Maker & Stylist
@@ -124,13 +124,13 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
         try {
             console.log("--------------------------------------------------")
             console.log("🤖 AGENT: THE SECONDARY CRITIC (SambaNova Llama-4)")
-            console.log("Action: Running fallback analysis with Llama-4-Maverick-17B-128E-Instruct (2 Samples)...")
+            console.log("Action: Running fallback analysis with Llama-4-Maverick-17B-128E-Instruct (1 Sample)...")
 
             const promptText = `You are THE HARSH CRITIC (Chief Creative Officer). Describe this media item.
             Focus on mood, lighting, and main subjects. Extremely short summary.`;
 
-            // Maverick docs suggest up to 2 images for optimal context
-            const limitedParts = validParts.slice(0, 2);
+            // Extreme reduction for stability on preview model
+            const limitedParts = validParts.slice(0, 1);
 
             const response = await fetch("https://api.sambanova.ai/v1/chat/completions", {
                 method: "POST",
