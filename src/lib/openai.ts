@@ -6,7 +6,11 @@ export const openai = apiKey ? new OpenAI({
     apiKey: apiKey,
 }) : null;
 
-export async function generateJSONWithGPT4o<T>(prompt: string, schema: any): Promise<T> {
+export async function generateJSONWithGPT4o<T>(
+    prompt: string,
+    schema: any,
+    options: { temperature?: number; seed?: number } = {}
+): Promise<T> {
     if (!openai) {
         throw new Error("OPENAI_API_KEY is missing");
     }
@@ -23,7 +27,9 @@ export async function generateJSONWithGPT4o<T>(prompt: string, schema: any): Pro
                 content: prompt
             }
         ],
-        response_format: { type: "json_object" }
+        response_format: { type: "json_object" },
+        temperature: options.temperature ?? 1.0,
+        seed: options.seed
     });
 
     const content = response.choices[0].message.content;

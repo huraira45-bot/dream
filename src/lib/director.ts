@@ -65,14 +65,17 @@ export function getStyleForVariation(index: number): DirectorStyle {
     const key = keys[index % keys.length]
     const config = STYLES_CONFIG[key]
 
-    // "Intelligent Agent" -> Randomize the specific transition/effect for this run
+    // Shuffled pool of transitions and effects to add more "entropy"
+    const allTransitions: TransitionType[] = ["fade", "wipeRight", "wipeLeft", "slideRight", "slideLeft"];
+    const allEffects: EffectType[] = ["zoomIn", "zoomOut", "slideLeft", "slideRight", "none"];
+
     return {
         id: key,
         name: config.name,
         description: config.description,
         minDuration: config.minDuration,
-        transition: config.transitions[Math.floor(Math.random() * config.transitions.length)] as TransitionType,
-        effect: config.effects[Math.floor(Math.random() * config.effects.length)] as EffectType,
+        transition: (Math.random() > 0.5 ? config.transitions[Math.floor(Math.random() * config.transitions.length)] : allTransitions[Math.floor(Math.random() * allTransitions.length)]) as TransitionType,
+        effect: (Math.random() > 0.5 ? config.effects[Math.floor(Math.random() * config.effects.length)] : allEffects[Math.floor(Math.random() * allEffects.length)]) as EffectType,
         musicMood: config.mood as any,
         saturation: (config as any).saturation,
         brightness: (config as any).brightness,

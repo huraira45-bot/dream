@@ -93,19 +93,19 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
             return "No visual data available (items skipped due to size/type)."
         }
 
-        const prompt = `You are THE HARSH CRITIC (Chief Creative Officer). Analyze these ${validParts.length} media items with zero tolerance for "mid" content.
+        const prompt = `You are THE HARSH CRITIC (Chief Creative Officer). Analyze these ${validParts.length} media items.
         
         CRITIQUE CRITERIA:
-        - Composition: Is it amateurish? (e.g., cut off heads, bad framing).
-        - Technical: Is it blurry, grainy, or under-exposed? 
-        - Vibe: Does it look premium? Throw out anything that looks like a "bad WhatsApp photo".
+        - Technical: Cull blurry, grainy, or under-exposed items.
+        - Atmosphere: What is the vibe? (e.g., "Moody speakeasy", "Sun-drenched morning", "High-octane street", "Cozy minimalist").
+        - Subject Specifics: What is ACTUALLY in the shot? (e.g., "Latte art with a swan", "Steam rising from spicy noodles", "Close-up of leather stitching").
         
         YOUR TASK:
-        1. Identify exactly which indices (0 to ${validParts.length - 1}) are SUB-PAR and MUST be SKIPPED.
-        2. For the high-quality items, provide a technical visual summary using terms like: "High dynamic range", "Deep bokeh", "Vibrant saturation", "Symmetry", "Product-focused".
+        1. Identify indices (0 to ${validParts.length - 1}) to [SKIP].
+        2. Provide a technically rich and VIBE-FOCUSED summary. Mention specific colors, lighting styles, and the "main character" of the media.
         
         Format: [SKIP: indices]
-        Summary: (Detailed, technical, professional).`
+        Summary: (Evocative, descriptive, professional).`
 
         logger.info(`Sending ${validParts.length} parts to Gemini for analysis...`)
         const result = await model.generateContent([prompt, ...validParts])
