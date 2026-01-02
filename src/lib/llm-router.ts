@@ -110,9 +110,7 @@ export async function processMultiLLMCreativeFlow(
     Each option must be distinct in vibe, text, and music.
 
     VARIATION SEEDS (Strict Enforcement):
-    - Option 1 [${variationMix[0].type}]: ${variationMix[0].style}. 
-    - Option 2 [${variationMix[1].type}]: ${variationMix[1].style}.
-    - Option 3 [${variationMix[2].type}]: ${variationMix[2].style}.
+${variationMix.map((v, i) => `    - Option ${i + 1} [${v.type}]: ${v.style}.`).join("\n")}
 
     AESTHETIC RULES (The Stylist):
     - Tone: Incorporate the "${pickedSpice}" theme into your color choices and copywriting.
