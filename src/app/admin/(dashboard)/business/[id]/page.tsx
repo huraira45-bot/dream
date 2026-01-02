@@ -261,8 +261,9 @@ export default async function BusinessDetail({
                                 <div className="p-3 bg-zinc-50 rounded-2xl group-hover:bg-zinc-900 group-hover:text-white transition-all">
                                     <Film className="w-6 h-6" />
                                 </div>
-                                <div className="px-3 py-1 bg-zinc-50 rounded-full text-[10px] font-black uppercase text-zinc-400 tracking-widest group-hover:bg-zinc-900/10">
-                                    {reel.trendingAudioTip ? "Music: Hit" : "Royalty Free"}
+                                <div className="px-3 py-1 bg-zinc-50 rounded-full text-[10px] font-black uppercase text-zinc-400 tracking-widest group-hover:bg-zinc-900/10 flex items-center gap-1.5">
+                                    {reel.type === "REEL" ? <Film className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
+                                    {reel.type}
                                 </div>
                             </div>
 
