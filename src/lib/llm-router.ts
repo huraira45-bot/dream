@@ -117,8 +117,17 @@ export async function processMultiLLMCreativeFlow(
     - If you repeat a song, the entire batch is invalid.
 
     DIRECTOR RULES:
+    - COLD OPEN: Prioritize starting the narrative with the "Big Result" or "Peak Vibe" before context.
     - NEGATIVE CONSTRAINT: DO NOT reuse hooks from "Hooks Used Recently".
     - CAPTION DIVERSITY: Captions must be completely different. No "Yum!" in every one. Write specific marketing copy for each mood. Use emojis liberally for HYPE, but be sober for DRAMATIC.
+
+    HOOK FORMULAS (Opus.pro Standard):
+    You MUST use one of these formulas for EVERY hook:
+    1. THE CONTRARIAN: "Everyone says [Common Belief], but [Your Take]" or "Stop [Doing X] and do this instead".
+    2. THE MISTAKE: "Don't make the mistake I made with [Topic]" or "I wasted [Time/Money] until I learned this".
+    3. THE NUMBERED LIST: "[3-7] [Things/Secrets/Ways] that [Specific Outcome]".
+    4. THE TIME-BASED: "How I [Achieved Result] in [Short Time]" or "What [Time Period] of [Activity] taught me".
+    5. THE QUESTION: "Are you [Doing Something Wrong]?" or "What if [Provocative Scenario]?"
 
     CRITICAL RULES:
     - Identify any media that should be SKIPPED based on the visual report (e.g., if there's a blurry or low-quality index mentioned). 
