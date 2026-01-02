@@ -1,5 +1,5 @@
 import { generateReelMetadata, describeMedia } from "./gemini";
-import { generateJSONWithGPT4o } from "./openai";
+import { generateJSONWithLLM } from "./openai";
 import { getTrendingSongsForRegion } from "./trends";
 import { logger } from "./logger";
 
@@ -213,7 +213,7 @@ ${variationMix.map((v, i) => `    - Option ${i + 1} [${v.type}]: ${v.style}.`).j
 
     try {
         let attempts = 0;
-        let result = await generateJSONWithGPT4o<{ options: AIReelDataV3[] }>(prompt, {}, { temperature: 1.0 });
+        let result = await generateJSONWithLLM<{ options: AIReelDataV3[] }>(prompt, {}, { temperature: 1.0 });
 
         // SIMILARITY CHECK (The Diversity Engine)
         while (attempts < 2) {
@@ -277,7 +277,7 @@ ${variationMix.map((v, i) => `    - Option ${i + 1} [${v.type}]: ${v.style}.`).j
 
             if ((overlap12 > 0.6 || overlap23 > 0.6) || !uniqueSongs || hasForbiddenHook || hasForbiddenSong || (mode === CreativeMode.NO_VISION && isGeneric) || lowDivergence) {
                 console.log(`⚠️  HARD REJECTION (Attempt ${attempts + 1}). Reasons: ${!uniqueSongs ? 'Non-unique songs ' : ''}${hasForbiddenHook ? 'Forbidden hook ' : ''}${hasForbiddenSong ? 'Forbidden song ' : ''}${isGeneric ? 'Generic hook detected ' : ''}${lowDivergence ? 'Low divergence ' : ''}${overlap12 > 0.6 ? 'Similarity overlap ' : ''}`);
-                result = await generateJSONWithGPT4o<{ options: AIReelDataV3[] }>(prompt + "\n\nCRITICAL: YOUR PREVIOUS OUTPUT WAS REJECTED. IT WAS TOO SIMILAR TO HISTORY, TOO GENERIC, OR HAD LOW DIVERGENCE (dimensions must differ). BE BOLDER.", {}, { temperature: 1.2 });
+                result = await generateJSONWithLLM<{ options: AIReelDataV3[] }>(prompt + "\n\nCRITICAL: YOUR PREVIOUS OUTPUT WAS REJECTED. IT WAS TOO SIMILAR TO HISTORY, TOO GENERIC, OR HAD LOW DIVERGENCE (dimensions must differ). BE BOLDER.", {}, { temperature: 1.2 });
                 attempts++;
             } else {
                 break;

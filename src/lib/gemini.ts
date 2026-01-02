@@ -232,13 +232,49 @@ export async function generateReelMetadata(
     `
 
     try {
-        if (!model) throw new Error("Gemini API Key missing")
+        if (!model) throw new Error("Gemini model not initialized")
         const result = await model.generateContent(prompt)
         const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim()
         const parsed = JSON.parse(text)
         return Array.isArray(parsed) ? parsed.slice(0, 3) : [parsed]
     } catch (error: any) {
-        logger.error(`Gemini Metadata Error: ${error.message}`)
+        logger.error(`Gemini Metadata Error: ${error.message}. Attempting Groq fallback...`)
+
+        const groqKey = process.env.GROQ_API_KEY;
+        if (groqKey) {
+            try {
+                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${groqKey}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [
+                            {
+                                role: "user",
+                                content: prompt
+                            }
+                        ],
+                        response_format: { type: "json_object" },
+                        temperature: 1.0
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    const content = data.choices[0].message.content;
+                    const parsed = JSON.parse(content);
+                    // Handle wrap-around if LLM returns an object with 'options' key instead of raw array
+                    const finalArray = Array.isArray(parsed) ? parsed : (parsed.options || [parsed]);
+                    return finalArray.slice(0, 3);
+                }
+            } catch (groqErr: any) {
+                logger.error(`Groq Metadata Error: ${groqErr.message}`);
+            }
+        }
+
         // Fallback with limited but safe data (Shuffled for diversity)
         const shuffledHits = [...trendingHits].sort(() => Math.random() - 0.5);
 
