@@ -37,79 +37,77 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
 
     console.log("--------------------------------------------------")
     console.log("🤖 AGENT: THE HARSH CRITIC (Gemini Vision)")
-    console.log(`Action: Analyzing first ${Math.min(imageUrls.length, 6)} media items (out of ${imageUrls.length})...`)
+    console.log(`Action: Sampling ${Math.min(imageUrls.length, 12)} media items (out of ${imageUrls.length}) for quality check...`)
 
-    // Shuffle and analyze up to 6 media items for quality filtering
-    const shuffledUrls = [...imageUrls].sort(() => Math.random() - 0.5);
+    // Create indexed items for correct mapping
+    const indexedItems = imageUrls.map((url, index) => ({ url, index }));
+
+    // Sample a diverse set (first, middle, last, and randoms)
+    const sampledItems = [
+        indexedItems[0], // First
+        indexedItems[Math.floor(indexedItems.length / 2)], // Middle
+        indexedItems[indexedItems.length - 1], // Last
+        ...indexedItems.sort(() => Math.random() - 0.5)
+    ].filter((item, i, self) => item && self.findIndex(t => t.index === item.index) === i).slice(0, 12);
+
     const mediaParts = await Promise.all(
-        shuffledUrls.slice(0, 6).map(async (url) => {
+        sampledItems.map(async (item) => {
+            const { url, index } = item;
             try {
                 const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+                const timeout = setTimeout(() => controller.abort(), 15000);
 
-                // 1. Head Check for size and type
                 const headRes = await fetch(url, { method: 'HEAD', signal: controller.signal });
                 clearTimeout(timeout);
 
                 const size = parseInt(headRes.headers.get('content-length') || '0');
-                const type = headRes.headers.get('content-type') || '';
+                if (size > 10 * 1024 * 1024) return null;
 
-                if (size > 5 * 1024 * 1024) {
-                    logger.warn(`Skipping Gemini analysis for large file (${(size / 1024 / 1024).toFixed(1)}MB): ${url}`);
-                    return null;
-                }
-
-                if (type.includes('video')) {
-                    logger.info(`Skipping direct video download for Gemini, will rely on metadata: ${url}`);
-                    return null;
-                }
-
-                // 2. Actual Download with timeout
-                const downloadController = new AbortController();
-                const downloadTimeout = setTimeout(() => downloadController.abort(), 30000); // 30s timeout
-
-                const response = await fetch(url, { signal: downloadController.signal });
+                const response = await fetch(url);
                 const buffer = await response.arrayBuffer();
-                clearTimeout(downloadTimeout);
 
                 return {
+                    originalIndex: index,
                     inlineData: {
                         data: Buffer.from(buffer).toString("base64"),
                         mimeType: "image/jpeg"
                     }
                 };
-            } catch (err: any) {
-                logger.error(`Failed to fetch media for Gemini (${url}): ${err.message}`);
+            } catch (err) {
                 return null;
             }
         })
     )
 
-    // Filter out nulls (skipped or failed files)
     const validParts = mediaParts.filter(Boolean) as any[];
 
     try {
         if (validParts.length === 0) {
             logger.warn("No valid media items to analyze for Gemini Vision.");
-            return "No visual data available (items skipped due to size/type)."
+            return "No visual data available."
         }
 
         const prompt = `You are THE HARSH CRITIC (Chief Creative Officer). Analyze these ${validParts.length} media items.
         
+        Indices provided: [${validParts.map(p => p.originalIndex).join(", ")}]
+        
         CRITIQUE CRITERIA:
         - Technical: Cull blurry, grainy, or under-exposed items.
-        - Atmosphere: What is the vibe? (e.g., "Moody speakeasy", "Sun-drenched morning", "High-octane street", "Cozy minimalist").
-        - Subject Specifics: What is ACTUALLY in the shot? (e.g., "Latte art with a swan", "Steam rising from spicy noodles", "Close-up of leather stitching").
+        - Atmosphere: What is the vibe?
+        - Subject Specifics: What is ACTUALLY in the shot?
         
         YOUR TASK:
-        1. Identify indices (0 to ${validParts.length - 1}) to [SKIP].
-        2. Provide a technically rich and VIBE-FOCUSED summary. Mention specific colors, lighting styles, and the "main character" of the media.
+        1. Identify any original indices to [SKIP] due to low quality or off-brand vibe.
+        2. Identify 3-5 original indices as [TOP_PICKS] for the main story.
+        3. Provide a technically rich summary.
         
-        Format: [SKIP: indices]
-        Summary: (Evocative, descriptive, professional).`
+        Format:
+        [SKIP: original_indices]
+        [TOP_PICKS: original_indices]
+        Summary: (Evocative description).`
 
-        logger.info(`Sending ${validParts.length} parts to Gemini for analysis...`)
-        const result = await model.generateContent([prompt, ...validParts])
+        logger.info(`Sending ${validParts.length} samples to Gemini...`)
+        const result = await model.generateContent([prompt, ...validParts.map(p => ({ inlineData: p.inlineData }))])
         const analysis = result.response.text()
         logger.info("Critic Report: Analysis complete.")
         return analysis

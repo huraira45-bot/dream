@@ -117,13 +117,21 @@ export async function processMultiLLMCreativeFlow(
     
     Project Context:
     - Business: ${businessName}
-    - Visual Observation Report from Gemini: ${visualReport}
-    - Media Count: ${mediaUrls.length}
+    - Visual Observation Report from Gemini Critic: ${visualReport}
+    - Total Media Available: ${mediaUrls.length} items.
     - Trending Songs (Pakistan): [${trendingSongs}]
     - MEMORY (AVOID THESE):
     - Songs Used Recently: [${usedSongs.join(", ")}]
     - Hooks Used Recently: [${usedHooks.join(", ")}]
     - CURRENT MODE: ${mode}
+    
+    HIGH-QUALITY SELECTION RULE (The SMM):
+    - You MUST identify the "best" media items to include in this ${isReel ? "Reel" : "Post"}.
+    - Do NOT use low-quality or irrelevant items mentioned as SKIP in the report.
+    - PRIORITIZE items marked as [TOP_PICKS] in the visual report.
+    - TARGET DENSITY: A selection of 5-10 BEST items is much better than using all ${mediaUrls.length} items. 
+    - CRITICAL: If the user uploaded too many items, CULL the weaker ones. 
+    - RETURN: List all indices to IGNORE in "skipMediaIndices".
     
     ${mode === CreativeMode.NO_VISION ? `
     🚨 NO_VISION CRITICAL RULE:
@@ -203,12 +211,8 @@ ${variationMix.map((v, i) => `    - Option ${i + 1} [${v.type}]: ${v.style}.`).j
     4. THE TIME-BASED: "How I [Result] in [Short Time]"
     5. THE QUESTION: "Are you [Doing Something Wrong]?"
 
-    CRITICAL RULES:
-    - Identify any media that should be SKIPPED based on the visual report (e.g., if there's a blurry or low-quality index mentioned). 
-      (Note: indices are 0 to ${mediaUrls.length - 1}).
-
     Return ONLY a JSON object with a key "options" containing an array of ${variationMix.length} AIReelDataV3 objects.
-    Fields: hook, title, caption, fontFamily, fontColor, textBackgroundColor, textPosition, musicMood, trendingAudioTip (UNIQUE), musicRationale, vibeScore, energyLevel, skipMediaIndices, smmAura, smmGimmick, visualStyle, narrative, transitionType, effectType.
+    Fields: hook, title, caption, fontFamily, fontColor, textBackgroundColor, textPosition, musicMood, trendingAudioTip (UNIQUE), musicRationale, vibeScore, energyLevel, skipMediaIndices (CRITICAL: indices to IGNORE/CULL), smmAura, smmGimmick, visualStyle, narrative, transitionType, effectType.
     `;
 
     try {

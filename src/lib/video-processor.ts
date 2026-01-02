@@ -96,10 +96,16 @@ export async function processReelForBusinessV2(businessId: string) {
     const variationPromises = aiOptions.map(async (metadata, i) => {
         const style = getStyleForVariation(i)
 
-        // FILTER MEDIA
+        // FILTER MEDIA (Quality Guard)
         const skipIndices = (metadata as any).skipMediaIndices || []
         const filteredMediaItems = mediaItems.filter((_: any, idx: number) => !skipIndices.includes(idx))
-        const finalMediaForRender = filteredMediaItems.length > 0 ? filteredMediaItems : mediaItems
+
+        // Quality Guard: Limit to best 10 items to prevent overcrowding
+        const finalMediaForRender = (filteredMediaItems.length > 0 ? filteredMediaItems : mediaItems).slice(0, 10)
+
+        if (mediaItems.length > finalMediaForRender.length) {
+            logger.info(`Quality Guard: Culled ${mediaItems.length - finalMediaForRender.length} weaker assets for higher density.`)
+        }
 
         // Intelligent Music Selection
         let musicTrack = getMusicForMood(metadata.musicMood)
