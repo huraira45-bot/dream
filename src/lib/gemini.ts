@@ -1,9 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { getTrendingSongsForRegion } from "./trends"
+import { logger } from "./logger"
 
 const apiKey = process.env.GEMINI_API_KEY
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
-const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" }) : null
+const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) : null
 
 interface AIReelData {
     // 1. The Hook Maker & Stylist
@@ -39,21 +40,60 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
         console.log("🤖 AGENT: THE HARSH CRITIC (Gemini Vision)")
         console.log(`Action: Analyzing ${imageUrls.length} media items...`)
 
-        // Analyze up to 10 media items for quality filtering
+        // Analyze up to 6 media items for quality filtering (reduced from 10 to save memory)
         const mediaParts = await Promise.all(
-            imageUrls.slice(0, 10).map(async (url) => {
-                const response = await (fetch as any)(url)
-                const buffer = await response.arrayBuffer()
-                return {
-                    inlineData: {
-                        data: Buffer.from(buffer).toString("base64"),
-                        mimeType: "image/jpeg"
+            imageUrls.slice(0, 6).map(async (url) => {
+                try {
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+                    // 1. Head Check for size and type
+                    const headRes = await fetch(url, { method: 'HEAD', signal: controller.signal });
+                    clearTimeout(timeout);
+
+                    const size = parseInt(headRes.headers.get('content-length') || '0');
+                    const type = headRes.headers.get('content-type') || '';
+
+                    if (size > 5 * 1024 * 1024) {
+                        logger.warn(`Skipping Gemini analysis for large file (${(size / 1024 / 1024).toFixed(1)}MB): ${url}`);
+                        return null;
                     }
+
+                    if (type.includes('video')) {
+                        logger.info(`Skipping direct video download for Gemini, will rely on metadata: ${url}`);
+                        return null;
+                    }
+
+                    // 2. Actual Download with timeout
+                    const downloadController = new AbortController();
+                    const downloadTimeout = setTimeout(() => downloadController.abort(), 30000); // 30s timeout
+
+                    const response = await fetch(url, { signal: downloadController.signal });
+                    const buffer = await response.arrayBuffer();
+                    clearTimeout(downloadTimeout);
+
+                    return {
+                        inlineData: {
+                            data: Buffer.from(buffer).toString("base64"),
+                            mimeType: "image/jpeg"
+                        }
+                    };
+                } catch (err: any) {
+                    logger.error(`Failed to fetch media for Gemini (${url}): ${err.message}`);
+                    return null;
                 }
             })
         )
 
-        const prompt = `You are THE HARSH CRITIC (Chief Creative Officer). Analyze these ${imageUrls.length} media items with zero tolerance for "mid" content.
+        // Filter out nulls (skipped or failed files)
+        const validParts = mediaParts.filter(Boolean) as any[];
+
+        if (validParts.length === 0) {
+            logger.warn("No valid media items to analyze for Gemini Vision.");
+            return "No visual data available (items skipped due to size/type)."
+        }
+
+        const prompt = `You are THE HARSH CRITIC (Chief Creative Officer). Analyze these ${validParts.length} media items with zero tolerance for "mid" content.
         
         CRITIQUE CRITERIA:
         - Composition: Is it amateurish? (e.g., cut off heads, bad framing).
@@ -61,18 +101,19 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
         - Vibe: Does it look premium? Throw out anything that looks like a "bad WhatsApp photo".
         
         YOUR TASK:
-        1. Identify exactly which indices (0 to ${imageUrls.length - 1}) are SUB-PAR and MUST be SKIPPED.
+        1. Identify exactly which indices (0 to ${validParts.length - 1}) are SUB-PAR and MUST be SKIPPED.
         2. For the high-quality items, provide a technical visual summary using terms like: "High dynamic range", "Deep bokeh", "Vibrant saturation", "Symmetry", "Product-focused".
         
         Format: [SKIP: indices]
         Summary: (Detailed, technical, professional).`
 
-        const result = await model.generateContent([prompt, ...mediaParts])
+        logger.info(`Sending ${validParts.length} parts to Gemini for analysis...`)
+        const result = await model.generateContent([prompt, ...validParts])
         const analysis = result.response.text()
-        console.log("✅ CRITIC REPORT: Analysis complete.")
+        logger.info("Critic Report: Analysis complete.")
         return analysis
-    } catch (e) {
-        console.error("Vision Error:", e)
+    } catch (e: any) {
+        logger.error(`Vision Error: ${e.message}`)
         return "Visual analysis failed."
     }
 }
@@ -138,8 +179,8 @@ export async function generateReelMetadata(
         const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim()
         const parsed = JSON.parse(text)
         return Array.isArray(parsed) ? parsed.slice(0, 3) : [parsed]
-    } catch (error) {
-        console.error("Gemini Error:", error)
+    } catch (error: any) {
+        logger.error(`Gemini Metadata Error: ${error.message}`)
         // Fallback with limited but safe data
         const fallback = {
             hook: "YOU NEED TO SEE THIS",

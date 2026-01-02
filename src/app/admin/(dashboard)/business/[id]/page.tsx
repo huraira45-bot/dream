@@ -8,6 +8,7 @@ import { GenerateButton } from "@/components/admin/generate-button"
 import { ResetMediaButton } from "@/components/admin/reset-media-button"
 import { DeleteReelButton } from "@/components/admin/delete-reel-button"
 import { ScheduleReelButton } from "@/components/admin/schedule-reel-button"
+import { ReelStatusPoller } from "@/components/admin/reel-status-poller"
 import { Loader2 } from "lucide-react"
 
 export default async function BusinessDetail({
@@ -203,8 +204,8 @@ export default async function BusinessDetail({
                             <div className="flex items-center gap-3">
                                 {reel.url.startsWith('pending') ? (
                                     <div className="w-full flex items-center gap-2">
-                                        <div className="flex-1 flex items-center justify-center gap-2 py-4 bg-zinc-50 rounded-2xl text-zinc-400 text-sm font-bold italic">
-                                            <Loader2 className="w-4 h-4 animate-spin" /> Rendering...
+                                        <div className="flex-1">
+                                            <ReelStatusPoller reelId={reel.id} currentUrl={reel.url} />
                                         </div>
                                         <DeleteReelButton reelId={reel.id} />
                                     </div>

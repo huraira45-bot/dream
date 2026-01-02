@@ -7,6 +7,7 @@ import cloudinary from "@/lib/cloudinary"
 import { postToShotstack } from "./shotstack"
 import { getStyleForVariation } from "./director"
 import { processMultiLLMCreativeFlow } from "./llm-router"
+import { logger } from "./logger"
 
 export async function processReelForBusinessV2(businessId: string) {
     // 1. Fetch unprocessed media including business details
@@ -20,7 +21,9 @@ export async function processReelForBusinessV2(businessId: string) {
         }
     })
 
+    logger.info(`Orchestration v2.1 started for business: ${businessId}`)
     if (!business || business.mediaItems.length === 0) {
+        logger.warn(`No business or media items found for business: ${businessId}`)
         return null
     }
 
@@ -43,9 +46,7 @@ export async function processReelForBusinessV2(businessId: string) {
 
     const isReel = score > 10 || (videoCount > mediaItems.length / 2 && mediaItems.length > 3)
 
-    console.log("\n==================================================")
-    console.log(`🎬 STARTING AI ORCHESTRATION: ${business.name}`)
-    console.log(`📂 Input: ${mediaItems.length} media files. Detected Mode: ${isReel ? "REEL" : "POST"}`)
+    logger.info(`Detected Mode: ${isReel ? "REEL" : "POST"} for ${business.name} with ${mediaItems.length} items`)
 
     const mediaTypes = mediaItems.map((m: { type: string }) => m.type)
     const allUrls = mediaItems.map((m: any) => m.url)
@@ -63,15 +64,16 @@ export async function processReelForBusinessV2(businessId: string) {
 
     console.log(`🧠 MEMORY: Found ${usedSongs.length} past songs and ${usedHooks.length} past hooks to avoid.`)
 
-    // 4. Multi-LLM Creative Flow: Gemini (Vision) -> GPT-4o (Aesthetic + Gen Z SMM)
+    logger.info(`Starting Multi-LLM Creative Flow...`)
     const aiOptions = await processMultiLLMCreativeFlow(
         business.name,
         allUrls,
         isReel,
-        (business as any).region || "Pakistan",
+        business.region || "Pakistan",
         usedSongs,
         usedHooks
     )
+    logger.info(`Creative flow complete. Variations generated: ${aiOptions.length}`)
 
     // ... (Canvas self-healing logic remains same) ...
 
@@ -105,7 +107,7 @@ export async function processReelForBusinessV2(businessId: string) {
             }
         }
 
-        const reel = await (prisma.generatedReel as any).create({
+        const reel = await prisma.generatedReel.create({
             data: {
                 businessId: business.id,
                 title: metadata.title,
@@ -139,6 +141,12 @@ export async function processReelForBusinessV2(businessId: string) {
         }
     })
 
-    const variations = await Promise.all(variationPromises)
-    return variations
+    try {
+        const variations = await Promise.all(variationPromises)
+        logger.info(`Successfully triggered ${variations.length} variations for ${business.name}`)
+        return variations
+    } catch (err: any) {
+        logger.error(`Fatal variation generation error: ${err.message}`)
+        throw err
+    }
 }

@@ -1,6 +1,7 @@
 import { generateReelMetadata, describeMedia } from "./gemini";
 import { generateJSONWithGPT4o } from "./openai";
 import { getTrendingSongsForRegion } from "./trends";
+import { logger } from "./logger";
 
 export interface AIReelDataV3 {
     // 1. The Hook Maker & Stylist (GPT-4o)
@@ -41,8 +42,9 @@ export async function processMultiLLMCreativeFlow(
     usedSongs: string[] = [],
     usedHooks: string[] = []
 ): Promise<AIReelDataV3[]> {
-    // Step 1: Gemini 1.5 Pro - Visual Analysis & Filtering
+    logger.info(`Analyzing ${mediaUrls.length} media items with Gemini v2.1...`)
     const visualReport = await describeMedia(mediaUrls);
+    logger.info(`Visual report generated successfully.`)
 
     // Step 2: GPT-4o - Creative Production & Gen Z SMM Review
     console.log("--------------------------------------------------")
@@ -115,10 +117,10 @@ export async function processMultiLLMCreativeFlow(
 
     try {
         const result = await generateJSONWithGPT4o<{ options: AIReelDataV3[] }>(prompt, {});
-        console.log("✅ CREATIVE TEAM: Generated 3 unique director cuts.")
+        logger.info("Creative Team: Generated 3 unique production options via GPT-4o.")
         return result.options;
     } catch (openaiError: any) {
-        console.warn("OpenAI Failed (Quota/Error), falling back to Gemini for Creative:", openaiError.message);
+        logger.warn(`OpenAI Failed: ${openaiError.message}. Falling back to Gemini...`);
 
         // Fallback to Gemini 1.5 Pro/Flash for the creative part
         const geminiOptions = await generateReelMetadata(
