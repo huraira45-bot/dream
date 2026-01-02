@@ -4,7 +4,7 @@ import { logger } from "./logger"
 
 const apiKey = process.env.GEMINI_API_KEY
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
-const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }) : null
+const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) : null
 
 interface AIReelData {
     // 1. The Hook Maker & Stylist
@@ -128,8 +128,8 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
             const promptText = `You are THE HARSH CRITIC (Chief Creative Officer). Describe these media items.
             Focus on mood, lighting, and main subjects for a video production team. Short summary only.`;
 
-            // Use reduced set for stability
-            const limitedParts = validParts.slice(0, 3);
+            // Use reduced set for stability (Llama-4 Maverick natively multimodal)
+            const limitedParts = validParts.slice(0, 2); // Maverick docs suggest up to 2 images for optimal context
 
             const response = await fetch("https://api.sambanova.ai/v1/chat/completions", {
                 method: "POST",
@@ -151,7 +151,8 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
                             ]
                         }
                     ],
-                    temperature: 0.1
+                    temperature: 0.1,
+                    max_tokens: 512
                 })
             });
 
