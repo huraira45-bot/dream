@@ -5,6 +5,7 @@ import { getMusicForMood, MUSIC_LIBRARY } from "@/lib/music"
 import { generateStitchedVideoUrl } from "@/lib/cloudinary-stitcher"
 import cloudinary from "@/lib/cloudinary"
 import { postToShotstack } from "./shotstack"
+import { renderStaticPost } from "./static-processor"
 import { getStyleForVariation } from "./director"
 import { processMultiLLMCreativeFlow } from "./llm-router"
 import { logger } from "./logger"
@@ -21,7 +22,7 @@ export async function processReelForBusinessV2(businessId: string) {
                 orderBy: { createdAt: 'asc' } // Ensure chronological sequence
             }
         }
-    })
+    }) as any
 
     logger.info(`Orchestration v2.1 started for business: ${businessId}`)
     if (!business || business.mediaItems.length === 0) {
@@ -85,7 +86,7 @@ export async function processReelForBusinessV2(businessId: string) {
                 primaryColor: branding.primary,
                 secondaryColor: branding.secondary,
                 accentColor: branding.accent
-            }
+            } as any
         })
     } else if (business.primaryColor) {
         branding = {
@@ -156,6 +157,7 @@ export async function processReelForBusinessV2(businessId: string) {
                 title: metadata.hook, // Save the actual Hook to avoid repetition in next runs
                 caption: metadata.caption,
                 url: `pending:init-${Date.now()}-${i}`,
+                type: isReel ? "REEL" : "POST",
                 musicUrl: musicTrack.url,
                 trendingAudioTip: metadata.trendingAudioTip,
                 mediaItemIds: finalMediaForRender.map((m: any) => m.id)
@@ -163,15 +165,26 @@ export async function processReelForBusinessV2(businessId: string) {
         })
 
         // Trigger Shotstack Render
+        // 6. Trigger Render (Branch between Reel and Post)
+        let renderId = "pending"
         try {
-            const renderResponse = await postToShotstack(finalMediaForRender, musicTrack.url, style, metadata)
-            const renderId = renderResponse.id
+            if (isReel) {
+                const response = await postToShotstack(finalMediaForRender, musicTrack.url, style, metadata)
+                renderId = response.id
+                console.log(`🎬 Variation ${i + 1}: Render Queued -> ${renderId}`)
+            } else {
+                // For static posts, we pick the first/best item
+                const mainItem = finalMediaForRender[0]
+                const { mood, ...brandingData } = (branding || { primary: "#000000", secondary: "#FFFFFF", accent: "#FF0000", mood: "Modern" })
+                const response = await renderStaticPost(mainItem.url, brandingData, metadata)
+                renderId = response.id
+                console.log(`🖼️ Variation ${i + 1}: Static Post Render Queued -> ${renderId}`)
+            }
 
             await prisma.generatedReel.update({
                 where: { id: reel.id },
                 data: { url: `pending:${renderId}` }
             })
-
             console.log(`🎬 Variation ${i + 1}: Render Queued -> ${renderId}`)
             return reel
         } catch (err: any) {

@@ -9,7 +9,8 @@ import { ResetMediaButton } from "@/components/admin/reset-media-button"
 import { DeleteReelButton } from "@/components/admin/delete-reel-button"
 import { ScheduleReelButton } from "@/components/admin/schedule-reel-button"
 import { ReelStatusPoller } from "@/components/admin/reel-status-poller"
-import { Loader2 } from "lucide-react"
+import { getUpcomingEvents } from "@/lib/calendar"
+import { Loader2, Palette } from "lucide-react"
 
 export default async function BusinessDetail({
     params,
@@ -42,6 +43,8 @@ export default async function BusinessDetail({
 
     const drafts = business.reels.filter((r: any) => r.status === "DRAFT")
     const scheduled = business.reels.filter((r: any) => r.status === "SCHEDULED")
+
+    const upcomingEvents = await getUpcomingEvents(30) // Show next 30 days of Pakistani events
 
     return (
         <div className="space-y-8">
@@ -83,6 +86,71 @@ export default async function BusinessDetail({
                         Live Page
                     </Link>
                     <GenerateButton businessId={business.id} />
+                </div>
+            </div>
+
+            {/* NEW: BRANDING & CALENDAR PREVIEW */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Brand Identity */}
+                <div className="bg-white border border-zinc-100 rounded-[2.5rem] p-8 shadow-sm">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-2">
+                            <Palette className="w-5 h-5 text-pink-600" /> Brand Identity
+                        </h2>
+                        <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Auto-Extracted</span>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <div className="flex-1 space-y-2">
+                            <div className="flex items-center justify-between text-xs font-bold text-zinc-400 uppercase tracking-tight">
+                                <span>Primary</span>
+                                <span className="font-mono text-zinc-900">{(business as any).primaryColor || "#000000"}</span>
+                            </div>
+                            <div className="h-12 w-full rounded-2xl border border-zinc-100" style={{ backgroundColor: (business as any).primaryColor || "#000000" }} />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                            <div className="flex items-center justify-between text-xs font-bold text-zinc-400 uppercase tracking-tight">
+                                <span>Secondary</span>
+                                <span className="font-mono text-zinc-900">{(business as any).secondaryColor || "#FFFFFF"}</span>
+                            </div>
+                            <div className="h-12 w-full rounded-2xl border border-zinc-100" style={{ backgroundColor: (business as any).secondaryColor || "#FFFFFF" }} />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                            <div className="flex items-center justify-between text-xs font-bold text-zinc-400 uppercase tracking-tight">
+                                <span>Accent</span>
+                                <span className="font-mono text-zinc-900">{(business as any).accentColor || "#FF0000"}</span>
+                            </div>
+                            <div className="h-12 w-full rounded-2xl border border-zinc-100" style={{ backgroundColor: (business as any).accentColor || "#FF0000" }} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Calendar Wisdom */}
+                <div className="bg-white border border-zinc-100 rounded-[2.5rem] p-8 shadow-sm overflow-hidden relative group">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-2">
+                            <Calendar className="w-5 h-5 text-purple-600" /> Marketing Calendar
+                        </h2>
+                        <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest text-purple-500">Upcoming Events</span>
+                    </div>
+
+                    <div className="space-y-4">
+                        {upcomingEvents.slice(0, 2).map((event, idx) => (
+                            <div key={idx} className="flex items-center gap-4 p-4 bg-zinc-50 rounded-2xl group/event hover:bg-zinc-100 transition-colors">
+                                <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex flex-col items-center justify-center text-center">
+                                    <span className="text-[10px] font-black text-purple-600 uppercase tracking-tighter">{event.date.toLocaleString('default', { month: 'short' })}</span>
+                                    <span className="text-lg font-black text-zinc-900 leading-none">{event.date.getDate()}</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="font-bold text-zinc-900 truncate">{event.title}</h4>
+                                    <p className="text-xs text-zinc-500 line-clamp-1 italic">"{event.suggestionPrompt.substring(0, 40)}..."</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    {upcomingEvents.length === 0 && (
+                        <div className="py-8 text-center text-zinc-400 text-sm italic">No major events this week</div>
+                    )}
                 </div>
             </div>
 
