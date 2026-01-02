@@ -8,6 +8,8 @@ import { postToShotstack } from "./shotstack"
 import { getStyleForVariation } from "./director"
 import { processMultiLLMCreativeFlow } from "./llm-router"
 import { logger } from "./logger"
+import { extractBrandingFromLogo } from "./branding"
+import { getUpcomingEvents } from "./calendar"
 
 export async function processReelForBusinessV2(businessId: string) {
     // 1. Fetch unprocessed media including business details
@@ -69,6 +71,34 @@ export async function processReelForBusinessV2(businessId: string) {
     console.log(`Avoid Hooks: ${usedHooks.length > 0 ? usedHooks.join(", ") : "None"}`)
     console.log("--------------------------------------------------")
 
+    // 3.5. Branding & Calendar Awareness
+    let branding = null
+    if (business.logoUrl && (!business.primaryColor || !business.secondaryColor)) {
+        console.log("🎨 AGENT: THE STYLIST (Branding)")
+        console.log(`Action: Extracting brand palette from logo for ${business.name}...`)
+        branding = await extractBrandingFromLogo(business.logoUrl)
+
+        // Update business with extracted branding for future use
+        await prisma.business.update({
+            where: { id: business.id },
+            data: {
+                primaryColor: branding.primary,
+                secondaryColor: branding.secondary,
+                accentColor: branding.accent
+            }
+        })
+    } else if (business.primaryColor) {
+        branding = {
+            primary: business.primaryColor,
+            secondary: business.secondaryColor || "#FFFFFF",
+            accent: business.accentColor || "#FF0000",
+            mood: "Established"
+        }
+    }
+
+    const upcomingEvents = await getUpcomingEvents(7)
+    const eventTitles = upcomingEvents.map(e => e.title)
+
     logger.info(`Starting Multi-LLM Creative Flow...`)
     const aiOptions = await processMultiLLMCreativeFlow(
         business.name,
@@ -76,7 +106,10 @@ export async function processReelForBusinessV2(businessId: string) {
         isReel,
         business.region || "Pakistan",
         usedSongs,
-        usedHooks
+        usedHooks,
+        undefined, // mode (will be auto-detected in router)
+        branding || undefined,
+        eventTitles
     )
     logger.info(`Creative flow complete. Variations generated: ${aiOptions.length}`)
 

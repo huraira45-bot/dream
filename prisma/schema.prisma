@@ -20,6 +20,10 @@ model Business {
   name       String
   slug       String          @unique
   region     String?         // e.g., "Pakistan", "USA", "UK"
+  logoUrl    String?         // Branding Logo
+  primaryColor   String?     // Primary Hex
+  secondaryColor String?     // Secondary Hex
+  accentColor    String?     // Accent Hex (Optional)
   createdAt  DateTime        @default(now())
   reels      GeneratedReel[]
   mediaItems MediaItem[]
@@ -70,4 +74,14 @@ model MusicTrend {
   createdAt DateTime @default(now())
 
   @@unique([region, songTitle])
+}
+
+model EventCalendar {
+  id               String   @id @default(cuid())
+  title            String
+  date             DateTime
+  category         String   // e.g., "National", "Religious", "Sports", "Trend"
+  suggestionPrompt String   // Context for the AI when generating a post
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
 }

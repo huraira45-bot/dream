@@ -46,12 +46,14 @@ export async function processMultiLLMCreativeFlow(
     isReel: boolean,
     region: string = "Pakistan",
     usedSongs: string[] = [],
-    usedHooks: string[] = []
+    usedHooks: string[] = [],
+    mode: CreativeMode = CreativeMode.FULL_VISION,
+    branding?: { primary: string, secondary: string, accent: string, mood: string },
+    upcomingEvents: string[] = []
 ): Promise<AIReelDataV3[]> {
     logger.info(`Analyzing ${mediaUrls.length} media items with Gemini v2.1...`)
     const visualReport = await describeMedia(mediaUrls);
 
-    let mode = CreativeMode.FULL_VISION;
     if (visualReport.includes("Visual analysis failed")) {
         mode = CreativeMode.NO_VISION;
         console.log("--------------------------------------------------")
@@ -140,6 +142,21 @@ export async function processMultiLLMCreativeFlow(
     - Focus on abstracts, curiosity, and high-entropy storytelling.
     ` : ""}
 
+    ${branding ? `
+    BRAND GUIDELINES (The Stylist):
+    - Primary Color: ${branding.primary}
+    - Secondary Color: ${branding.secondary}
+    - Accent Color: ${branding.accent}
+    - Brand Mood: ${branding.mood}
+    - RULE: You MUST prioritize these colors for "fontColor" and "textBackgroundColor".
+    ` : ""}
+
+    ${upcomingEvents.length > 0 ? `
+    CALENDAR CONTEXT (Occasional Post Logic):
+    - Upcoming Events in Pakistan: [${upcomingEvents.join(", ")}]
+    - RULE: If an event is relevant, use it to pivot your hooks and visual style.
+    ` : ""}
+
     YOUR TASK: Generate EXACTLY ${variationMix.length} UNIQUE production options. 
     Each option must be distinct in vibe, text, and music.
 
@@ -217,6 +234,9 @@ ${variationMix.map((v, i) => `    - Option ${i + 1} [${v.type}]: ${v.style}.`).j
 
     try {
         let attempts = 0;
+        // The original `isReel` parameter is already available.
+        // The line `const isReel = variationMix[0]?.type === ReelType.REEL;` is not needed here
+        // as `isReel` is already a function parameter.
         let result = await generateJSONWithLLM<{ options: AIReelDataV3[] }>(prompt, {}, { temperature: 1.0 });
 
         // SIMILARITY CHECK (The Diversity Engine)
