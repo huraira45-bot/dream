@@ -35,60 +35,60 @@ interface AIReelData {
 export async function describeMedia(imageUrls: string[]): Promise<string> {
     if (!model) return "No visual data available."
 
-    try {
-        console.log("--------------------------------------------------")
-        console.log("🤖 AGENT: THE HARSH CRITIC (Gemini Vision)")
-        console.log(`Action: Analyzing first ${Math.min(imageUrls.length, 6)} media items (out of ${imageUrls.length})...`)
+    console.log("--------------------------------------------------")
+    console.log("🤖 AGENT: THE HARSH CRITIC (Gemini Vision)")
+    console.log(`Action: Analyzing first ${Math.min(imageUrls.length, 6)} media items (out of ${imageUrls.length})...`)
 
-        // Shuffle and analyze up to 6 media items for quality filtering
-        const shuffledUrls = [...imageUrls].sort(() => Math.random() - 0.5);
-        const mediaParts = await Promise.all(
-            shuffledUrls.slice(0, 6).map(async (url) => {
-                try {
-                    const controller = new AbortController();
-                    const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+    // Shuffle and analyze up to 6 media items for quality filtering
+    const shuffledUrls = [...imageUrls].sort(() => Math.random() - 0.5);
+    const mediaParts = await Promise.all(
+        shuffledUrls.slice(0, 6).map(async (url) => {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
-                    // 1. Head Check for size and type
-                    const headRes = await fetch(url, { method: 'HEAD', signal: controller.signal });
-                    clearTimeout(timeout);
+                // 1. Head Check for size and type
+                const headRes = await fetch(url, { method: 'HEAD', signal: controller.signal });
+                clearTimeout(timeout);
 
-                    const size = parseInt(headRes.headers.get('content-length') || '0');
-                    const type = headRes.headers.get('content-type') || '';
+                const size = parseInt(headRes.headers.get('content-length') || '0');
+                const type = headRes.headers.get('content-type') || '';
 
-                    if (size > 5 * 1024 * 1024) {
-                        logger.warn(`Skipping Gemini analysis for large file (${(size / 1024 / 1024).toFixed(1)}MB): ${url}`);
-                        return null;
-                    }
-
-                    if (type.includes('video')) {
-                        logger.info(`Skipping direct video download for Gemini, will rely on metadata: ${url}`);
-                        return null;
-                    }
-
-                    // 2. Actual Download with timeout
-                    const downloadController = new AbortController();
-                    const downloadTimeout = setTimeout(() => downloadController.abort(), 30000); // 30s timeout
-
-                    const response = await fetch(url, { signal: downloadController.signal });
-                    const buffer = await response.arrayBuffer();
-                    clearTimeout(downloadTimeout);
-
-                    return {
-                        inlineData: {
-                            data: Buffer.from(buffer).toString("base64"),
-                            mimeType: "image/jpeg"
-                        }
-                    };
-                } catch (err: any) {
-                    logger.error(`Failed to fetch media for Gemini (${url}): ${err.message}`);
+                if (size > 5 * 1024 * 1024) {
+                    logger.warn(`Skipping Gemini analysis for large file (${(size / 1024 / 1024).toFixed(1)}MB): ${url}`);
                     return null;
                 }
-            })
-        )
 
-        // Filter out nulls (skipped or failed files)
-        const validParts = mediaParts.filter(Boolean) as any[];
+                if (type.includes('video')) {
+                    logger.info(`Skipping direct video download for Gemini, will rely on metadata: ${url}`);
+                    return null;
+                }
 
+                // 2. Actual Download with timeout
+                const downloadController = new AbortController();
+                const downloadTimeout = setTimeout(() => downloadController.abort(), 30000); // 30s timeout
+
+                const response = await fetch(url, { signal: downloadController.signal });
+                const buffer = await response.arrayBuffer();
+                clearTimeout(downloadTimeout);
+
+                return {
+                    inlineData: {
+                        data: Buffer.from(buffer).toString("base64"),
+                        mimeType: "image/jpeg"
+                    }
+                };
+            } catch (err: any) {
+                logger.error(`Failed to fetch media for Gemini (${url}): ${err.message}`);
+                return null;
+            }
+        })
+    )
+
+    // Filter out nulls (skipped or failed files)
+    const validParts = mediaParts.filter(Boolean) as any[];
+
+    try {
         if (validParts.length === 0) {
             logger.warn("No valid media items to analyze for Gemini Vision.");
             return "No visual data available (items skipped due to size/type)."
@@ -114,8 +114,57 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
         logger.info("Critic Report: Analysis complete.")
         return analysis
     } catch (e: any) {
-        logger.error(`Vision Error: ${e.message}`)
-        return "Visual analysis failed."
+        logger.error(`Gemini Vision Error: ${e.message}. Attempting Groq fallback...`)
+
+        const groqKey = process.env.GROQ_API_KEY;
+        if (!groqKey) {
+            logger.warn("GROQ_API_KEY missing, skipping fallback.");
+            return "Visual analysis failed."
+        }
+
+        try {
+            console.log("--------------------------------------------------")
+            console.log("🤖 AGENT: THE SECONDARY CRITIC (Groq Vision)")
+            console.log("Action: Running fallback analysis with Llama 3.2 Vision...")
+
+            const prompt = `You are THE HARSH CRITIC (Chief Creative Officer). Analyze these media items.
+            Provide a technically rich and VIBE-FOCUSED summary. Mention specific colors, lighting styles, and the "main character".
+            Format: [SKIP: indices] Summary: (Descriptive).`;
+
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${groqKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "llama-3.2-11b-vision-preview",
+                    messages: [
+                        {
+                            role: "user",
+                            content: [
+                                { type: "text", text: prompt },
+                                ...validParts.map(p => ({
+                                    type: "image_url",
+                                    image_url: { url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` }
+                                }))
+                            ]
+                        }
+                    ],
+                    temperature: 0.7
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error?.message || "Groq API error");
+
+            const analysis = data.choices[0].message.content;
+            logger.info("Groq Critic Report: Fallback analysis complete.");
+            return analysis;
+        } catch (groqErr: any) {
+            logger.error(`Groq Vision Error: ${groqErr.message}`);
+            return "Visual analysis failed."
+        }
     }
 }
 
