@@ -55,9 +55,19 @@ export async function processMultiLLMCreativeFlow(
     console.log("--------------------------------------------------")
     console.log("🤖 AGENT: THE DYNAMIC DJ")
     console.log(`Action: Fetching real-time trending music for ${region}...`)
-    const trendingHits = (await getTrendingSongsForRegion(region)).sort(() => Math.random() - 0.5);
+    let trendingHits = (await getTrendingSongsForRegion(region)).sort(() => Math.random() - 0.5);
+
+    if (visualReport.includes("Visual analysis failed")) {
+        console.log("--------------------------------------------------")
+        console.log("⚠️  AGENT: THE HARSH CRITIC (FAILED)")
+        console.log("Action: Vision failure detected. Reducing variations and filtering out top trending tracks to avoid 'Safety Bias'.")
+        console.log("--------------------------------------------------")
+        // Forbid the top 50% of trending hits to avoid the "Safety Bias" of picking rank #1
+        trendingHits = trendingHits.slice(Math.floor(trendingHits.length / 2));
+    }
+
     const trendingSongs = trendingHits.join(", ");
-    console.log(`🎵 DJ PICKED: ${trendingHits.length} viral tracks found.`)
+    console.log(`🎵 DJ PICKED: ${trendingHits.length} viral tracks found (Post-Safety Filter).`)
 
     const creativeSpice = [
         "Cyberpunk Neon", "Vintage Film Noir", "Vibrant Pop Art", "Dreamy Pastel",
@@ -75,10 +85,6 @@ export async function processMultiLLMCreativeFlow(
     ].sort(() => 0.5 - Math.random()).slice(0, 3);
 
     if (visualReport.includes("Visual analysis failed")) {
-        console.log("--------------------------------------------------")
-        console.log("⚠️  AGENT: THE HARSH CRITIC (FAILED)")
-        console.log("Action: Vision failure detected. Reducing variations to 1 to avoid repetitive 'safety bias'.")
-        console.log("--------------------------------------------------")
         variationMix = variationMix.slice(0, 1); // Only 1 "Safe" variation
     }
 
