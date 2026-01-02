@@ -125,11 +125,13 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
         try {
             console.log("--------------------------------------------------")
             console.log("🤖 AGENT: THE SECONDARY CRITIC (SambaNova Vision)")
-            console.log("Action: Running fallback analysis with Llama 3.2 11B Vision...")
+            console.log("Action: Running fallback analysis with Llama 3.2 11B Vision (Reduced Set)...")
 
-            const promptText = `You are THE HARSH CRITIC (Chief Creative Officer). Analyze these media items.
-            Provide a technically rich and VIBE-FOCUSED summary. Mention specific colors, lighting styles, and the "main character".
-            Format: [SKIP: indices] Summary: (Descriptive).`;
+            const promptText = `You are THE HARSH CRITIC (Chief Creative Officer). Describe these media items.
+            Focus on mood, lighting, and main subjects for a video production team. Short summary only.`;
+
+            // Reduce to max 3 images to avoid "Request too large" HTML errors
+            const limitedParts = validParts.slice(0, 3);
 
             const response = await fetch("https://api.sambanova.ai/v1/chat/completions", {
                 method: "POST",
@@ -144,19 +146,25 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
                             role: "user",
                             content: [
                                 { type: "text", text: promptText },
-                                ...validParts.map(p => ({
+                                ...limitedParts.map(p => ({
                                     type: "image_url",
                                     image_url: { url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` }
                                 }))
                             ]
                         }
                     ],
-                    temperature: 0.1,
-                    top_p: 0.1
+                    temperature: 0.1
                 })
             });
 
-            const data = await response.json();
+            const responseText = await response.text();
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseErr) {
+                throw new Error(`Non-JSON response (HTML Error?): ${responseText.substring(0, 100)}...`);
+            }
+
             if (!response.ok) throw new Error(data.error?.message || "SambaNova API error");
 
             const analysis = data.choices[0].message.content;

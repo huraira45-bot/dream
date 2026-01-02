@@ -26,27 +26,32 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
 
     // 0. Viral Hook (Attention Grabber - Stylist Upgrade)
     if (metadata?.hook) {
+        const fontMapping: { [key: string]: string } = {
+            "montserrat": "montserrat",
+            "bebas neue": "bebas-neue",
+            "permanent marker": "permanent-marker",
+            "playfair display": "playfair-display",
+            "roboto": "roboto",
+            "anton": "anton",
+            "fredoka one": "fredoka-one",
+            "outfit": "outfit"
+        }
+        const requestedFont = (metadata.fontFamily || "montserrat").toLowerCase().trim();
+        const fontFamily = fontMapping[requestedFont] || "montserrat";
+
         textClips.push({
             asset: {
                 type: "text",
                 text: metadata.hook.toUpperCase(),
                 font: {
-                    family: (metadata.fontFamily || "montserrat").toLowerCase().trim().replace(/\s+/g, '-'),
+                    family: fontFamily,
                     size: 42,
                     color: metadata.fontColor || "#ffffff"
                 },
-                alignment: {
-                    horizontal: "center",
-                    vertical: "center"
-                },
-                background: {
-                    color: metadata.textBackgroundColor || "#ff0000",
-                    padding: 0.1,
-                    opacity: 1
-                }
+                alignment: "center"
             },
             start: 0,
-            length: 3.0, // Increased duration for readability
+            length: 3.0,
             transition: { in: "zoom", out: "fade" }
         })
     }
@@ -104,19 +109,15 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
                     type: "text",
                     text: displayText,
                     font: {
-                        family: metadata.fontFamily?.toLowerCase() || "montserrat",
+                        family: "montserrat",
                         size: 30,
                         color: metadata.fontColor || "#ffffff"
                     },
-                    background: {
-                        color: metadata.textBackgroundColor || "#000000",
-                        padding: 0.05,
-                        opacity: 0.8
-                    }
+                    alignment: metadata.textPosition === "center" ? "center" : (metadata.textPosition === "top" ? "center" : "center")
                 },
                 start: currentTime + (duration / 4),
                 length: duration / 2,
-                position: metadata.textPosition || "bottom",
+                position: (metadata.textPosition === "bottom" || metadata.textPosition === "top" || metadata.textPosition === "center") ? metadata.textPosition : "bottom",
                 offset: metadata.textPosition === "center" ? { y: 0 } : (metadata.textPosition === "top" ? { y: -0.3 } : { y: 0.15 }),
                 transition: { in: "fade", out: "fade" }
             })
