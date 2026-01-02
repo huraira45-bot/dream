@@ -202,8 +202,11 @@ export default async function BusinessDetail({
 
                             <div className="flex items-center gap-3">
                                 {reel.url.startsWith('pending') ? (
-                                    <div className="w-full flex items-center justify-center gap-2 py-4 bg-zinc-50 rounded-2xl text-zinc-400 text-sm font-bold italic">
-                                        <Loader2 className="w-4 h-4 animate-spin" /> Rendering...
+                                    <div className="w-full flex items-center gap-2">
+                                        <div className="flex-1 flex items-center justify-center gap-2 py-4 bg-zinc-50 rounded-2xl text-zinc-400 text-sm font-bold italic">
+                                            <Loader2 className="w-4 h-4 animate-spin" /> Rendering...
+                                        </div>
+                                        <DeleteReelButton reelId={reel.id} />
                                     </div>
                                 ) : (
                                     <>
