@@ -4,7 +4,7 @@ import { logger } from "./logger"
 
 const apiKey = process.env.GEMINI_API_KEY
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
-const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-pro" }) : null
+const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) : null
 
 interface AIReelData {
     // 1. The Hook Maker & Stylist
