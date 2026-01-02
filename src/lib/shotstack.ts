@@ -48,7 +48,10 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
                     size: 42,
                     color: metadata.fontColor || "#ffffff"
                 },
-                alignment: "center"
+                alignment: {
+                    horizontal: "center",
+                    vertical: "center"
+                }
             },
             start: 0,
             length: 3.0,
@@ -113,7 +116,10 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
                         size: 30,
                         color: metadata.fontColor || "#ffffff"
                     },
-                    alignment: metadata.textPosition === "center" ? "center" : (metadata.textPosition === "top" ? "center" : "center")
+                    alignment: {
+                        horizontal: "center",
+                        vertical: (metadata.textPosition === "center" || metadata.textPosition === "top" || metadata.textPosition === "bottom") ? metadata.textPosition : "bottom"
+                    }
                 },
                 start: currentTime + (duration / 4),
                 length: duration / 2,

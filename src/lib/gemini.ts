@@ -4,7 +4,7 @@ import { logger } from "./logger"
 
 const apiKey = process.env.GEMINI_API_KEY
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
-const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) : null
+const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }) : null
 
 interface AIReelData {
     // 1. The Hook Maker & Stylist
@@ -114,7 +114,7 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
         logger.info("Critic Report: Analysis complete.")
         return analysis
     } catch (e: any) {
-        logger.error(`Gemini Vision Error: ${e.message}. Attempting SambaNova fallback...`)
+        logger.error(`Gemini Vision Error: ${e.message}. Attempting SambaNova Llama-4 fallback...`)
 
         const sambaKey = process.env.SAMBANOVA_API_KEY;
         if (!sambaKey) {
@@ -124,13 +124,13 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
 
         try {
             console.log("--------------------------------------------------")
-            console.log("🤖 AGENT: THE SECONDARY CRITIC (SambaNova Vision)")
-            console.log("Action: Running fallback analysis with Llama 3.2 11B Vision (Reduced Set)...")
+            console.log("🤖 AGENT: THE SECONDARY CRITIC (SambaNova Llama-4)")
+            console.log("Action: Running fallback analysis with Llama-4-Maverick-17B-128E-Instruct...")
 
             const promptText = `You are THE HARSH CRITIC (Chief Creative Officer). Describe these media items.
             Focus on mood, lighting, and main subjects for a video production team. Short summary only.`;
 
-            // Reduce to max 3 images to avoid "Request too large" HTML errors
+            // Use reduced set for stability
             const limitedParts = validParts.slice(0, 3);
 
             const response = await fetch("https://api.sambanova.ai/v1/chat/completions", {
@@ -140,7 +140,7 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    model: "Llama-3.2-11B-Vision-Instruct",
+                    model: "Llama-4-Maverick-17B-128E-Instruct",
                     messages: [
                         {
                             role: "user",
@@ -162,13 +162,13 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
             try {
                 data = JSON.parse(responseText);
             } catch (parseErr) {
-                throw new Error(`Non-JSON response (HTML Error?): ${responseText.substring(0, 100)}...`);
+                throw new Error(`Non-JSON response from SambaNova: ${responseText.substring(0, 100)}...`);
             }
 
             if (!response.ok) throw new Error(data.error?.message || "SambaNova API error");
 
             const analysis = data.choices[0].message.content;
-            logger.info("SambaNova Critic Report: Fallback analysis complete.");
+            logger.info("SambaNova Critic Report: Llama-4 analysis complete.");
             return analysis;
         } catch (sambaErr: any) {
             logger.error(`SambaNova Vision Error: ${sambaErr.message}`);
