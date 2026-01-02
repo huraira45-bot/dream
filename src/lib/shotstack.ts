@@ -65,9 +65,9 @@ export async function postToShotstack(mediaItems: MediaItem[], musicUrl: string 
             start: currentTime,
             length: duration,
             fit: "cover",
-            scale: 3.5, // Extreme zoom for bokeh effect
+            scale: 4.5, // Extreme zoom for bokeh effect
             filter: "blur", // Shotstack built-in blur
-            opacity: 0.35, // Darken significantly to make foreground pop
+            opacity: 0.2, // Darken even more to make foreground pop
             transition: { in: "fade", out: "fade" }
         })
 

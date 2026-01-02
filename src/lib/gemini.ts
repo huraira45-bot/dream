@@ -4,7 +4,7 @@ import { logger } from "./logger"
 
 const apiKey = process.env.GEMINI_API_KEY
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
-const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) : null
+const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-pro" }) : null
 
 interface AIReelData {
     // 1. The Hook Maker & Stylist
@@ -162,6 +162,14 @@ export async function generateReelMetadata(
     - Choose an effectType from ["zoomIn", "zoomOut", "slideLeft", "slideRight", "none"].
     - Match the editing speed and style to the visual atmosphere.
 
+    HOOK RULES (Agent: Opus Expert):
+    You MUST use one of these Scroll-Stop formulas:
+    1. THE CONTRARIAN: Challenge a common belief.
+    2. THE MISTAKE: Warn against a common pitfall.
+    3. THE NUMBERED LIST: "3 Secrets to..." or "5 Ways to...".
+    4. THE TIME-BASED: "How I [Result] in [Time]".
+    5. THE QUESTION: Pose a provocative question.
+
     Return ONLY a JSON array of 3 AIReelData objects:
     - hook (max 6 words)
     - title (max 5 words)
@@ -182,25 +190,26 @@ export async function generateReelMetadata(
         return Array.isArray(parsed) ? parsed.slice(0, 3) : [parsed]
     } catch (error: any) {
         logger.error(`Gemini Metadata Error: ${error.message}`)
-        // Fallback with limited but safe data
-        const fallback = {
-            hook: "YOU NEED TO SEE THIS",
+        // Fallback with limited but safe data (Shuffled for diversity)
+        const shuffledHits = [...trendingHits].sort(() => Math.random() - 0.5);
+
+        return Array.from({ length: 3 }).map((_, i) => ({
+            hook: i === 0 ? "YOU NEED TO SEE THIS" : (i === 1 ? "POV: BEST VIBES" : "DON'T MISS OUT"),
             title: `Discover ${businessName}`,
             caption: `The best vibe in town! ✨ #Dream #${businessName.replace(/\s/g, "")}`,
-            fontFamily: "Bebas Neue",
+            fontFamily: i === 0 ? "Bungee" : (i === 1 ? "Permanent Marker" : "Bebas Neue"),
             fontColor: "#FFFFFF",
-            textBackgroundColor: "#FF0000",
+            textBackgroundColor: i === 0 ? "#FF0000" : (i === 1 ? "#00FF00" : "#0000FF"),
             textPosition: "center" as const,
-            musicMood: "Pop",
-            trendingAudioTip: trendingHits[0] || "Asim Azhar - Meri Zindagi Hai Tu",
-            musicRationale: "High energy fallback",
+            musicMood: "Trendy",
+            trendingAudioTip: shuffledHits[i % shuffledHits.length] || "Asim Azhar - Meri Zindagi Hai Tu",
+            musicRationale: "Randomized fallback strategy",
             vibeScore: 8,
             energyLevel: "high" as const,
             visualStyle: "Fast and Dynamic",
             narrative: "An energetic look at the business.",
             transitionType: "fade" as const,
             effectType: "zoomIn" as const
-        }
-        return [fallback, fallback, fallback]
+        }))
     }
 }

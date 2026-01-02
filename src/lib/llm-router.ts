@@ -175,7 +175,8 @@ export async function processMultiLLMCreativeFlow(
         );
 
         // Map AIReelData to AIReelDataV3
-        return geminiOptions.map(opt => ({
+        const shuffledGemini = geminiOptions.sort(() => Math.random() - 0.5);
+        return shuffledGemini.map((opt, i) => ({
             ...opt,
             skipMediaIndices: [], // Gemini's metadata generator doesn't do this yet
             smmAura: "Vibe checked by Gemini",
