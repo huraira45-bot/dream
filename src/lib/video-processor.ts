@@ -110,7 +110,7 @@ export async function processReelForBusinessV2(businessId: string) {
         const reel = await prisma.generatedReel.create({
             data: {
                 businessId: business.id,
-                title: metadata.title,
+                title: metadata.hook, // Save the actual Hook to avoid repetition in next runs
                 caption: metadata.caption,
                 url: `pending:init-${Date.now()}-${i}`,
                 musicUrl: musicTrack.url,

@@ -40,9 +40,10 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
         console.log("🤖 AGENT: THE HARSH CRITIC (Gemini Vision)")
         console.log(`Action: Analyzing first ${Math.min(imageUrls.length, 6)} media items (out of ${imageUrls.length})...`)
 
-        // Analyze up to 6 media items for quality filtering (reduced from 10 to save memory)
+        // Shuffle and analyze up to 6 media items for quality filtering
+        const shuffledUrls = [...imageUrls].sort(() => Math.random() - 0.5);
         const mediaParts = await Promise.all(
-            imageUrls.slice(0, 6).map(async (url) => {
+            shuffledUrls.slice(0, 6).map(async (url) => {
                 try {
                     const controller = new AbortController();
                     const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout

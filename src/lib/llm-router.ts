@@ -50,7 +50,7 @@ export async function processMultiLLMCreativeFlow(
     console.log("--------------------------------------------------")
     console.log("🤖 AGENT: THE DYNAMIC DJ")
     console.log(`Action: Fetching real-time trending music for ${region}...`)
-    const trendingHits = await getTrendingSongsForRegion(region);
+    const trendingHits = (await getTrendingSongsForRegion(region)).sort(() => Math.random() - 0.5);
     const trendingSongs = trendingHits.join(", ");
     console.log(`🎵 DJ PICKED: ${trendingHits.length} viral tracks found.`)
 
