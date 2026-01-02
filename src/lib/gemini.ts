@@ -4,7 +4,7 @@ import { logger } from "./logger"
 
 const apiKey = process.env.GEMINI_API_KEY
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
-const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash-002" }) : null
+const model = genAI ? genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" }) : null
 
 interface AIReelData {
     // 1. The Hook Maker & Stylist
@@ -65,12 +65,13 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
 
                 const response = await fetch(url);
                 const buffer = await response.arrayBuffer();
+                const contentType = response.headers.get('content-type') || 'image/jpeg';
 
                 return {
                     originalIndex: index,
                     inlineData: {
                         data: Buffer.from(buffer).toString("base64"),
-                        mimeType: "image/jpeg"
+                        mimeType: contentType
                     }
                 };
             } catch (err) {
@@ -123,13 +124,13 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
         try {
             console.log("--------------------------------------------------")
             console.log("🤖 AGENT: THE SECONDARY CRITIC (SambaNova Llama-4)")
-            console.log("Action: Running fallback analysis with Llama-4-Maverick-17B-128E-Instruct (Single Item)...")
+            console.log("Action: Running fallback analysis with Llama-4-Maverick-17B-128E-Instruct (2 Samples)...")
 
             const promptText = `You are THE HARSH CRITIC (Chief Creative Officer). Describe this media item.
             Focus on mood, lighting, and main subjects. Extremely short summary.`;
 
-            // Extreme reduction for stability on preview model
-            const limitedParts = validParts.slice(0, 1);
+            // Maverick docs suggest up to 2 images for optimal context
+            const limitedParts = validParts.slice(0, 2);
 
             const response = await fetch("https://api.sambanova.ai/v1/chat/completions", {
                 method: "POST",
@@ -146,13 +147,15 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
                                 { type: "text", text: promptText },
                                 ...limitedParts.map(p => ({
                                     type: "image_url",
-                                    image_url: { url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` }
+                                    image_url: {
+                                        url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}`
+                                    }
                                 }))
                             ]
                         }
                     ],
                     temperature: 0.1,
-                    max_tokens: 256
+                    max_tokens: 512
                 })
             });
 
