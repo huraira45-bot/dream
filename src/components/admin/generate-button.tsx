@@ -24,23 +24,22 @@ export function GenerateButton({ businessId }: GenerateButtonProps) {
     const [campaignGoal, setCampaignGoal] = useState("")
     const router = useRouter()
 
-    const handleGenerate = async () => {
+    const handleGenerate = async (type: "REEL" | "POST") => {
         setLoading(true)
         setResults(null)
         try {
             const res = await fetch("/api/process", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ businessId, campaignGoal }),
+                body: JSON.stringify({ businessId, campaignGoal, type }),
             })
             const data = await res.json()
-            // Data could be an array of reels or an object with message
             if (Array.isArray(data)) {
                 setResults(data)
             } else if (data.reels) {
                 setResults(data.reels)
             }
-            router.refresh() // Refresh server components to show new reels in list
+            router.refresh()
         } catch (e) {
             console.error(e)
             alert("Failed to generate content")
@@ -54,27 +53,28 @@ export function GenerateButton({ businessId }: GenerateButtonProps) {
             <div className="flex flex-col gap-3">
                 <textarea
                     placeholder="Describe a special offer or event (e.g., '50% off for New Year' or 'Grand Opening on Friday')..."
-                    className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all min-h-[100px] resize-none text-zinc-900"
+                    className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all min-h-[80px] resize-none text-zinc-900"
                     value={campaignGoal}
                     onChange={(e) => setCampaignGoal(e.target.value)}
                 />
-                <button
-                    onClick={handleGenerate}
-                    disabled={loading}
-                    className="px-6 py-4 bg-black text-white rounded-2xl font-bold text-sm hover:bg-zinc-800 transition-all shadow-xl shadow-black/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full"
-                >
-                    {loading ? (
-                        <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            AI Director Working...
-                        </>
-                    ) : (
-                        <>
-                            <Sparkles className="w-4 h-4 text-purple-400" />
-                            Generate Branded Campaign
-                        </>
-                    )}
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => handleGenerate("REEL")}
+                        disabled={loading}
+                        className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl font-bold text-xs hover:bg-purple-700 transition-all shadow-lg shadow-purple-600/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Film className="w-4 h-4" />}
+                        Generate Reel
+                    </button>
+                    <button
+                        onClick={() => handleGenerate("POST")}
+                        disabled={loading}
+                        className="flex-1 px-4 py-3 bg-zinc-900 text-white rounded-xl font-bold text-xs hover:bg-black transition-all shadow-lg shadow-black/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+                        Generate Post
+                    </button>
+                </div>
             </div>
 
             {/* Result Modal / Overlay */}

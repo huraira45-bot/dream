@@ -13,221 +13,181 @@ import { extractBrandingFromLogo } from "./branding"
 import { getUpcomingEvents } from "./calendar"
 import { createCanvaDesignFromTemplate } from "./canva"
 
-export async function processReelForBusinessV2(businessId: string, campaignGoal?: string) {
-    // 1. Fetch unprocessed media including business details
+/**
+ * Core Orchestration Engine (Internal)
+ * Handles visual analysis, memory, and metadata generation.
+ */
+async function processMediaOrchestration(businessId: string, forceType: "REEL" | "POST", campaignGoal?: string) {
     const business = await prisma.business.findUnique({
         where: { id: businessId },
         include: {
             mediaItems: {
                 where: { processed: false },
-                orderBy: { createdAt: 'asc' } // Ensure chronological sequence
+                orderBy: { createdAt: 'asc' }
             }
         }
     }) as any
 
-    logger.info(`Orchestration v2.1 started for business: ${businessId}`)
     if (!business || business.mediaItems.length === 0) {
-        logger.warn(`No business or media items found for business: ${businessId}`)
+        logger.warn(`No media items found for business: ${businessId}`)
         return null
     }
 
     const mediaItems = business.mediaItems
     const allMediaIds = mediaItems.map((m: { id: string }) => m.id)
+    const isReel = forceType === "REEL"
 
-    // 2. Calculate Reel Score
-    // Video = 2 pts, Image = 1 pt
-    let score = 0
-    let videoCount = 0
-
-    for (const item of mediaItems) {
-        if (item.type.toLowerCase().includes('video')) {
-            score += 2
-            videoCount++
-        } else {
-            score += 1
-        }
-    }
-
-    const isReel = score > 10 || (videoCount > mediaItems.length / 2 && mediaItems.length > 3)
-
-    logger.info(`Detected Mode: ${isReel ? "REEL" : "POST"} for ${business.name} with ${mediaItems.length} items`)
-
-    const mediaTypes = mediaItems.map((m: { type: string }) => m.type)
-    const allUrls = mediaItems.map((m: any) => m.url)
-
-    // 3. Fetch Reel History for "Memory" (Unique Assets)
+    // 1. Fetch History for Memory
     const pastReels = await prisma.generatedReel.findMany({
         where: { businessId },
         orderBy: { createdAt: 'desc' },
         take: 10,
         select: { trendingAudioTip: true, title: true }
     })
-
     const usedSongs = pastReels.map(r => r.trendingAudioTip).filter(Boolean) as string[]
     const usedHooks = pastReels.map(r => r.title).filter(Boolean) as string[]
 
-    console.log("--------------------------------------------------")
-    console.log("🧠 AGENT: THE MEMORY KEEPER")
-    console.log(`Action: Checking history for ${business.name}...`)
-    console.log(`Avoid Songs: ${usedSongs.length > 0 ? usedSongs.join(", ") : "None"}`)
-    console.log(`Avoid Hooks: ${usedHooks.length > 0 ? usedHooks.join(", ") : "None"}`)
-    console.log("--------------------------------------------------")
-
-    // 3.5. Branding & Calendar Awareness
+    // 2. Branding Palette
     let branding = null
     if (business.logoUrl && (!business.primaryColor || !business.secondaryColor)) {
-        console.log("🎨 AGENT: THE STYLIST (Branding)")
-        console.log(`Action: Extracting brand palette from logo for ${business.name}...`)
         branding = await extractBrandingFromLogo(business.logoUrl)
-
-        // Update business with extracted branding for future use
         await prisma.business.update({
             where: { id: business.id },
-            data: {
-                primaryColor: branding.primary,
-                secondaryColor: branding.secondary,
-                accentColor: branding.accent
-            } as any
+            data: { primaryColor: branding.primary, secondaryColor: branding.secondary, accentColor: branding.accent } as any
         })
-    } else if (business.primaryColor) {
-        branding = {
-            primary: business.primaryColor,
-            secondary: business.secondaryColor || "#FFFFFF",
-            accent: business.accentColor || "#FF0000",
-            mood: "Established"
-        }
+    } else {
+        branding = { primary: business.primaryColor || "#000000", secondary: business.secondaryColor || "#FFFFFF", accent: business.accentColor || "#FF0000", mood: "Modern" }
     }
 
     const upcomingEvents = await getUpcomingEvents(7)
     const eventTitles = upcomingEvents.map(e => e.title)
 
-    logger.info(`Starting Multi-LLM Creative Flow...`)
+    // 3. AI Creative Flow
     const aiOptions = await processMultiLLMCreativeFlow(
         business.name,
-        allUrls,
+        mediaItems.map((m: any) => m.url),
         isReel,
         business.region || "Pakistan",
         usedSongs,
         usedHooks,
-        undefined, // mode (will be auto-detected in router)
-        branding || undefined,
+        undefined,
+        branding,
         eventTitles,
         campaignGoal
     )
-    logger.info(`Creative flow complete. Variations generated: ${aiOptions.length}`)
-
-    // ... (Canvas self-healing logic remains same) ...
 
     // 4. Mark items as processed
     await prisma.mediaItem.updateMany({
-        where: {
-            id: { in: allMediaIds },
-        },
-        data: {
-            processed: true,
-        },
+        where: { id: { in: allMediaIds } },
+        data: { processed: true }
     })
 
-    // 5. Generate AI Variations (IN PARALLEL)
+    // 5. Generate Variations
     const variationPromises = aiOptions.map(async (metadata, i) => {
         const style = getStyleForVariation(i)
-
-        // FILTER MEDIA (Quality Guard)
         const skipIndices = (metadata as any).skipMediaIndices || []
-        const filteredMediaItems = mediaItems.filter((_: any, idx: number) => !skipIndices.includes(idx))
+        const filteredMedia = mediaItems.filter((_: any, idx: number) => !skipIndices.includes(idx))
+        const finalMediaForRender = (filteredMedia.length > 0 ? filteredMedia : mediaItems).slice(0, 10)
 
-        // Quality Guard: Limit to best 10 items to prevent overcrowding
-        const finalMediaForRender = (filteredMediaItems.length > 0 ? filteredMediaItems : mediaItems).slice(0, 10)
-
-        if (mediaItems.length > finalMediaForRender.length) {
-            logger.info(`Quality Guard: Culled ${mediaItems.length - finalMediaForRender.length} weaker assets for higher density.`)
-        }
-
-        // Intelligent Music Selection
         let musicTrack = getMusicForMood(metadata.musicMood)
-
         if (metadata.trendingAudioTip) {
             const realAudioUrl = await findAndConvertAudio(metadata.trendingAudioTip)
-            if (realAudioUrl) {
-                musicTrack = { ...musicTrack, url: realAudioUrl, name: metadata.trendingAudioTip }
-            }
+            if (realAudioUrl) musicTrack = { ...musicTrack, url: realAudioUrl, name: metadata.trendingAudioTip }
         }
 
         const reel = await prisma.generatedReel.create({
             data: {
                 businessId: business.id,
-                title: metadata.hook, // Save the actual Hook to avoid repetition in next runs
+                title: metadata.hook,
                 caption: metadata.caption,
                 url: `pending:init-${Date.now()}-${i}`,
-                type: isReel ? "REEL" : "POST",
+                type: forceType,
                 musicUrl: musicTrack.url,
                 trendingAudioTip: metadata.trendingAudioTip,
                 mediaItemIds: finalMediaForRender.map((m: any) => m.id)
             }
         })
 
-        // Trigger Shotstack Render
-        // 6. Trigger Render (Branch between Reel, Canva, and Post)
         let renderId = "pending"
-        const { mood, ...brandingData } = (branding || { primary: "#000000", secondary: "#FFFFFF", accent: "#FF0000", mood: "Modern" })
+        const { mood, ...brandingData } = (branding || { primary: "#000000", secondary: "#FFFFFF", accent: "#FF0000" })
 
         try {
-            if (isReel) {
+            if (forceType === "REEL") {
                 const response = await postToShotstack(finalMediaForRender, musicTrack.url, style, metadata)
                 renderId = response.id
-                console.log(`🎬 Variation ${i + 1}: Render Queued -> ${renderId}`)
-            } else if (business.canvaTemplateId) {
-                // Render via Canva if Template ID is available
-                console.log(`🎨 Variation ${i + 1}: Attempting Canva Autofill...`)
-                const canvaResponse = await createCanvaDesignFromTemplate(
-                    business.canvaTemplateId,
-                    {
-                        "headline": metadata.hook,
-                        "cta": metadata.title || "Buy Now",
-                        "image_1": finalMediaForRender[0]?.url || ""
-                    },
-                    `${business.name} - ${metadata.hook}`,
-                    business.canvaAccessToken
-                )
-                if (canvaResponse) {
-                    renderId = canvaResponse.design_url || "canva_pending"
-                    console.log(`🎨 Variation ${i + 1}: Canva Design Created -> ${renderId}`)
+            } else {
+                // ALWAYS USE GLOBAL CANVA LOGIC IF REQUESTED TO USE CANVA
+                // Fallback to Shotstack only if no template ID is found at all
+                if (business.canvaTemplateId) {
+                    const canvaResponse = await createCanvaDesignFromTemplate(
+                        business.canvaTemplateId,
+                        {
+                            "headline": metadata.hook,
+                            "cta": metadata.title || "Buy Now",
+                            "image_1": finalMediaForRender[0]?.url || ""
+                        },
+                        `${business.name} - ${metadata.hook}`,
+                        process.env.CANVA_API_KEY // GLOBAL TOKEN
+                    )
+                    renderId = canvaResponse?.design_url || "canva_pending"
                 } else {
-                    // Fallback to Shotstack if Canva fails or not configured
-                    const response = await renderStaticPost(finalMediaForRender[0].url, brandingData, metadata)
+                    const mainItem = finalMediaForRender[0]
+                    const response = await renderStaticPost(mainItem.url, brandingData, metadata)
                     renderId = response.id
                 }
-            } else {
-                // For regular static posts, use Shotstack
-                const mainItem = finalMediaForRender[0]
-                const response = await renderStaticPost(mainItem.url, brandingData, metadata)
-                renderId = response.id
-                console.log(`🖼️ Variation ${i + 1}: Static Post Render Queued -> ${renderId}`)
             }
 
             await prisma.generatedReel.update({
                 where: { id: reel.id },
                 data: { url: `pending:${renderId}` }
             })
-            console.log(`🎬 Variation ${i + 1}: Render Queued -> ${renderId}`)
             return reel
         } catch (err: any) {
-            console.error(`❌ Variation ${i + 1}: Shotstack Error ->`, err.message)
-            const msg = err?.message || "Unknown Error"
+            logger.error(`Generation Error: ${err.message}`)
             await prisma.generatedReel.update({
                 where: { id: reel.id },
-                data: { url: `failed:${msg.substring(0, 100)}` }
+                data: { url: `failed:${err.message.substring(0, 100)}` }
             })
             return reel
         }
     })
 
-    try {
-        const variations = await Promise.all(variationPromises)
-        logger.info(`Successfully triggered ${variations.length} variations for ${business.name}`)
-        return variations
-    } catch (err: any) {
-        logger.error(`Fatal variation generation error: ${err.message}`)
-        throw err
-    }
+    return await Promise.all(variationPromises)
+}
+
+/**
+ * Public API: Generate Video Reels
+ */
+export async function processVideoReel(businessId: string, campaignGoal?: string) {
+    logger.info(`🎬 Triggering Video Reel Generation for: ${businessId}`)
+    return await processMediaOrchestration(businessId, "REEL", campaignGoal)
+}
+
+/**
+ * Public API: Generate Static Posts
+ */
+export async function processStaticPost(businessId: string, campaignGoal?: string) {
+    logger.info(`🖼️ Triggering Static Post Generation for: ${businessId}`)
+    return await processMediaOrchestration(businessId, "POST", campaignGoal)
+}
+
+/**
+ * Legacy Support (Auto-detect based on score)
+ */
+export async function processReelForBusinessV2(businessId: string, campaignGoal?: string) {
+    // For legacy reasons, we check the media and decide, but redirect to new functions
+    const business = await prisma.business.findUnique({
+        where: { id: businessId },
+        include: { mediaItems: { where: { processed: false } } }
+    }) as any
+
+    if (!business || business.mediaItems.length === 0) return null
+
+    let score = 0
+    business.mediaItems.forEach((m: any) => {
+        score += m.type.includes('video') ? 2 : 1
+    })
+
+    const type = score > 10 ? "REEL" : "POST"
+    return await processMediaOrchestration(businessId, type, campaignGoal)
 }
