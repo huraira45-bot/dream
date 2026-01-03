@@ -88,3 +88,11 @@ model EventCalendar {
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
 }
+
+model GlobalSetting {
+  id                String   @id @default("platform-settings")
+  canvaAccessToken  String?
+  canvaRefreshToken String?
+  canvaTokenExpiresAt DateTime?
+  updatedAt         DateTime @updatedAt
+}

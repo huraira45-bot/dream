@@ -129,21 +129,14 @@ export default async function BusinessDetail({
                             <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                                 <Sparkles className="w-4 h-4" />
                             </div>
-                            <h3 className="font-bold text-zinc-900">Canva Connect</h3>
+                            <h2 className="font-bold text-zinc-900 tracking-tight">Canva Engine</h2>
                             <Link
-                                href={`/api/auth/canva/login?businessId=${business.id}`}
-                                className="ml-auto px-3 py-1.5 bg-blue-600 text-white text-[10px] font-black uppercase rounded-lg shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all"
+                                href="/admin/settings"
+                                className="ml-auto text-[10px] font-black uppercase text-blue-600 hover:text-blue-700 underline underline-offset-4 transition-all"
                             >
-                                Authorize Global Canva
+                                Settings
                             </Link>
                         </div>
-                        {(business as any).canvaAccessToken && (
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="px-2 py-1 bg-green-50 text-green-600 text-[10px] font-black uppercase rounded-md border border-green-200">
-                                    Account Linked
-                                </div>
-                            </div>
-                        )}
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Global Brand Template ID</label>
                             <input

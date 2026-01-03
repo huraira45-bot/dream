@@ -2,7 +2,7 @@ import Link from "next/link"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
-import { LayoutDashboard, PlusCircle, LogOut, Wand2, User } from "lucide-react"
+import { LayoutDashboard, PlusCircle, LogOut, Wand2, User, Settings } from "lucide-react"
 
 export default async function DashboardLayout({
     children,
@@ -42,6 +42,13 @@ export default async function DashboardLayout({
                     >
                         <PlusCircle className="w-5 h-5" />
                         Register Business
+                    </Link>
+                    <Link
+                        href="/admin/settings"
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-zinc-600 hover:bg-zinc-50 hover:text-black transition-all"
+                    >
+                        <Settings className="w-5 h-5" />
+                        Global Settings
                     </Link>
                 </nav>
 

@@ -1,12 +1,96 @@
 import { logger } from "./logger"
+import { prisma } from "./prisma"
 
 const CANVA_API_BASE = "https://api.canva.com/rest/v1"
 
 /**
+ * Automatically fetches the global access token, refreshing it if expired.
+ */
+export async function getGlobalAccessToken(): Promise<string | null> {
+    const settings = await (prisma as any).globalSetting.findUnique({
+        where: { id: "platform-settings" }
+    });
+
+    if (!settings || !settings.canvaAccessToken || !settings.canvaRefreshToken) {
+        logger.warn("Canva: Global tokens not found in database. Initial authorization required.");
+        return process.env.CANVA_API_KEY || null;
+    }
+
+    // Check if token is expired or expiring in the next 5 minutes
+    const now = new Date();
+    const isExpired = settings.canvaTokenExpiresAt && (new Date(settings.canvaTokenExpiresAt).getTime() - now.getTime() < 300000);
+
+    if (isExpired) {
+        logger.info("Canva: Global token expired. Attempting refresh...");
+        return await refreshGlobalToken(settings.canvaRefreshToken);
+    }
+
+    return settings.canvaAccessToken;
+}
+
+/**
+ * Uses the refresh token to obtain a new access token from Canva.
+ */
+async function refreshGlobalToken(refreshToken: string): Promise<string | null> {
+    const clientId = process.env.CANVA_CLIENT_ID;
+    const clientSecret = process.env.CANVA_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+        logger.error("Canva Refresh: Missing Client ID or Secret in environment.");
+        return null;
+    }
+
+    try {
+        const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+        const response = await fetch("https://api.canva.com/rest/v1/oauth/token", {
+            method: "POST",
+            headers: {
+                "Authorization": `Basic ${basicAuth}`,
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({
+                grant_type: "refresh_token",
+                refresh_token: refreshToken
+            })
+        });
+
+        if (!response.ok) {
+            const errData = await response.json();
+            logger.error(`Canva Refresh Error: ${JSON.stringify(errData)}`);
+            return null;
+        }
+
+        const tokens = await response.json();
+        const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
+
+        await (prisma as any).globalSetting.upsert({
+            where: { id: "platform-settings" },
+            create: {
+                id: "platform-settings",
+                canvaAccessToken: tokens.access_token,
+                canvaRefreshToken: tokens.refresh_token,
+                canvaTokenExpiresAt: expiresAt
+            },
+            update: {
+                canvaAccessToken: tokens.access_token,
+                canvaRefreshToken: tokens.refresh_token,
+                canvaTokenExpiresAt: expiresAt
+            }
+        });
+
+        logger.info("Canva: Global token refreshed successfully.");
+        return tokens.access_token;
+    } catch (err: any) {
+        logger.error(`Canva Refresh Exception: ${err.message}`);
+        return null;
+    }
+}
+
+/**
  * Uploads an image from a URL to Canva and returns the asset_id.
- * Note: This is an asynchronous job that we poll for completion.
  */
 async function uploadAssetFromUrl(url: string, apiKey: string): Promise<string | null> {
+    // ... (rest of the code remains same, but using logger)
     try {
         logger.info(`Canva: Starting upload for URL: ${url}`);
         const response = await fetch(`${CANVA_API_BASE}/url-asset-uploads`, {

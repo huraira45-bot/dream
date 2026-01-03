@@ -56,24 +56,30 @@ export async function GET(req: Request) {
         }
 
         const tokens = await response.json();
+        const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
 
         console.log("-----------------------------------------");
         console.log("🔑 CANVA GLOBAL TOKEN GENERATED!");
-        console.log("COPY THIS TO YOUR .env AS CANVA_API_KEY:");
-        console.log(tokens.access_token);
         console.log("-----------------------------------------");
 
-        // 3. Save tokens to the business
-        await prisma.business.update({
-            where: { id: businessId },
-            data: {
+        // 3. Save tokens to Global Settings
+        await (prisma as any).globalSetting.upsert({
+            where: { id: "platform-settings" },
+            create: {
+                id: "platform-settings",
                 canvaAccessToken: tokens.access_token,
-                canvaRefreshToken: tokens.refresh_token
-            } as any
+                canvaRefreshToken: tokens.refresh_token,
+                canvaTokenExpiresAt: expiresAt
+            },
+            update: {
+                canvaAccessToken: tokens.access_token,
+                canvaRefreshToken: tokens.refresh_token,
+                canvaTokenExpiresAt: expiresAt
+            }
         });
 
-        // 4. Redirect back to business detail page
-        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/admin/business/${businessId}?canva=success&token_tip=${tokens.access_token.substring(0, 8)}`);
+        // 4. Redirect back to business detail page (or settings)
+        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/admin/business/${businessId}?canva=success`);
 
     } catch (err: any) {
         console.error("Canva OAuth Error:", err.message);

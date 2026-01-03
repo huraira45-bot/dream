@@ -11,7 +11,7 @@ import { processMultiLLMCreativeFlow } from "./llm-router"
 import { logger } from "./logger"
 import { extractBrandingFromLogo } from "./branding"
 import { getUpcomingEvents } from "./calendar"
-import { createCanvaDesignFromTemplate } from "./canva"
+import { createCanvaDesignFromTemplate, getGlobalAccessToken } from "./canva"
 
 /**
  * Core Orchestration Engine (Internal)
@@ -119,6 +119,7 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                 // ALWAYS USE GLOBAL CANVA LOGIC IF REQUESTED TO USE CANVA
                 // Fallback to Shotstack only if no template ID is found at all
                 if (business.canvaTemplateId) {
+                    const globalAccessToken = await getGlobalAccessToken()
                     const canvaResponse = await createCanvaDesignFromTemplate(
                         business.canvaTemplateId,
                         {
@@ -130,7 +131,7 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                             "image_3": finalMediaForRender[2]?.url || ""
                         },
                         `${business.name} - ${metadata.hook}`,
-                        process.env.CANVA_API_KEY // GLOBAL TOKEN
+                        globalAccessToken || undefined
                     )
                     renderId = canvaResponse?.design_url || "canva_pending"
                 } else {
