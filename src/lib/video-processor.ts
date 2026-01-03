@@ -11,7 +11,7 @@ import { processMultiLLMCreativeFlow } from "./llm-router"
 import { logger } from "./logger"
 import { extractBrandingFromLogo } from "./branding"
 import { getUpcomingEvents } from "./calendar"
-import { createCanvaDesignFromTemplate, getGlobalAccessToken } from "./canva"
+// Canva ignored in favor of Native Brand Engine
 
 /**
  * Core Orchestration Engine (Internal)
@@ -109,36 +109,29 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
         })
 
         let renderId = "pending"
-        const { mood, ...brandingData } = (branding || { primary: "#000000", secondary: "#FFFFFF", accent: "#FF0000" })
+        // brandingData is no longer needed separately, handled by Native Engine logic
 
         try {
             if (forceType === "REEL") {
                 const response = await postToShotstack(finalMediaForRender, musicTrack.url, style, metadata)
                 renderId = response.id
             } else {
-                // ALWAYS USE GLOBAL CANVA LOGIC IF REQUESTED TO USE CANVA
-                // Fallback to Shotstack only if no template ID is found at all
-                if (business.canvaTemplateId) {
-                    const globalAccessToken = await getGlobalAccessToken()
-                    const canvaResponse = await createCanvaDesignFromTemplate(
-                        business.canvaTemplateId,
-                        {
-                            "headline": metadata.hook,
-                            "body": metadata.caption,
-                            "cta": metadata.title || "Learn More",
-                            "image_1": finalMediaForRender[0]?.url || "",
-                            "image_2": finalMediaForRender[1]?.url || "",
-                            "image_3": finalMediaForRender[2]?.url || ""
-                        },
-                        `${business.name} - ${metadata.hook}`,
-                        globalAccessToken || undefined
-                    )
-                    renderId = canvaResponse?.design_url || "canva_pending"
-                } else {
-                    const mainItem = finalMediaForRender[0]
-                    const response = await renderStaticPost(mainItem.url, brandingData, metadata)
-                    renderId = response.id
+                // PIVOT: Native Brand Engine (HTML-to-Image)
+                // This replaces the complex Canva/Shotstack flow with a robust, free, and branded local generator.
+                const mainItem = finalMediaForRender[0]
+                const nativeBranding = {
+                    primaryColor: branding?.primary || "#000000",
+                    accentColor: branding?.accent || "#FF4D4D"
                 }
+
+                logger.info(`🚀 Routing to Native Brand Engine...`)
+                const response = await renderStaticPost(mainItem.url, nativeBranding, {
+                    hook: metadata.hook,
+                    businessName: business.name,
+                    cta: metadata.title || "Learn More"
+                })
+
+                renderId = response.url // Native engine returns a Cloudinary URL directly
             }
 
             await prisma.generatedReel.update({

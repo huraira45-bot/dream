@@ -1,96 +1,49 @@
+import cloudinary from "./cloudinary"
+import { logger } from "./logger"
+
 export interface MediaItem {
     id: string
     url: string
     type: string
 }
 
-const SHOTSTACK_API_ENDPOINT = "https://api.shotstack.io/edit/stage/render"
-
+/**
+ * Renders a static post using the native HTML-to-Image engine and uploads to Cloudinary.
+ */
 export async function renderStaticPost(
     mediaUrl: string,
-    branding: { primary: string, secondary: string, accent: string },
-    metadata: { hook: string, title?: string, fontFamily?: string }
+    branding: { primaryColor: string, accentColor: string },
+    metadata: { hook: string, businessName: string, cta?: string }
 ) {
-    const apiKey = process.env.SHOTSTACK_API_KEY
-    if (!apiKey) throw new Error("SHOTSTACK_API_KEY missing")
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
-    const fontMapping: { [key: string]: string } = {
-        "montserrat": "montserrat",
-        "bebas neue": "bebas-neue",
-        "permanent marker": "permanent-marker",
-        "playfair display": "playfair-display",
-        "roboto": "roboto",
-        "anton": "anton",
-        "fredoka one": "fredoka-one",
-        "outfit": "outfit"
-    }
-    const requestedFont = (metadata.fontFamily || "montserrat").toLowerCase().trim();
-    const fontFamily = fontMapping[requestedFont] || "montserrat";
+    // 1. Construct the Native Renderer URL
+    const renderUrl = new URL(`${appUrl}/api/render/post`)
+    renderUrl.searchParams.append("headline", metadata.hook)
+    renderUrl.searchParams.append("cta", metadata.cta || "Check it out")
+    renderUrl.searchParams.append("imgUrl", mediaUrl)
+    renderUrl.searchParams.append("primaryColor", branding.primaryColor)
+    renderUrl.searchParams.append("accentColor", branding.accentColor)
+    renderUrl.searchParams.append("businessName", metadata.businessName)
 
-    const payload = {
-        timeline: {
-            background: branding.primary || "#000000",
-            tracks: [
-                {
-                    clips: [
-                        {
-                            asset: {
-                                type: "text",
-                                text: metadata.hook.toUpperCase(),
-                                font: {
-                                    family: fontFamily,
-                                    size: 48,
-                                    color: branding.accent || "#ffffff"
-                                },
-                                alignment: {
-                                    horizontal: "center",
-                                    vertical: "center"
-                                }
-                            },
-                            start: 0,
-                            length: 1
-                        }
-                    ]
-                },
-                {
-                    clips: [
-                        {
-                            asset: {
-                                type: "image",
-                                src: mediaUrl
-                            },
-                            start: 0,
-                            length: 1,
-                            fit: "cover",
-                            opacity: 0.6
-                        }
-                    ]
-                }
-            ]
-        },
-        output: {
-            format: "jpg",
-            size: {
-                width: 1080,
-                height: 1080
-            }
+    logger.info(`🎨 Generating Native Branded Post: ${renderUrl.toString()}`)
+
+    try {
+        // 2. Upload the dynamically generated image to Cloudinary
+        // Cloudinary will fetch the URL, Satori will render the HTML, and Cloudinary stores the result.
+        const uploadResponse = await cloudinary.uploader.upload(renderUrl.toString(), {
+            folder: "branded-posts",
+            public_id: `post_${Date.now()}`
+        })
+
+        logger.info(`✅ Branded Post Rendered & Uploaded: ${uploadResponse.secure_url}`)
+
+        return {
+            id: uploadResponse.public_id,
+            url: uploadResponse.secure_url
         }
+    } catch (error: any) {
+        logger.error(`❌ Native Render Failure: ${error.message}`)
+        throw new Error(`Failed to render native branded post: ${error.message}`)
     }
-
-    const res = await fetch(SHOTSTACK_API_ENDPOINT, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "x-api-key": apiKey
-        },
-        body: JSON.stringify(payload)
-    })
-
-    if (!res.ok) {
-        const err = await res.json()
-        throw new Error(`Shotstack Static Error: ${JSON.stringify(err)}`)
-    }
-
-    const data = await res.json()
-    return data.response
 }
