@@ -27,7 +27,6 @@ export async function GET(req: NextRequest) {
                 const imgRes = await fetch(imgUrl, { signal: AbortSignal.timeout(8000) });
                 if (imgRes.ok && imgRes.headers.get('content-type')?.startsWith('image/')) {
                     const arrayBuffer = await imgRes.arrayBuffer();
-                    // Robust Base64 for Edge
                     const uint8 = new Uint8Array(arrayBuffer);
                     let binary = '';
                     for (let i = 0; i < uint8.length; i++) {
@@ -55,7 +54,7 @@ export async function GET(req: NextRequest) {
                         overflow: 'hidden'
                     }}
                 >
-                    {/* Bottom Accent Bar (Solid) */}
+                    {/* Bottom Accent Bar */}
                     <div style={{
                         position: 'absolute',
                         bottom: 0,
@@ -65,7 +64,7 @@ export async function GET(req: NextRequest) {
                         display: 'flex'
                     }} />
 
-                    {/* Logo/Brand Box (Flat) */}
+                    {/* Logo/Brand Box */}
                     <div style={{
                         position: 'absolute',
                         top: 50,
@@ -75,12 +74,12 @@ export async function GET(req: NextRequest) {
                         borderRadius: '15px',
                         display: 'flex'
                     }}>
-                        <div style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>
+                        <div style={{ display: 'flex', color: 'white', fontSize: 24, fontWeight: 'bold' }}>
                             {businessName.slice(0, 20)}
                         </div>
                     </div>
 
-                    {/* Main Promotion Container (Flat) */}
+                    {/* Main Promotion Container */}
                     <div
                         style={{
                             position: 'absolute',
@@ -96,18 +95,18 @@ export async function GET(req: NextRequest) {
                             zIndex: 10
                         }}
                     >
-                        <div style={{ fontSize: 90, fontWeight: 900, color: '#FBCA3E', lineHeight: 1.0, marginBottom: 10 }}>
+                        <div style={{ display: 'flex', fontSize: 90, fontWeight: 900, color: '#FBCA3E', lineHeight: 1.0, marginBottom: 10 }}>
                             {headline.split(' ')[0]}
                         </div>
-                        <div style={{ fontSize: 60, fontWeight: 700, color: 'white', lineHeight: 1.1, marginBottom: 30 }}>
+                        <div style={{ display: 'flex', fontSize: 60, fontWeight: 700, color: 'white', lineHeight: 1.1, marginBottom: 30 }}>
                             {headline.split(' ').slice(1).join(' ')}
                         </div>
 
-                        <div style={{ fontSize: 24, fontWeight: 500, color: 'white', opacity: 0.95, marginBottom: 40, lineHeight: 1.4 }}>
+                        <div style={{ display: 'flex', fontSize: 24, fontWeight: 500, color: 'white', opacity: 0.95, marginBottom: 40, lineHeight: 1.4 }}>
                             {subheadline}
                         </div>
 
-                        {/* CTA Button (Flat) */}
+                        {/* CTA Button */}
                         <div style={{
                             backgroundColor: 'white',
                             color: accentColor,
@@ -118,11 +117,11 @@ export async function GET(req: NextRequest) {
                             display: 'flex',
                             alignSelf: 'flex-start'
                         }}>
-                            {cta}
+                            <div style={{ display: 'flex' }}>{cta}</div>
                         </div>
                     </div>
 
-                    {/* Illustration Area (Flat) */}
+                    {/* Illustration Area */}
                     <div
                         style={{
                             position: 'absolute',
@@ -140,17 +139,18 @@ export async function GET(req: NextRequest) {
                                 style={{
                                     width: '100%',
                                     height: 'auto',
-                                    objectFit: 'contain'
+                                    objectFit: 'contain',
+                                    display: 'flex'
                                 }}
                             />
                         ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 40, fontWeight: 'bold', transform: 'rotate(-5deg)' }}>
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 40, fontWeight: 'bold' }}>
                                 PREMIUM • BRAND
                             </div>
                         )}
                     </div>
 
-                    {/* Quality Stamp (Flat Circle) */}
+                    {/* Quality Stamp */}
                     <div style={{
                         position: 'absolute',
                         top: 100,
@@ -166,11 +166,11 @@ export async function GET(req: NextRequest) {
                         border: `6px solid ${primaryColor}`,
                         zIndex: 30
                     }}>
-                        <div style={{ fontSize: 22, fontWeight: 900, color: primaryColor }}>100%</div>
-                        <div style={{ fontSize: 18, fontWeight: 700, color: '#666' }}>QUALITY</div>
+                        <div style={{ display: 'flex', fontSize: 22, fontWeight: 900, color: primaryColor }}>100%</div>
+                        <div style={{ display: 'flex', fontSize: 18, fontWeight: 700, color: '#666' }}>QUALITY</div>
                     </div>
 
-                    {/* Floating Info (Flat) */}
+                    {/* Floating Info */}
                     <div style={{
                         position: 'absolute',
                         bottom: 120,
@@ -182,7 +182,7 @@ export async function GET(req: NextRequest) {
                         display: 'flex',
                         zIndex: 40
                     }}>
-                        <div style={{ fontSize: 20, fontWeight: 'bold', color: primaryColor }}>
+                        <div style={{ display: 'flex', fontSize: 20, fontWeight: 'bold', color: primaryColor }}>
                             {businessName.toUpperCase()} • OPEN NOW
                         </div>
                     </div>
