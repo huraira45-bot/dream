@@ -309,3 +309,65 @@ export async function generateReelMetadata(
         }))
     }
 }
+
+/**
+ * THE HARSH CRITIC: Final Branded Vibe Check
+ * Compares the generated post against the logo to ensure perfect branding alignment.
+ */
+export async function validatePostVibe(
+    logoUrl: string,
+    postImageUrl: string,
+    businessName: string
+): Promise<{ matches: boolean; reasoning: string }> {
+    if (!model) return { matches: true, reasoning: "Critic Offline (Model Missing)" }
+
+    console.log("--------------------------------------------------")
+    console.log("🔍 AGENT: THE HARSH CRITIC (Final Vibe Check)")
+    console.log(`Action: Comparing Logo vs. Generated Post for: ${businessName}`)
+
+    try {
+        const [logoRes, postRes] = await Promise.all([
+            fetch(logoUrl).then(r => r.arrayBuffer()),
+            fetch(postImageUrl).then(r => r.arrayBuffer())
+        ]);
+
+        const prompt = `You are THE HARSH CRITIC. You are reviewing a final generated post for ${businessName}.
+        
+        INPUTS:
+        1. The Business Logo (First Image)
+        2. The Generated Post (Second Image)
+        
+        CRITERIA:
+        - COLOR HARMONY: Does the post respect the primary color palette of the logo?
+        - AESTHETIC HARMONY: Is the vibe (Modern, Editorial, Bold) consistent between logo and post?
+        - BRAND INTEGRITY: Does it look like the same company designed both?
+        
+        TASK:
+        Do NOT be lenient. If the colors feel off or the layout is generic compared to the logo's quality, fail it.
+        
+        JSON RESPONSE FORMAT:
+        {
+          "matches": boolean,
+          "reasoning": "brief explanation"
+        }`;
+
+        const result = await model.generateContent([
+            prompt,
+            { inlineData: { data: Buffer.from(logoRes).toString("base64"), mimeType: "image/png" } },
+            { inlineData: { data: Buffer.from(postRes).toString("base64"), mimeType: "image/png" } }
+        ]);
+
+        const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+        logger.info(`🤖 Agent: THE HARSH CRITIC (RAW_RESPONSE): ${text}`);
+        const parsed = JSON.parse(text);
+
+        console.log(`⚖️  CRITIC VERDICT for ${businessName}: ${parsed.matches ? "✅ VIBE MATCHED" : "❌ VIBE MISMATCH"}`)
+        console.log(`📝 Reason: ${parsed.reasoning}`)
+        console.log("--------------------------------------------------")
+
+        return parsed;
+    } catch (e: any) {
+        logger.error(`Validation Error: ${e.message}`);
+        return { matches: true, reasoning: "Fallback Success (Validation Failed)" }
+    }
+}

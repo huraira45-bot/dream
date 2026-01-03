@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { generateReelMetadata, describeMedia } from "@/lib/gemini"
+import { generateReelMetadata, describeMedia, validatePostVibe } from "@/lib/gemini"
 import { findAndConvertAudio } from './audio-finder'
 import { getMusicForMood, MUSIC_LIBRARY } from "@/lib/music"
 import { generateStitchedVideoUrl } from "@/lib/cloudinary-stitcher"
@@ -135,22 +135,51 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                     accentColor: branding?.accent || "#FF4D4D"
                 }
 
-                logger.info(`🚀 Routing to Native Brand Engine...`)
-                const sanitize = (val: any) => {
-                    const str = String(val || "");
-                    return str.replace(/[^\x00-\x7F]/g, "").trim();
-                };
+                let attempts = 0;
+                let finalRenderResponse = null;
+                const MAX_ATTEMPTS = 3; // Total tries
 
-                const response = await renderStaticPost(mediaUrl, nativeBranding, {
-                    hook: sanitize(metadata.hook),
-                    businessName: sanitize(business.name),
-                    cta: sanitize(metadata.title || "Learn More"),
-                    subheadline: sanitize(metadata.caption || ""),
-                    logoUrl: business.logoUrl,
-                    layoutStyle: (metadata as any).layoutStyle
-                })
+                while (attempts < MAX_ATTEMPTS) {
+                    attempts++;
+                    logger.info(`🚀 [Attempt ${attempts}] Routing to Native Brand Engine...`)
 
-                renderId = response.url // Native engine returns a Cloudinary URL directly
+                    const sanitize = (val: any) => {
+                        const str = String(val || "");
+                        return str.replace(/[^\x00-\x7F]/g, "").trim();
+                    };
+
+                    const response = await renderStaticPost(mediaUrl, nativeBranding, {
+                        hook: sanitize(metadata.hook),
+                        businessName: sanitize(business.name),
+                        cta: sanitize(metadata.title || "Learn More"),
+                        subheadline: sanitize(metadata.caption || ""),
+                        logoUrl: business.logoUrl,
+                        layoutStyle: (metadata as any).layoutStyle
+                    })
+
+                    // --- THE HARSH CRITIC: FINAL VIBE CHECK ---
+                    if (business.logoUrl) {
+                        const check = await validatePostVibe(business.logoUrl, response.url, business.name);
+                        if (check.matches) {
+                            finalRenderResponse = response;
+                            break;
+                        } else {
+                            logger.warn(`❌ Vibe Mismatch on Attempt ${attempts}: ${check.reasoning}`);
+                            // If it fails, we slightly tweak the "spice" for the next attempt by changing layout if it was magazine
+                            if (attempts < MAX_ATTEMPTS) {
+                                (metadata as any).layoutStyle = (metadata as any).layoutStyle === 'magazine' ? 'poster' : 'magazine';
+                                logger.info(`🔄 Retrying with flipped layout: ${(metadata as any).layoutStyle}`);
+                            } else {
+                                finalRenderResponse = response; // Fallback to last one
+                            }
+                        }
+                    } else {
+                        finalRenderResponse = response;
+                        break;
+                    }
+                }
+
+                renderId = finalRenderResponse?.url || "failed"
             }
 
             // Sync Update: POST is immediate, REEL is pending
