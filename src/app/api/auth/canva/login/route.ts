@@ -39,7 +39,7 @@ export async function GET(req: Request) {
 
         // 3. Construct Authorization URL
         const scopes = ["design:content:read", "design:content:write", "asset:read", "asset:write", "brand_template:read"];
-        const authUrl = new URL("https://www.canva.com/api/oauth/v1/authorize");
+        const authUrl = new URL("https://www.canva.com/api/oauth/authorize");
         authUrl.searchParams.append("response_type", "code");
         authUrl.searchParams.append("client_id", clientId);
         authUrl.searchParams.append("redirect_uri", redirectUri);
