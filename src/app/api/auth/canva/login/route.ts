@@ -10,19 +10,17 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const businessId = searchParams.get("businessId") || "global"; // Default to global if not provided
 
-        const clientId = process.env.CANVA_CLIENT_ID;
-        const redirectUri = process.env.CANVA_REDIRECT_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/canva/callback`;
+        const clientId = process.env.CANVA_CLIENT_ID?.trim();
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+        const envRedirectUri = process.env.CANVA_REDIRECT_URL?.trim();
+
+        const redirectUri = envRedirectUri || (appUrl ? `${appUrl}/api/auth/canva/callback` : undefined);
 
         console.log(`Canva Login Init: businessId=${businessId}, clientId=${clientId ? 'SET' : 'MISSING'}, redirectUri=${redirectUri}`);
 
-        if (!clientId) {
-            console.error("CRITICAL: CANVA_CLIENT_ID is missing from environment variables.");
-            return NextResponse.json({ error: "Missing Canva Client ID" }, { status: 500 });
-        }
-
-        if (!process.env.NEXT_PUBLIC_APP_URL && !process.env.CANVA_REDIRECT_URL) {
-            console.error("CRITICAL: NEXT_PUBLIC_APP_URL is missing, cannot construct redirect URI.");
-            return NextResponse.json({ error: "Missing App URL configuration" }, { status: 500 });
+        if (!clientId || !redirectUri) {
+            console.error("CRITICAL: CANVA_CLIENT_ID or Redirect URI is missing.");
+            return NextResponse.json({ error: "Missing configuration" }, { status: 500 });
         }
 
         // 1. Generate PKCE Verifier and Challenge

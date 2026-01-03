@@ -32,8 +32,8 @@ export async function getGlobalAccessToken(): Promise<string | null> {
  * Uses the refresh token to obtain a new access token from Canva.
  */
 async function refreshGlobalToken(refreshToken: string): Promise<string | null> {
-    const clientId = process.env.CANVA_CLIENT_ID;
-    const clientSecret = process.env.CANVA_CLIENT_SECRET;
+    const clientId = process.env.CANVA_CLIENT_ID?.trim();
+    const clientSecret = process.env.CANVA_CLIENT_SECRET?.trim();
 
     if (!clientId || !clientSecret) {
         logger.error("Canva Refresh: Missing Client ID or Secret in environment.");

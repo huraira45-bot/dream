@@ -24,12 +24,15 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Missing code" }, { status: 400 });
         }
 
-        const clientId = process.env.CANVA_CLIENT_ID;
-        const clientSecret = process.env.CANVA_CLIENT_SECRET;
-        const redirectUri = process.env.CANVA_REDIRECT_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/canva/callback`;
+        const clientId = process.env.CANVA_CLIENT_ID?.trim();
+        const clientSecret = process.env.CANVA_CLIENT_SECRET?.trim();
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+        const envRedirectUri = process.env.CANVA_REDIRECT_URL?.trim();
 
-        if (!clientId || !clientSecret) {
-            console.error("CRITICAL: Canva Client ID or Secret missing in callback.");
+        const redirectUri = envRedirectUri || (appUrl ? `${appUrl}/api/auth/canva/callback` : undefined);
+
+        if (!clientId || !clientSecret || !redirectUri) {
+            console.error("CRITICAL: Canva credentials or Redirect URI missing in callback.");
             return NextResponse.json({ error: "Configuration Error" }, { status: 500 });
         }
 
