@@ -16,8 +16,11 @@ Add the ability for businesses to manage their brand logo, which will be used in
 - Add a "Brand Logo" section in the "Brand Identity" card.
 - Include a URL input for the logo and an optional "Extract Branding" button to re-trigger color extraction from the new logo.
 
-#### [NEW] [logo-manager.tsx](file:///c:/Users/ServerDeskop/Desktop/dream/src/components/admin/logo-manager.tsx)
-- Create a client component for managing the business logo (input field, save status).
+#### [MODIFY] [logo-manager.tsx](file:///c:/Users/ServerDeskop/Desktop/dream/src/components/admin/logo-manager.tsx)
+- Add a file input for direct logo upload.
+- Integrate with Cloudinary signature and upload logic (reusing patterns from `UploadForm`).
+- Update business `logoUrl` via the `PATCH` API after successful Cloudinary upload.
+- Remove the text-based URL input to prioritize direct upload.
 
 ### Frontend - Public Business Page
 #### [MODIFY] [page.tsx](file:///c:/Users/ServerDeskop/Desktop/dream/src/app/b/[slug]/page.tsx)

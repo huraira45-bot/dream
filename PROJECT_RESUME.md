@@ -20,6 +20,7 @@ An AI Video Marketing engine tailored for the Pakistan market. It converts raw m
    - **Base64 Proxying**: Implemented edge-prefetching for external illustrations to prevent rendering failures.
 2. **Business Logo Management**:
    - Added full CRUD for business logos via Admin Dashboard.
+   - **Direct Upload**: Supports instant file uploads (PNG/SVG) to Cloudinary instead of just URL links.
    - Logos are dynamically integrated into the public business pages and social post layouts.
 3. **Illustration Fallback**:
    - Business without media now automatically generate professional 3D clay-style graphics via Pollinations AI.

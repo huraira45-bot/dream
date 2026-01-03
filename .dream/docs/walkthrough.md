@@ -31,7 +31,7 @@ Updated [video-processor.ts](file:///c:/Users/ServerDeskop/Desktop/dream/src/lib
 I've implemented a full lifecycle for managing business logos, ensuring they are integrated into both the public-facing pages and the automated post generation.
 
 ### Components:
-- **Logo Manager UI**: A new client component in the Admin Dashboard that allows project owners to paste a logo URL, preview it instantly, and save it to the database with real-time feedback.
+- **Logo Manager UI**: A new client component in the Admin Dashboard that allows project owners to upload their brand logo (PNG/SVG) directly to Cloudinary with instant preview and remove capability.
 - **PATCH API Endpoint**: A robust update API for businesses that handles logo and other branding updates securely.
 - **Dynamic Public Identity**: The business's public page now detects and displays the brand logo, replacing generic icons and strengthening brand consistency.
 - **Renderer Integration**: The Native Brand Engine now automatically pulls the `logoUrl` from the business record to include it in every social post.

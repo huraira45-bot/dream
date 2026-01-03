@@ -84,6 +84,9 @@
     - [x] Verify production render with automatic domain recovery
 - [x] Business Logo Management
     - [x] Create `PATCH` API for business updates
-    - [x] Develop `LogoManager` component
+    - [x] Develop `LogoManager` component with file upload
     - [x] Add logo input to Admin Business Detail page
     - [x] Update public business page to display logo
+- [x] Build Stability & Troubleshooting
+    - [x] Resolve `sonner` missing dependency build error
+    - [x] Configure root `<Toaster />` for global notifications
