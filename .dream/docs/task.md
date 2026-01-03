@@ -1,0 +1,89 @@
+# Task: Improve AI Diversity and Agent Performance
+
+- [x] Analyze current LLM orchestration for repetition
+    - [x] Inspect `llm-router.ts` prompt and variation logic
+    - [x] Inspect `gemini.ts` Vision summary specificity
+- [x] Implement Diversity Improvements
+    - [x] Inject random "style seeds" into GPT-4o prompt
+    - [x] Increase temperature for creative generation (Temperature 1.0)
+    - [x] Enhance "The Critic" (Gemini) to be more descriptive about specific subjects
+    - [x] Improve "The DJ" (AudioFinder) to pick more varied tracks
+    - [x] Implement media shuffling for unique Vision analysis
+    - [x] Implement song shuffling in prompts
+    - [x] Fix Hook tracking in database history
+- [x] Implement Visual Polish & Traceability
+    - [x] Implement High-Intensity Background Blur
+    - [x] Set HD 1080x1920 Vertical Resolution
+    - [x] Add Agent Traceability (Console Logs)
+    - [x] Add Funky Google Font Library
+- [x] Integrate Opus.pro Hook Formulas
+    - [x] Extract formulas from URL
+    - [x] Update `llm-router.ts` with explicit formulas
+    - [x] Update `shotstack.ts` with visual pattern interrupts
+    - [x] Update `walkthrough.md` with new capabilities
+- [x] Overhaul Agent Diversity (Binding Constraints)
+    - [x] Implement Hard FORBIDDEN_BLOCKLIST
+    - [x] Implement Variation Divergence Contract
+    - [x] Implement "Temperature Ladder" (Risk Profile)
+    - [x] Separate Video and Post Generation Pipelines
+- [x] Implement Global Canva Token Support (Platform Mode)
+- [x] Add Explicit Type Selection in Dashboard
+- [x] Update API Route for Workflow Branching
+- [x] Create Global Settings page for centralized management
+- [x] Implement token refresh mechanism in `canva.ts`
+- [x] Remove individual business authorization buttons
+- [x] Implement Native Brand Engine (HTML-to-Image)
+    - [x] Create `/api/render/post` ImageResponse route
+    - [x] Design branded social post templates
+    - [x] Integrate into `processStaticPost` pipeline
+- [x] Verify automated post generation without external dependencies
+    - [x] Implement Similarity Rejection Loop
+    - [x] Implement Vision-Failure "Safe Mode"
+- [x] Integrate Secondary Vision Provider (Groq/Llama 3.2)
+    - [x] Create `src/lib/groq.ts` or update `gemini.ts` with multi-provider logic
+    - [x] Add Llama 3.2 Vision support
+    - [x] Implement automatic fallback if Gemini fails
+- [x] Enforce Hard Control & Rejection (v4.0)
+    - [x] Implement `CreativeMode` (FULL/PARTIAL/NO_VISION) in `llm-router.ts`
+    - [x] Build `validateCreative` post-generation blocker
+    - [x] Implement Dimensional Divergence checker
+    - [x] Implement Trend Decay/Cooldown in DJ logic
+    - [x] Fix Groq model deprecation error
+    - [x] Fail-closed strategy for OpenAI 429 errors
+- [x] Replace GPT-4o with Free Alternatives (Groq-Llama)
+    - [x] Refactor `openai.ts` into a multi-provider `generateJSONWithLLM`
+    - [x] Switch `llm-router.ts` to use Llama 3.3 70B (Groq)
+    - [x] Implement fallback chain (Groq -> OpenAI -> Gemini)
+- [x] Integrate SambaNova Vision Fallback
+    - [x] Update `gemini.ts` with SambaNova Llama-4 Maverick Vision logic
+    - [x] Fix SambaNova payload size and JSON parsing
+    - [x] Fix Shotstack text asset schema and font sanitization (v1 compliant)
+    - [x] Implement automatic failover from Gemini to SambaNova Llama-4
+- [x] Implement "Social Manager" Media Culling
+    - [x] Fix Vision Indexing mapping in `gemini.ts`
+    - [x] Add "Quality Guard" (10-item limit) in `video-processor.ts`
+    - [x] Update Creative Director prompt for aggressive data selection
+    - [x] Resolve Gemini 404 & SambaNova Stability (Standardized on Gemini 2.5 Flash v1)
+- [x] Social Posting System Expansion
+    - [x] Update Database Schema (Branding & Calendar)
+    - [x] Implement Branding Agent (Color Extraction)
+    - [x] Build Calendar Agent (Pakistani Events - Full 2026)
+    - [x] Develop Static Post Renderer (Shotstack/HTML)
+    - [x] Build Buffer-style Scheduling UI (Manual & Auto)
+- [x] Canva & Custom Campaign Integration
+    - [x] Implement Manual Campaign Goal Input
+    - [x] Build Canva API Integration Layer (Autofill API)
+    - [x] Implement Illustration Fallback (Free & Advanced)
+    - [x] Create `illustration-service.ts` for Pollinations AI
+    - [x] Upgrade `route.tsx` to "Premium Ad Layout"
+    - [x] Update `video-processor.ts` to support media-less posts
+    - [x] Verify 3D style generation and branded rendering
+- [x] Implementation Robustness & Failover
+    - [x] Add domain fallback (`dream-eta-ruddy`) in `static-processor.ts`
+    - [x] Relax moderation constraints in `llm-router.ts` (Generic Hook fix)
+    - [x] Verify production render with automatic domain recovery
+- [x] Business Logo Management
+    - [x] Create `PATCH` API for business updates
+    - [x] Develop `LogoManager` component
+    - [x] Add logo input to Admin Business Detail page
+    - [x] Update public business page to display logo

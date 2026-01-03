@@ -3,34 +3,44 @@
 This document is for future AI collaborators to quickly understand the project state, architecture, and recent complex fixes.
 
 ## 📌 Project Overview
-An AI Video Marketing engine tailored for the Pakistan market. It converts raw media into viral-style Social Media Reels with multimodal AI context.
+An AI Video Marketing engine tailored for the Pakistan market. It converts raw media into viral-style Social Media Reels and high-fidelity Branded Posts with multimodal AI context.
 
 ## 🛠️ Tech Stack & Key Files
 - **Next.js 15+ & Prisma**: Core framework and database.
-- **Shotstack (v1 Edit API)**: Video rendering engine (`src/lib/shotstack.ts`).
+- **Native Brand Engine**: Local Satori-based renderer for high-quality static posts (`src/app/api/render/post/route.tsx`).
+- **Illustration Service**: Pollinations AI (Flux) integration for the free 3D illustration fallback (`src/lib/illustration-service.ts`).
+- **Shotstack (v1 Edit API)**: Video rendering engine for Reels (`src/lib/shotstack.ts`).
 - **Gemini 1.5 Flash**: Multimodal brain for visual analysis and hook generation (`src/lib/gemini.ts`).
-- **Processing Engine**: `src/lib/video-processor.ts` (Orchestrates Vision > Metadata > Shotstack).
+- **Processing Engine**: `src/lib/video-processor.ts` (Orchestrates Vision > Metadata > Native/Shotstack).
 
-## 🧠 Recent Breakthrough: Director 3.0
-- **Visual Awareness**: The AI now samples clips and uses Gemini Vision to "see" content before generating titles.
-- **Viral Hooks**: High-retention 1.5s scroll-stopping hooks (e.g., "WAIT FOR IT") with high-visibility red backgrounds.
-- **Hyper-Readability**: All captions use background-boxed "Montserrat" typography to ensure 100% visibility over busy backgrounds.
+## 🧠 Recent Breakthroughs
+1. **Native Brand Engine (Director 4.0)**:
+   - Replaced complex Canva/Shotstack flows with a local, zero-cost renderer.
+   - **Satori-Hardened**: Fixed emoji crashes by sanitizing text and enforced explicit flex layouts for 100% stability.
+   - **Base64 Proxying**: Implemented edge-prefetching for external illustrations to prevent rendering failures.
+2. **Business Logo Management**:
+   - Added full CRUD for business logos via Admin Dashboard.
+   - Logos are dynamically integrated into the public business pages and social post layouts.
+3. **Illustration Fallback**:
+   - Business without media now automatically generate professional 3D clay-style graphics via Pollinations AI.
 
-## ⚠️ Critical Architecture Notes (Read Before Editing)
-1. **Shotstack Schema**: 
+## ⚠️ Critical Architecture Notes
+1. **Satori Rendering**: 
+   - Every `div` MUST have `display: flex`.
+   - Emojis MUST be stripped using `sanitizeText` or Satori will crash at the edge.
+   - External images should be converted to Base64 at the edge if visibility is inconsistent.
+2. **Shotstack Schema**: 
    - `volume` belongs inside the `asset` object for videos.
-   - **Empty Tracks are NOT allowed**. The track array must be filtered if a track is empty.
-   - Text assets use `TextAsset` (not `TitleAsset`) for better styling control.
-2. **Audio Pipeline**:
-   - Uses a custom scraper (`src/lib/scraper.ts`) and finder (`src/lib/audio-finder.ts`) to get real trending Pakistani music.
-   - Final audio is synced to the global `soundtrack` property for better stability.
-3. **Cloudinary**:
-   - Uses **Signed Client-Side Uploads** to bypass Vercel's 4.5MB limit.
+   - The track array must be filtered if a track is empty.
+3. **Domain Routing**:
+   - Production rendering defaults to `dream-eta-ruddy.vercel.app` to avoid "403 Forbidden" errors on standard aliases.
 
 ## 📋 Next Steps for Collaborator
+- [x] Integrate high-reliability Native Brand Engine.
+- [x] Implement Business Logo upload and display.
 - [ ] Monitor the 3 AI variations generated in `video-processor.ts`.
 - [ ] Enhance transition logic for even more "Premium" feel.
 - [ ] Finalize the Instagram Share Sheet flow for desktop users.
 
 ---
-*Created by Antigravity on 2026-01-01*
+*Updated by Antigravity on 2026-01-03*
