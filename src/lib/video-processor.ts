@@ -123,8 +123,11 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                         business.canvaTemplateId,
                         {
                             "headline": metadata.hook,
-                            "cta": metadata.title || "Buy Now",
-                            "image_1": finalMediaForRender[0]?.url || ""
+                            "body": metadata.caption,
+                            "cta": metadata.title || "Learn More",
+                            "image_1": finalMediaForRender[0]?.url || "",
+                            "image_2": finalMediaForRender[1]?.url || "",
+                            "image_3": finalMediaForRender[2]?.url || ""
                         },
                         `${business.name} - ${metadata.hook}`,
                         process.env.CANVA_API_KEY // GLOBAL TOKEN

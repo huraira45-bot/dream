@@ -56,7 +56,12 @@ export async function GET(req: Request) {
         }
 
         const tokens = await response.json();
-        // tokens include: access_token, refresh_token, expires_in, etc.
+
+        console.log("-----------------------------------------");
+        console.log("🔑 CANVA GLOBAL TOKEN GENERATED!");
+        console.log("COPY THIS TO YOUR .env AS CANVA_API_KEY:");
+        console.log(tokens.access_token);
+        console.log("-----------------------------------------");
 
         // 3. Save tokens to the business
         await prisma.business.update({
@@ -68,7 +73,7 @@ export async function GET(req: Request) {
         });
 
         // 4. Redirect back to business detail page
-        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/admin/business/${businessId}?canva=success`);
+        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/admin/business/${businessId}?canva=success&token_tip=${tokens.access_token.substring(0, 8)}`);
 
     } catch (err: any) {
         console.error("Canva OAuth Error:", err.message);
