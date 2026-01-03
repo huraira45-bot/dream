@@ -10,6 +10,7 @@ import { DeleteReelButton } from "@/components/admin/delete-reel-button"
 import { ScheduleReelButton } from "@/components/admin/schedule-reel-button"
 import { ReelStatusPoller } from "@/components/admin/reel-status-poller"
 import { getUpcomingEvents } from "@/lib/calendar"
+import { LogoManager } from "@/components/admin/logo-manager"
 
 export default async function BusinessDetail({
     params,
@@ -92,60 +93,69 @@ export default async function BusinessDetail({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Brand Identity */}
                 <div className="bg-white border border-zinc-100 rounded-[2.5rem] p-8 shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center justify-between mb-8">
                         <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-2">
                             <Palette className="w-5 h-5 text-pink-600" /> Brand Identity
                         </h2>
-                        <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Auto-Extracted</span>
+                        <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Visual Assets</span>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="flex-1 space-y-2">
-                            <div className="flex items-center justify-between text-xs font-bold text-zinc-400 uppercase tracking-tight">
-                                <span>Primary</span>
-                                <span className="font-mono text-zinc-900">{(business as any).primaryColor || "#000000"}</span>
-                            </div>
-                            <div className="h-12 w-full rounded-2xl border border-zinc-100" style={{ backgroundColor: (business as any).primaryColor || "#000000" }} />
-                        </div>
-                        <div className="flex-1 space-y-2">
-                            <div className="flex items-center justify-between text-xs font-bold text-zinc-400 uppercase tracking-tight">
-                                <span>Secondary</span>
-                                <span className="font-mono text-zinc-900">{(business as any).secondaryColor || "#FFFFFF"}</span>
-                            </div>
-                            <div className="h-12 w-full rounded-2xl border border-zinc-100" style={{ backgroundColor: (business as any).secondaryColor || "#FFFFFF" }} />
-                        </div>
-                        <div className="flex-1 space-y-2">
-                            <div className="flex items-center justify-between text-xs font-bold text-zinc-400 uppercase tracking-tight">
-                                <span>Accent</span>
-                                <span className="font-mono text-zinc-900">{(business as any).accentColor || "#FF0000"}</span>
-                            </div>
-                            <div className="h-12 w-full rounded-2xl border border-zinc-100" style={{ backgroundColor: (business as any).accentColor || "#FF0000" }} />
-                        </div>
-                    </div>
+                    <div className="space-y-8">
+                        {/* Logo Manager */}
+                        <LogoManager businessId={business.id} currentLogoUrl={business.logoUrl} />
 
-                    {/* Canva Template Input */}
-                    <div className="mt-8 pt-8 border-t border-zinc-100">
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                <Sparkles className="w-4 h-4" />
+                        {/* Colors */}
+                        <div className="pt-8 border-t border-zinc-100">
+                            <h3 className="text-xs font-black uppercase text-zinc-400 tracking-widest mb-4">Palette</h3>
+                            <div className="flex items-center gap-4">
+                                <div className="flex-1 space-y-2">
+                                    <div className="flex items-center justify-between text-[10px] font-bold text-zinc-400 uppercase tracking-tight">
+                                        <span>Primary</span>
+                                        <span className="font-mono text-zinc-900">{(business as any).primaryColor || "#000000"}</span>
+                                    </div>
+                                    <div className="h-12 w-full rounded-2xl border border-zinc-100 shadow-inner" style={{ backgroundColor: (business as any).primaryColor || "#000000" }} />
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                    <div className="flex items-center justify-between text-[10px] font-bold text-zinc-400 uppercase tracking-tight">
+                                        <span>Secondary</span>
+                                        <span className="font-mono text-zinc-900">{(business as any).secondaryColor || "#FFFFFF"}</span>
+                                    </div>
+                                    <div className="h-12 w-full rounded-2xl border border-zinc-100 shadow-inner" style={{ backgroundColor: (business as any).secondaryColor || "#FFFFFF" }} />
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                    <div className="flex items-center justify-between text-[10px] font-bold text-zinc-400 uppercase tracking-tight">
+                                        <span>Accent</span>
+                                        <span className="font-mono text-zinc-900">{(business as any).accentColor || "#FF0000"}</span>
+                                    </div>
+                                    <div className="h-12 w-full rounded-2xl border border-zinc-100 shadow-inner" style={{ backgroundColor: (business as any).accentColor || "#FF0000" }} />
+                                </div>
                             </div>
-                            <h2 className="font-bold text-zinc-900 tracking-tight">Canva Engine</h2>
-                            <Link
-                                href="/admin/settings"
-                                className="ml-auto text-[10px] font-black uppercase text-blue-600 hover:text-blue-700 underline underline-offset-4 transition-all"
-                            >
-                                Settings
-                            </Link>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Global Brand Template ID</label>
-                            <input
-                                type="text"
-                                defaultValue={(business as any).canvaTemplateId || ""}
-                                placeholder="Paste Canva Template ID (e.g., 'DAE...')"
-                                className="w-full px-4 py-3 bg-zinc-50 border border-zinc-100 rounded-xl text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
-                            />
-                            <p className="text-[10px] text-zinc-400 italic">This template will be used for professional "POST" generations.</p>
+
+                        {/* Canva Template Input */}
+                        <div className="pt-8 border-t border-zinc-100">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                    <Sparkles className="w-4 h-4" />
+                                </div>
+                                <h3 className="font-bold text-zinc-900 tracking-tight">Canva Engine</h3>
+                                <Link
+                                    href="/admin/settings"
+                                    className="ml-auto text-[10px] font-black uppercase text-blue-600 hover:text-blue-700 underline underline-offset-4 transition-all"
+                                >
+                                    Settings
+                                </Link>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Global Brand Template ID</label>
+                                <input
+                                    type="text"
+                                    defaultValue={(business as any).canvaTemplateId || ""}
+                                    placeholder="Paste Canva Template ID (e.g., 'DAE...')"
+                                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-100 rounded-xl text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                                />
+                                <p className="text-[10px] text-zinc-400 italic">This template will be used for professional "POST" generations.</p>
+                            </div>
                         </div>
                     </div>
                 </div>

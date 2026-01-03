@@ -28,9 +28,13 @@ export default async function BusinessPage({
 
             <main className="max-w-md mx-auto px-6 py-12 flex flex-col items-center">
                 {/* Header / Brand */}
-                <div className="flex flex-col items-center mb-12 text-center">
-                    <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center mb-6 shadow-2xl shadow-white/10">
-                        < Music className="w-8 h-8 text-black" />
+                <div className="flex flex-col items-center mb-12 text-center text-white/90">
+                    <div className="w-20 h-20 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl flex items-center justify-center mb-6 shadow-2xl overflow-hidden shadow-white/5">
+                        {business.logoUrl ? (
+                            <img src={business.logoUrl} alt={business.name} className="w-full h-full object-contain p-3" />
+                        ) : (
+                            <Music className="w-8 h-8 text-white/50" />
+                        )}
                     </div>
                     <h1 className="text-4xl font-extrabold tracking-tight mb-3">
                         {business.name}
