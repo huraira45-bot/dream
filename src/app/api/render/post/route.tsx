@@ -68,111 +68,122 @@ export async function GET(req: NextRequest) {
                         width: '100%',
                         display: 'flex',
                         flexDirection: 'column',
-                        backgroundColor: '#FBCA3E',
+                        backgroundColor: '#FFFFFF',
                         fontFamily: 'sans-serif',
                         position: 'relative',
                         overflow: 'hidden'
                     }}
                 >
-                    {/* Bottom Accent Bar */}
+                    {/* Top Branding Bar */}
                     <div style={{
-                        position: 'absolute',
-                        bottom: 0,
+                        height: 120,
                         width: '100%',
-                        height: 80,
                         backgroundColor: primaryColor,
-                        display: 'flex'
-                    }} />
-
-                    {/* Logo/Brand Box */}
-                    <div style={{
-                        position: 'absolute',
-                        top: 50,
-                        left: 50,
-                        backgroundColor: primaryColor,
-                        padding: '15px 30px',
-                        borderRadius: '15px',
-                        display: 'flex'
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '0 50px'
                     }}>
-                        <div style={{ display: 'flex', color: 'white', fontSize: 24, fontWeight: 'bold', alignItems: 'center', gap: '15px' }}>
+                        <div style={{ display: 'flex', color: 'white', fontSize: 32, fontWeight: '900', alignItems: 'center', gap: '20px' }}>
                             {base64Logo ? (
-                                <img src={base64Logo} style={{ width: 40, height: 40, objectFit: 'contain' }} />
+                                <img src={base64Logo} style={{ width: 60, height: 60, objectFit: 'contain', borderRadius: '10px' }} />
                             ) : null}
-                            {businessName.slice(0, 20)}
+                            {businessName.toUpperCase()}
                         </div>
                     </div>
 
-                    {/* Main Promotion Container */}
-                    <div
-                        style={{
+                    {/* Main Content Area */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                        {/* Background Visual (Illustration or Flat Color) */}
+                        <div style={{
                             position: 'absolute',
-                            top: 200,
-                            left: 80,
-                            width: 650,
-                            height: 600,
-                            backgroundColor: accentColor,
-                            borderRadius: '60px',
+                            inset: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: '#F9FAFB'
+                        }}>
+                            {base64Image ? (
+                                <img
+                                    src={base64Image}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        opacity: 0.15,
+                                        filter: 'grayscale(100%)'
+                                    }}
+                                />
+                            ) : (
+                                <div style={{ width: '100%', height: '100%', backgroundColor: accentColor, opacity: 0.05 }} />
+                            )}
+                        </div>
+
+                        {/* Centered Presentation Card */}
+                        <div style={{
+                            margin: 'auto',
+                            width: 800,
+                            backgroundColor: 'white',
+                            borderRadius: '40px',
                             display: 'flex',
                             flexDirection: 'column',
                             padding: '60px',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
+                            border: `2px solid ${primaryColor}20`,
                             zIndex: 10
-                        }}
-                    >
-                        <div style={{ display: 'flex', fontSize: 90, fontWeight: 900, color: '#FBCA3E', lineHeight: 1.0, marginBottom: 10 }}>
-                            {headline.split(' ')[0]}
-                        </div>
-                        <div style={{ display: 'flex', fontSize: 60, fontWeight: 700, color: 'white', lineHeight: 1.1, marginBottom: 30 }}>
-                            {headline.split(' ').slice(1).join(' ')}
-                        </div>
-
-                        <div style={{ display: 'flex', fontSize: 24, fontWeight: 500, color: 'white', opacity: 0.95, marginBottom: 40, lineHeight: 1.4 }}>
-                            {subheadline}
-                        </div>
-
-                        {/* CTA Button */}
-                        <div style={{
-                            backgroundColor: 'white',
-                            color: accentColor,
-                            padding: '25px 50px',
-                            borderRadius: '100px',
-                            fontSize: 35,
-                            fontWeight: '900',
-                            display: 'flex',
-                            alignSelf: 'flex-start'
                         }}>
-                            <div style={{ display: 'flex' }}>{cta}</div>
+                            <div style={{
+                                fontSize: headline.length > 30 ? 50 : 70,
+                                fontWeight: 900,
+                                color: primaryColor,
+                                lineHeight: 1.1,
+                                marginBottom: 30,
+                                textAlign: 'center'
+                            }}>
+                                {headline}
+                            </div>
+
+                            <div style={{
+                                fontSize: 28,
+                                fontWeight: 500,
+                                color: '#4B5563',
+                                textAlign: 'center',
+                                marginBottom: 50,
+                                lineHeight: 1.5
+                            }}>
+                                {subheadline}
+                            </div>
+
+                            <div style={{
+                                backgroundColor: accentColor,
+                                color: 'white',
+                                padding: '25px 60px',
+                                borderRadius: '100px',
+                                fontSize: 32,
+                                fontWeight: '900',
+                                display: 'flex',
+                                alignSelf: 'center',
+                                boxShadow: `0 10px 20px ${accentColor}40`
+                            }}>
+                                <div style={{ display: 'flex' }}>{cta}</div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Illustration Area */}
-                    <div
-                        style={{
-                            position: 'absolute',
-                            right: -50,
-                            top: 350,
-                            width: 600,
-                            height: 600,
-                            display: 'flex',
-                            zIndex: 20
-                        }}
-                    >
-                        {base64Image ? (
-                            <img
-                                src={base64Image}
-                                style={{
-                                    width: '100%',
-                                    height: 'auto',
-                                    objectFit: 'contain',
-                                    display: 'flex'
-                                }}
-                            />
-                        ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 40, fontWeight: 'bold' }}>
-                                PREMIUM • BRAND
-                            </div>
-                        )}
+                    {/* Bottom Utility Bar */}
+                    <div style={{
+                        height: 100,
+                        width: '100%',
+                        backgroundColor: '#F3F4F6',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderTop: '1px solid #E5E7EB'
+                    }}>
+                        <div style={{ display: 'flex', color: '#9CA3AF', fontSize: 20, fontWeight: '700', letterSpacing: '0.1em' }}>
+                            EXCLUSIVE OFFER • {new Date().getFullYear()} • DREAM AI
+                        </div>
                     </div>
-
                 </div>
             ),
             {

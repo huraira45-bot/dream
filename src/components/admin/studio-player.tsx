@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Play, Pause, Music, Share2, Image as ImageIcon, Download } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface MediaItem {
     id: string
@@ -13,6 +14,7 @@ interface StudioPlayerProps {
     reel: {
         id: string
         url: string
+        type: "REEL" | "POST"
         musicUrl?: string | null
         title?: string | null
         caption?: string | null
@@ -21,6 +23,8 @@ interface StudioPlayerProps {
 }
 
 export function StudioPlayer({ reel, mediaItems }: StudioPlayerProps) {
+    const isPost = reel.type === "POST"
+
     return (
         <div className="relative h-[100dvh] w-full flex items-center justify-center">
             {/* Background Blur Effect */}
@@ -28,7 +32,12 @@ export function StudioPlayer({ reel, mediaItems }: StudioPlayerProps) {
                 className="absolute inset-0 opacity-20 blur-[120px] scale-150 rotate-12 bg-gradient-to-br from-purple-600 via-blue-600 to-transparent"
             />
 
-            <div className="relative w-full max-w-[450px] aspect-[9/16] bg-zinc-900 rounded-[2.5rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 mx-4">
+            <div className={cn(
+                "relative w-full bg-zinc-900 overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 mx-4 transition-all duration-500",
+                isPost
+                    ? "max-w-[600px] aspect-square rounded-[3rem]"
+                    : "max-w-[450px] aspect-[9/16] rounded-[2.5rem]"
+            )}>
                 <VideoWithMusic reel={reel} mediaItems={mediaItems} />
             </div>
         </div>
@@ -131,19 +140,29 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
         return () => { if (timerRef.current) clearTimeout(timerRef.current) }
     }, [currentIndex, isPlaying, isVideo, isMasterMode])
 
+    const isPost = reel.type === "POST"
+
     return (
         <div className="w-full h-full relative group bg-black" onClick={() => setIsPlaying(!isPlaying)}>
 
             {/* RENDERER */}
             {isMasterMode ? (
-                <video
-                    ref={videoRef}
-                    src={finalUrl!}
-                    className="w-full h-full object-cover"
-                    loop
-                    playsInline
-                    onClick={() => setIsPlaying(!isPlaying)}
-                />
+                isPost ? (
+                    <img
+                        src={finalUrl!}
+                        className="w-full h-full object-cover"
+                        alt="Master Post"
+                    />
+                ) : (
+                    <video
+                        ref={videoRef}
+                        src={finalUrl!}
+                        className="w-full h-full object-cover"
+                        loop
+                        playsInline
+                        onClick={() => setIsPlaying(!isPlaying)}
+                    />
+                )
             ) : status === 'failed' || (finalUrl && finalUrl.startsWith('failed')) ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20 p-6 text-center">
                     <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4 border border-red-500/20">
@@ -177,18 +196,18 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div className="bg-black/70 px-4 py-2 rounded-full border border-purple-500/50 flex items-center gap-2">
                                 <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
-                                <span className="text-xs font-bold text-white uppercase tracking-widest">Rendering Master...</span>
+                                <span className="text-xs font-bold text-white uppercase tracking-widest">{isPost ? 'Rendering Post...' : 'Rendering 4K Reel...'}</span>
                             </div>
                         </div>
                     )}
                 </>
             )}
 
-            {!isMasterMode && reel.musicUrl && (
+            {!isMasterMode && !isPost && reel.musicUrl && (
                 <audio ref={audioRef} src={reel.musicUrl} loop />
             )}
 
-            {!isPlaying && (
+            {!isPlaying && !isPost && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none z-20">
                     <div className="w-16 h-16 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/20">
                         <Play className="w-8 h-8 fill-white" />
@@ -196,7 +215,7 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
                 </div>
             )}
 
-            {!isMasterMode && (
+            {!isMasterMode && !isPost && (
                 <div className="absolute top-0 inset-x-0 h-1 flex gap-1 p-2 z-30">
                     {mediaItems.map((_, idx) => (
                         <div
@@ -211,23 +230,30 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
                 <div className="flex items-center gap-3">
                     <div className="px-3 py-1 bg-purple-500 rounded-lg text-[10px] font-black uppercase tracking-widest text-white shadow-lg border border-purple-400">Dream Studio</div>
                     <div className="text-[10px] font-bold text-white/60 uppercase tracking-widest bg-black/20 px-2 py-1 rounded backdrop-blur-sm">
-                        {status === 'rendering' ? 'Generating 4K...' : status === 'ready' ? 'Master File' : 'Preview Mode'}
+                        {status === 'rendering' ? 'Processing...' : status === 'ready' ? (isPost ? 'Branded Post' : 'Master File') : 'Preview'}
                     </div>
                 </div>
             </div>
 
-            <div className="absolute bottom-0 inset-x-0 p-8 pb-12 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none z-20">
-                <div className="space-y-6">
-                    <div className="space-y-1">
-                        <h1 className="text-xl font-black tracking-tight text-white drop-shadow-md">{reel.title}</h1>
-                        <p className="text-sm text-white/80 line-clamp-2 drop-shadow-sm">{reel.caption}</p>
-                    </div>
+            <div className={cn(
+                "absolute bottom-0 inset-x-0 p-8 pb-12 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none z-20",
+                isPost && "bg-transparent pointer-events-auto flex justify-center"
+            )}>
+                <div className="space-y-6 w-full">
+                    {!isPost && (
+                        <div className="space-y-1">
+                            <h1 className="text-xl font-black tracking-tight text-white drop-shadow-md">{reel.title}</h1>
+                            <p className="text-sm text-white/80 line-clamp-2 drop-shadow-sm">{reel.caption}</p>
+                        </div>
+                    )}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-purple-500/20 backdrop-blur-md border border-purple-500/30 flex items-center justify-center animate-spin-slow">
-                                <Music className="w-5 h-5 text-purple-400" />
-                            </div>
-                            {(reel as any).trendingAudioTip && (
+                            {!isPost && (
+                                <div className="w-10 h-10 rounded-full bg-purple-500/20 backdrop-blur-md border border-purple-500/30 flex items-center justify-center animate-spin-slow">
+                                    <Music className="w-5 h-5 text-purple-400" />
+                                </div>
+                            )}
+                            {!isPost && (reel as any).trendingAudioTip && (
                                 <div className="px-3 py-1.5 bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl flex items-center gap-2">
                                     <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
                                     <span className="text-[10px] font-bold text-white/90">IG TREND: {(reel as any).trendingAudioTip}</span>
@@ -248,37 +274,35 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
                                             e.stopPropagation()
                                             let downloadUrl = finalUrl
                                             if (downloadUrl.includes('cloudinary.com')) {
-                                                // Add fl_attachment to force download
                                                 if (downloadUrl.includes('/upload/')) {
                                                     downloadUrl = downloadUrl.replace('/upload/', '/upload/fl_attachment/')
                                                 }
                                             }
                                             const a = document.createElement('a')
                                             a.href = downloadUrl
-                                            a.download = "Dream-Reel.mp4"
+                                            a.download = isPost ? "Dream-Post.png" : "Dream-Reel.mp4"
                                             document.body.appendChild(a)
                                             a.click()
                                             document.body.removeChild(a)
                                         }}
                                         className="p-3 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 text-white hover:bg-white/20 transition-all flex items-center gap-2"
-                                        title="Download Video"
+                                        title={isPost ? "Download Image" : "Download Video"}
                                     >
                                         <Download className="w-5 h-5" />
                                     </button>
                                     <button
                                         onClick={async (e) => {
                                             e.stopPropagation()
-                                            // Smart Share Logic
                                             try {
                                                 if (navigator.share) {
                                                     const blob = await fetch(finalUrl).then(r => r.blob())
-                                                    const file = new File([blob], 'reel.mp4', { type: 'video/mp4' })
+                                                    const file = new File([blob], isPost ? 'post.png' : 'reel.mp4', { type: isPost ? 'image/png' : 'video/mp4' })
 
                                                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                                                         await navigator.share({
                                                             files: [file],
-                                                            title: 'My Dream Reel',
-                                                            text: 'Check out this AI-generated reel! #DreamAI'
+                                                            title: isPost ? 'My Dream Post' : 'My Dream Reel',
+                                                            text: isPost ? 'Check out this AI-generated post!' : 'Check out this AI-generated reel!'
                                                         })
                                                         return
                                                     }
@@ -292,7 +316,7 @@ function VideoWithMusic({ reel, mediaItems }: { reel: any, mediaItems: MediaItem
                                                 }
                                                 const a = document.createElement('a')
                                                 a.href = downloadUrl
-                                                a.download = "Dream-Instagram-Reel.mp4"
+                                                a.download = isPost ? "Dream-Post.png" : "Dream-Reel.mp4"
                                                 document.body.appendChild(a)
                                                 a.click()
                                                 document.body.removeChild(a)

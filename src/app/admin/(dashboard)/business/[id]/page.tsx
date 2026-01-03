@@ -294,37 +294,55 @@ export default async function BusinessDetail({
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {drafts.map((reel: any) => (
-                        <div key={reel.id} className="relative group bg-white rounded-[2.5rem] border border-zinc-100 p-8 shadow-sm hover:shadow-xl hover:shadow-zinc-200/50 transition-all duration-300">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="p-3 bg-zinc-50 rounded-2xl group-hover:bg-zinc-900 group-hover:text-white transition-all">
-                                    <Film className="w-6 h-6" />
-                                </div>
-                                <div className="px-3 py-1 bg-zinc-50 rounded-full text-[10px] font-black uppercase text-zinc-400 tracking-widest group-hover:bg-zinc-900/10 flex items-center gap-1.5">
+                        <div key={reel.id} className="relative group bg-white rounded-[2.5rem] border border-zinc-100 p-6 shadow-sm hover:shadow-xl hover:shadow-zinc-200/50 transition-all duration-300 flex flex-col">
+                            {/* Visual Preview Area */}
+                            <div className="aspect-square w-full bg-zinc-50 rounded-2xl mb-6 overflow-hidden relative border border-zinc-100/50">
+                                {reel.url.startsWith('pending') ? (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                                        <Loader2 className="w-8 h-8 text-zinc-300 animate-spin" />
+                                        <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Rendering...</span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {reel.type === "REEL" ? (
+                                            <video src={reel.url} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                        ) : (
+                                            <img src={reel.url} className="w-full h-full object-cover" />
+                                        )}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                                    </>
+                                )}
+
+                                <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-black uppercase text-zinc-900 tracking-widest flex items-center gap-1.5 shadow-sm">
                                     {reel.type === "REEL" ? <Film className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
                                     {reel.type}
                                 </div>
                             </div>
 
-                            <h3 className="text-xl font-bold text-zinc-900 mb-2 line-clamp-1">{reel.title}</h3>
-                            <p className="text-sm text-zinc-500 line-clamp-3 mb-8 leading-relaxed italic">"{reel.caption}"</p>
+                            <div className="flex-1 space-y-2">
+                                <h3 className="text-lg font-bold text-zinc-900 line-clamp-1">{reel.title}</h3>
+                                <p className="text-xs text-zinc-500 line-clamp-2 leading-relaxed italic">"{reel.caption}"</p>
+                            </div>
 
-                            <div className="flex items-center gap-3">
-                                {reel.url.startsWith('pending') ? (
-                                    <div className="w-full flex items-center gap-2">
-                                        <div className="flex-1">
-                                            <ReelStatusPoller reelId={reel.id} currentUrl={reel.url} />
+                            <div className="mt-8 pt-6 border-t border-zinc-50">
+                                <div className="flex items-center gap-3">
+                                    {reel.url.startsWith('pending') ? (
+                                        <div className="w-full flex items-center gap-2">
+                                            <div className="flex-1">
+                                                <ReelStatusPoller reelId={reel.id} currentUrl={reel.url} />
+                                            </div>
+                                            <DeleteReelButton reelId={reel.id} />
                                         </div>
-                                        <DeleteReelButton reelId={reel.id} />
-                                    </div>
-                                ) : (
-                                    <>
-                                        <ScheduleReelButton reelId={reel.id} />
-                                        <Link href={`/v/${reel.id}`} className="flex-1 py-3 text-center bg-zinc-50 hover:bg-zinc-100 text-zinc-900 rounded-xl font-bold text-xs transition-all">
-                                            Preview
-                                        </Link>
-                                        <DeleteReelButton reelId={reel.id} />
-                                    </>
-                                )}
+                                    ) : (
+                                        <>
+                                            <ScheduleReelButton reelId={reel.id} />
+                                            <Link href={`/v/${reel.id}`} className="flex-1 py-3 text-center bg-zinc-50 hover:bg-zinc-100 text-zinc-900 rounded-xl font-bold text-xs transition-all">
+                                                Preview
+                                            </Link>
+                                            <DeleteReelButton reelId={reel.id} />
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}
