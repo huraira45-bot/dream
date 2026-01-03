@@ -18,9 +18,8 @@ export async function createCanvaDesignFromTemplate(
     }
 
     try {
-        // 1. Create a design from template using Autofill API concept
-        // (Simplified representation based on Canva Connect API)
-        const response = await fetch(`${CANVA_API_BASE}/autofill`, {
+        // 1. Create a design from template using Autofill API (Spec: /autofills)
+        const response = await fetch(`${CANVA_API_BASE}/autofills`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${apiKey}`,
@@ -29,7 +28,14 @@ export async function createCanvaDesignFromTemplate(
             body: JSON.stringify({
                 brand_template_id: templateId,
                 title: title,
-                data: data
+                data: Object.keys(data).reduce((acc, key) => {
+                    // Logic: If it's a URL, treat as image (simplification), else text
+                    const isUrl = data[key].startsWith("http");
+                    acc[key] = isUrl
+                        ? { type: "image", asset_id: data[key] } // Note: Canva requires asset_id, might need upload logic first
+                        : { type: "text", text: data[key] };
+                    return acc;
+                }, {} as any)
             })
         });
 
