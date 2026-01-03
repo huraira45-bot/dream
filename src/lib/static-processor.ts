@@ -13,7 +13,7 @@ export interface MediaItem {
 export async function renderStaticPost(
     mediaUrl: string,
     branding: { primaryColor: string, accentColor: string },
-    metadata: { hook: string, businessName: string, cta?: string, subheadline?: string }
+    metadata: { hook: string, businessName: string, cta?: string, subheadline?: string, logoUrl?: string }
 ) {
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost"))
         ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")
@@ -28,6 +28,9 @@ export async function renderStaticPost(
     renderUrl.searchParams.append("primaryColor", branding.primaryColor)
     renderUrl.searchParams.append("accentColor", branding.accentColor)
     renderUrl.searchParams.append("businessName", metadata.businessName)
+    if (metadata.logoUrl) {
+        renderUrl.searchParams.append("logoUrl", metadata.logoUrl)
+    }
 
     logger.info(`🎨 Generating Native Branded Post: ${renderUrl.toString()}`)
 

@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
         const primaryColor = searchParams.get('primaryColor') || '#000000';
         const accentColor = searchParams.get('accentColor') || '#FF4D4D';
         const businessName = sanitizeText(searchParams.get('businessName') || 'The Brand');
+        const logoUrl = searchParams.get('logoUrl');
 
         // Robust Image Fetching at the Edge
         let base64Image = null;
@@ -37,6 +38,25 @@ export async function GET(req: NextRequest) {
                 }
             } catch (err) {
                 console.error("Image Fetch Failed:", err);
+            }
+        }
+
+        let base64Logo = null;
+        if (logoUrl && logoUrl.startsWith('http')) {
+            try {
+                const logoRes = await fetch(logoUrl, { signal: AbortSignal.timeout(5000) });
+                if (logoRes.ok && logoRes.headers.get('content-type')?.startsWith('image/')) {
+                    const arrayBuffer = await logoRes.arrayBuffer();
+                    const uint8 = new Uint8Array(arrayBuffer);
+                    let binary = '';
+                    for (let i = 0; i < uint8.length; i++) {
+                        binary += String.fromCharCode(uint8[i]);
+                    }
+                    const base64String = btoa(binary);
+                    base64Logo = `data:${logoRes.headers.get('content-type')};base64,${base64String}`;
+                }
+            } catch (err) {
+                console.error("Logo Fetch Failed:", err);
             }
         }
 
@@ -74,7 +94,10 @@ export async function GET(req: NextRequest) {
                         borderRadius: '15px',
                         display: 'flex'
                     }}>
-                        <div style={{ display: 'flex', color: 'white', fontSize: 24, fontWeight: 'bold' }}>
+                        <div style={{ display: 'flex', color: 'white', fontSize: 24, fontWeight: 'bold', alignItems: 'center', gap: '15px' }}>
+                            {base64Logo ? (
+                                <img src={base64Logo} style={{ width: 40, height: 40, objectFit: 'contain' }} />
+                            ) : null}
                             {businessName.slice(0, 20)}
                         </div>
                     </div>

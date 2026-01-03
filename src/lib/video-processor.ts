@@ -133,21 +133,28 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                 }
 
                 logger.info(`🚀 Routing to Native Brand Engine...`)
-                const sanitize = (t: string) => t.replace(/[^\x00-\x7F]/g, "").trim();
+                const sanitize = (val: any) => {
+                    const str = String(val || "");
+                    return str.replace(/[^\x00-\x7F]/g, "").trim();
+                };
 
                 const response = await renderStaticPost(mediaUrl, nativeBranding, {
                     hook: sanitize(metadata.hook),
                     businessName: sanitize(business.name),
                     cta: sanitize(metadata.title || "Learn More"),
-                    subheadline: sanitize(metadata.caption || "")
+                    subheadline: sanitize(metadata.caption || ""),
+                    logoUrl: business.logoUrl
                 })
 
                 renderId = response.url // Native engine returns a Cloudinary URL directly
             }
 
+            // Sync Update: POST is immediate, REEL is pending
+            const finalUrl = (forceType === "POST") ? renderId : `pending:${renderId}`;
+
             await prisma.generatedReel.update({
                 where: { id: reel.id },
-                data: { url: `pending:${renderId}` }
+                data: { url: finalUrl }
             })
             return reel
         } catch (err: any) {
