@@ -3,26 +3,37 @@ import { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
+// Helper to strip emojis and non-standard characters that crash Satori
+function sanitizeText(text: string): string {
+    return text.replace(/[^\x00-\x7F]/g, "").trim();
+}
+
 export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
 
-        const headline = (searchParams.get('headline') || 'Quality Service').toUpperCase();
-        const subheadline = searchParams.get('subheadline') || 'Premium Excellence';
-        const cta = (searchParams.get('cta') || 'Order Now').toUpperCase();
+        const headline = sanitizeText(searchParams.get('headline') || 'Quality Service').toUpperCase();
+        const subheadline = sanitizeText(searchParams.get('subheadline') || 'Premium Excellence');
+        const cta = sanitizeText(searchParams.get('cta') || 'Order Now').toUpperCase();
         const imgUrl = searchParams.get('imgUrl');
         const primaryColor = searchParams.get('primaryColor') || '#000000';
         const accentColor = searchParams.get('accentColor') || '#FF4D4D';
-        const businessName = searchParams.get('businessName') || 'The Brand';
+        const businessName = sanitizeText(searchParams.get('businessName') || 'The Brand');
 
         // Robust Image Fetching at the Edge
         let base64Image = null;
-        if (imgUrl) {
+        if (imgUrl && imgUrl.startsWith('http')) {
             try {
                 const imgRes = await fetch(imgUrl, { signal: AbortSignal.timeout(8000) });
                 if (imgRes.ok && imgRes.headers.get('content-type')?.startsWith('image/')) {
                     const arrayBuffer = await imgRes.arrayBuffer();
-                    const base64String = Buffer.from(arrayBuffer).toString('base64');
+                    // Robust Base64 for Edge
+                    const uint8 = new Uint8Array(arrayBuffer);
+                    let binary = '';
+                    for (let i = 0; i < uint8.length; i++) {
+                        binary += String.fromCharCode(uint8[i]);
+                    }
+                    const base64String = btoa(binary);
                     base64Image = `data:${imgRes.headers.get('content-type')};base64,${base64String}`;
                 }
             } catch (err) {
@@ -65,7 +76,7 @@ export async function GET(req: NextRequest) {
                         display: 'flex'
                     }}>
                         <div style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>
-                            {businessName.slice(0, 15)}
+                            {businessName.slice(0, 20)}
                         </div>
                     </div>
 
@@ -123,7 +134,7 @@ export async function GET(req: NextRequest) {
                             zIndex: 20
                         }}
                     >
-                        {base64Image && (
+                        {base64Image ? (
                             <img
                                 src={base64Image}
                                 style={{
@@ -132,6 +143,10 @@ export async function GET(req: NextRequest) {
                                     objectFit: 'contain'
                                 }}
                             />
+                        ) : (
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 40, fontWeight: 'bold', transform: 'rotate(-5deg)' }}>
+                                PREMIUM • BRAND
+                            </div>
                         )}
                     </div>
 

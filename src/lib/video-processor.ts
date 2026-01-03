@@ -133,11 +133,13 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                 }
 
                 logger.info(`🚀 Routing to Native Brand Engine...`)
+                const sanitize = (t: string) => t.replace(/[^\x00-\x7F]/g, "").trim();
+
                 const response = await renderStaticPost(mediaUrl, nativeBranding, {
-                    hook: metadata.hook,
-                    businessName: business.name,
-                    cta: metadata.title || "Learn More",
-                    subheadline: metadata.caption // Passing caption as subheadline for the Premium Ad Layout
+                    hook: sanitize(metadata.hook),
+                    businessName: sanitize(business.name),
+                    cta: sanitize(metadata.title || "Learn More"),
+                    subheadline: sanitize(metadata.caption || "")
                 })
 
                 renderId = response.url // Native engine returns a Cloudinary URL directly
