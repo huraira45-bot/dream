@@ -7,35 +7,44 @@ export async function GET(req: Request) {
     const code = searchParams.get("code");
     const businessId = searchParams.get("state");
     const error = searchParams.get("error");
-
-    if (error) {
-        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/admin/business/${businessId}?error=canva_denied`);
-    }
-
-    if (!code || !businessId) {
-        return NextResponse.json({ error: "Missing required OAuth parameters" }, { status: 400 });
-    }
-
-    // 1. Get the code verifier from the cookie
-    const cookieStore = await cookies();
-    const codeVerifier = cookieStore.get("canva_code_verifier")?.value;
-
-    if (!codeVerifier) {
-        return NextResponse.json({ error: "Missing code verifier (session expired)" }, { status: 400 });
-    }
-
-    const clientId = process.env.CANVA_CLIENT_ID;
-    const clientSecret = process.env.CANVA_CLIENT_SECRET;
-    const redirectUri = process.env.CANVA_REDIRECT_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/canva/callback`;
-
-    if (!clientId || !clientSecret) {
-        return NextResponse.json({ error: "Server credential configuration error" }, { status: 500 });
-    }
-
     try {
-        // 2. Exchange code for tokens
-        const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+        const { searchParams } = new URL(req.url);
+        const code = searchParams.get("code");
+        const businessId = searchParams.get("state") || "global"; // state handles businessId
+        const error = searchParams.get("error");
+        const errorDescription = searchParams.get("error_description");
 
+        if (error) {
+            console.error(`Canva OAuth Error Callback: ${error} - ${errorDescription}`);
+            return NextResponse.json({ error: `Auth Error: ${error}`, details: errorDescription }, { status: 400 });
+        }
+
+        if (!code) {
+            console.error("Canva OAuth Callback: Missing authorization code.");
+            return NextResponse.json({ error: "Missing code" }, { status: 400 });
+        }
+
+        const clientId = process.env.CANVA_CLIENT_ID;
+        const clientSecret = process.env.CANVA_CLIENT_SECRET;
+        const redirectUri = process.env.CANVA_REDIRECT_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/canva/callback`;
+
+        if (!clientId || !clientSecret) {
+            console.error("CRITICAL: Canva Client ID or Secret missing in callback.");
+            return NextResponse.json({ error: "Configuration Error" }, { status: 500 });
+        }
+
+        // 1. Retrieve the code verifier from the cookie
+        const cookieStore = await cookies();
+        const codeVerifier = cookieStore.get("canva_code_verifier")?.value;
+
+        if (!codeVerifier) {
+            console.error("Canva OAuth Callback: Missing code_verifier cookie. (Possbily expired or cross-domain issue)");
+            return NextResponse.json({ error: "Missing session (code verifier). Please try again." }, { status: 400 });
+        }
+
+        // 2. Exchange code for access token
+        console.log(`Exchanging code for token... (RedirectURI: ${redirectUri})`);
+        const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
         const response = await fetch("https://api.canva.com/rest/v1/oauth/token", {
             method: "POST",
             headers: {
@@ -51,8 +60,9 @@ export async function GET(req: Request) {
         });
 
         if (!response.ok) {
-            const errData = await response.json();
-            throw new Error(`Canva Token Error: ${JSON.stringify(errData)}`);
+            const errBody = await response.json();
+            console.error("Canva Token Exchange Failed:", JSON.stringify(errBody));
+            return NextResponse.json({ error: "Token Exchange Failed", details: errBody }, { status: response.status });
         }
 
         const tokens = await response.json();
@@ -78,11 +88,21 @@ export async function GET(req: Request) {
             }
         });
 
-        // 4. Redirect back to business detail page (or settings)
-        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/admin/business/${businessId}?canva=success`);
+        // 4. Clean up cookie
+        cookieStore.delete("canva_code_verifier");
+
+        // 5. Redirect back
+        const targetUrl = businessId === "global"
+            ? `${process.env.NEXT_PUBLIC_APP_URL}/admin/settings?canva=success`
+            : `${process.env.NEXT_PUBLIC_APP_URL}/admin/business/${businessId}?canva=success`;
+
+        return NextResponse.redirect(targetUrl);
 
     } catch (err: any) {
-        console.error("Canva OAuth Error:", err.message);
-        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/admin/business/${businessId}?error=canva_token_failure`);
+        console.error("Canva OAuth Callback Exception:", err);
+        return NextResponse.json({
+            error: "Internal Server Error in Callback",
+            message: err.message
+        }, { status: 500 });
     }
 }
