@@ -13,13 +13,14 @@ export interface MediaItem {
 export async function renderStaticPost(
     mediaUrl: string,
     branding: { primaryColor: string, accentColor: string },
-    metadata: { hook: string, businessName: string, cta?: string }
+    metadata: { hook: string, businessName: string, cta?: string, subheadline?: string }
 ) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
     // 1. Construct the Native Renderer URL
     const renderUrl = new URL(`${appUrl}/api/render/post`)
     renderUrl.searchParams.append("headline", metadata.hook)
+    renderUrl.searchParams.append("subheadline", metadata.subheadline || "")
     renderUrl.searchParams.append("cta", metadata.cta || "Check it out")
     renderUrl.searchParams.append("imgUrl", mediaUrl)
     renderUrl.searchParams.append("primaryColor", branding.primaryColor)

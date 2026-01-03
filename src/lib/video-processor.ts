@@ -11,6 +11,7 @@ import { processMultiLLMCreativeFlow } from "./llm-router"
 import { logger } from "./logger"
 import { extractBrandingFromLogo } from "./branding"
 import { getUpcomingEvents } from "./calendar"
+import { generateFreeIllustration } from "./illustration-service"
 // Canva ignored in favor of Native Brand Engine
 
 /**
@@ -28,12 +29,12 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
         }
     }) as any
 
-    if (!business || business.mediaItems.length === 0) {
-        logger.warn(`No media items found for business: ${businessId}`)
+    if (!business || (business.mediaItems.length === 0 && forceType === "REEL")) {
+        logger.warn(`No media items found for business: ${businessId} and type is REEL. Blocking.`)
         return null
     }
 
-    const mediaItems = business.mediaItems
+    const mediaItems = business.mediaItems || []
     const allMediaIds = mediaItems.map((m: { id: string }) => m.id)
     const isReel = forceType === "REEL"
 
@@ -118,17 +119,25 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
             } else {
                 // PIVOT: Native Brand Engine (HTML-to-Image)
                 // This replaces the complex Canva/Shotstack flow with a robust, free, and branded local generator.
-                const mainItem = finalMediaForRender[0]
+                let mediaUrl = finalMediaForRender[0]?.url
+
+                // FALLBACK: If no media, generate a free 3D illustration
+                if (!mediaUrl) {
+                    logger.info(`✨ No media found for post, generating free illustration for: ${business.name}`)
+                    mediaUrl = await generateFreeIllustration(metadata.hook, branding?.mood)
+                }
+
                 const nativeBranding = {
                     primaryColor: branding?.primary || "#000000",
                     accentColor: branding?.accent || "#FF4D4D"
                 }
 
                 logger.info(`🚀 Routing to Native Brand Engine...`)
-                const response = await renderStaticPost(mainItem.url, nativeBranding, {
+                const response = await renderStaticPost(mediaUrl, nativeBranding, {
                     hook: metadata.hook,
                     businessName: business.name,
-                    cta: metadata.title || "Learn More"
+                    cta: metadata.title || "Learn More",
+                    subheadline: metadata.caption // Passing caption as subheadline for the Premium Ad Layout
                 })
 
                 renderId = response.url // Native engine returns a Cloudinary URL directly
