@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma"
 import { Sparkles, Shield, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react"
-import Link from "next/link"
 
 export default async function SettingsPage() {
     const settings = await (prisma as any).globalSetting.findUnique({
@@ -66,13 +65,13 @@ export default async function SettingsPage() {
                         )}
 
                         <div className="pt-4">
-                            <Link
-                                href={`/api/auth/canva/login?businessId=global`}
+                            <a
+                                href="/api/auth/canva/login?businessId=global"
                                 className="inline-flex items-center gap-3 px-8 py-4 bg-black text-white rounded-2xl font-bold text-sm hover:bg-zinc-800 transition-all shadow-xl shadow-black/10"
                             >
                                 <RefreshCw className={`w-4 h-4 ${isConnected ? '' : 'animate-spin'}`} />
                                 {isConnected ? 'Re-authorize Global Account' : 'Connect Global Canva Account'}
-                            </Link>
+                            </a>
                             {!isConnected && (
                                 <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-tighter mt-4 ml-2">
                                     ⚠️ Required for Static Post generation.
