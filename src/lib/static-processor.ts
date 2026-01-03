@@ -1,4 +1,4 @@
-import cloudinary from "./cloudinary"
+import cloudinary, { configCloudinary } from "./cloudinary"
 import { logger } from "./logger"
 
 export interface MediaItem {
@@ -15,6 +15,7 @@ export async function renderStaticPost(
     branding: { primaryColor: string, accentColor: string },
     metadata: { hook: string, businessName: string, cta?: string, subheadline?: string, logoUrl?: string }
 ) {
+    configCloudinary(); // Ensure Cloudinary is ready
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost"))
         ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")
         : "https://dream-eta-ruddy.vercel.app";
