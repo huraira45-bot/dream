@@ -29,22 +29,30 @@ export async function renderStaticPost(
 
     logger.info(`🎨 Generating Native Branded Post: ${renderUrl.toString()}`)
 
-    try {
-        // 2. Upload the dynamically generated image to Cloudinary
-        // Cloudinary will fetch the URL, Satori will render the HTML, and Cloudinary stores the result.
-        const uploadResponse = await cloudinary.uploader.upload(renderUrl.toString(), {
+    const attemptRender = async (url: string) => {
+        return await cloudinary.uploader.upload(url, {
             folder: "branded-posts",
             public_id: `post_${Date.now()}`
         })
+    }
 
+    try {
+        // 1st Attempt: Use Primary Configured URL
+        const uploadResponse = await attemptRender(renderUrl.toString())
         logger.info(`✅ Branded Post Rendered & Uploaded: ${uploadResponse.secure_url}`)
-
-        return {
-            id: uploadResponse.public_id,
-            url: uploadResponse.secure_url
-        }
+        return { id: uploadResponse.public_id, url: uploadResponse.secure_url }
     } catch (error: any) {
-        logger.error(`❌ Native Render Failure: ${error.message}`)
-        throw new Error(`Failed to render native branded post: ${error.message}`)
+        logger.warn(`⚠️ Primary Render Failed: ${error.message}. Attempting Fallback...`)
+
+        try {
+            // 2nd Attempt: Use Verified Live Domain Fallback
+            const fallbackUrl = renderUrl.toString().replace(appUrl, "https://dream-eta-ruddy.vercel.app")
+            const fallbackResponse = await attemptRender(fallbackUrl)
+            logger.info(`✅ Fallback Render Success: ${fallbackResponse.secure_url}`)
+            return { id: fallbackResponse.public_id, url: fallbackResponse.secure_url }
+        } catch (fallbackError: any) {
+            logger.error(`❌ Native Render Failure (All Domains): ${fallbackError.message}`)
+            throw new Error(`Failed to render native branded post: ${fallbackError.message}`)
+        }
     }
 }

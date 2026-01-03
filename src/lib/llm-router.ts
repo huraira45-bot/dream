@@ -300,8 +300,7 @@ ${variationMix.map((v, i) => `    - Option ${i + 1} [${v.type}]: ${v.style}.`).j
             );
             const isGeneric = result.options.some(opt =>
                 opt.hook.toLowerCase().includes("discover") ||
-                opt.hook.toLowerCase().includes("welcome") ||
-                opt.hook.toLowerCase().includes(businessName.toLowerCase())
+                opt.hook.toLowerCase().includes("welcome")
             );
 
             const lowDivergence = (result.options.length > 1 && diff12 < 2) || (result.options.length > 2 && diff23 < 2);
