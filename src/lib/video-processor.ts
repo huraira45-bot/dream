@@ -146,7 +146,8 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                     businessName: sanitize(business.name),
                     cta: sanitize(metadata.title || "Learn More"),
                     subheadline: sanitize(metadata.caption || ""),
-                    logoUrl: business.logoUrl
+                    logoUrl: business.logoUrl,
+                    layoutStyle: (metadata as any).layoutStyle
                 })
 
                 renderId = response.url // Native engine returns a Cloudinary URL directly

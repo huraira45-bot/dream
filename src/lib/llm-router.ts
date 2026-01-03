@@ -38,6 +38,7 @@ export interface AIReelDataV3 {
     narrative: string
     transitionType: "fade" | "wipeRight" | "wipeLeft" | "slideRight" | "slideLeft" | "zoom"
     effectType: "zoomIn" | "zoomOut" | "slideLeft" | "slideRight" | "none"
+    layoutStyle: "magazine" | "poster" // Native Image Builder Layout
 }
 
 export async function processMultiLLMCreativeFlow(
@@ -111,10 +112,13 @@ export async function processMultiLLMCreativeFlow(
     console.log(`Action: Brainstorming concepts (Spice: ${pickedSpice})`)
     console.log(`Variation Mix: ${variationMix.map(m => m.type).join(", ")}`)
 
-    const prompt = `You are an AI Creative Production Team consisting of:
-    - THE STYLIST: Expert in typography and minimal/aesthetic vibes.
-    - THE DJ: Selector of trending Pakistani audio.
-    - THE GEN Z SMM: A trend-aware boss who reviews everything for "Aura" and "Aesthetics". 
+    const prompt = `You are a ELITE AI CREATIVE STRATEGIST and Social Media Viral Expert. 
+    Your goal is to instruct the Native Image Builder on how to create the most EXTREMELY CATCHY and ATTRACTIVE visual content.
+    
+    You understand:
+    - High-conversion psychology (stopping the scroll).
+    - Social media aesthetics (Magazine layouts, Bold Posters, Minimalist clean vibes).
+    - Tone and "Aura" that makes people want to share.
     
     CRITICAL THEME (Creative Spice): ${pickedSpice}
     
@@ -128,115 +132,43 @@ export async function processMultiLLMCreativeFlow(
     - Hooks Used Recently: [${usedHooks.join(", ")}]
     - CURRENT MODE: ${mode}
     
-    HIGH-QUALITY SELECTION RULE (The SMM):
-    - You MUST identify the "best" media items to include in this ${isReel ? "Reel" : "Post"}.
-    - Do NOT use low-quality or irrelevant items mentioned as SKIP in the report.
-    - PRIORITIZE items marked as [TOP_PICKS] in the visual report.
-    - TARGET DENSITY: A selection of 5-10 BEST items is much better than using all ${mediaUrls.length} items. 
-    - CRITICAL: If the user uploaded too many items, CULL the weaker ones. 
+    NATIVE IMAGE BUILDER INSTRUCTIONS (The Strategist):
+    - You must choose a "layoutStyle":
+        - "magazine": Best for storytelling, lots of text, clean editorial look.
+        - "poster": Best for bold, high-impact visuals, big headlines, aggressive vibes.
+    
+    HIGH-QUALITY SELECTION RULE (The Strategist):
+    - Identify the "best" media items. Do NOT use generic or low-quality items.
+    - TARGET DENSITY: 5-10 BEST items. 
     - RETURN: List all indices to IGNORE in "skipMediaIndices".
     
     ${mode === CreativeMode.NO_VISION ? `
     🚨 NO_VISION CRITICAL RULE:
-    - You are BLIND. Do NOT use generic hooks like "Discover...", "Welcome to...", or "See the magic...".
-    - Avoid literal descriptions of the business name.
-    - Focus on abstracts, curiosity, and high-entropy storytelling.
+    - You are BLIND. Do NOT use generic hooks like "Discover...", "Welcome to...", or "See the magic...". Focus on abstracts and storytelling.
     ` : ""}
 
     ${branding ? `
-    BRAND GUIDELINES (The Stylist):
-    - Primary Color: ${branding.primary}
-    - Secondary Color: ${branding.secondary}
-    - Accent Color: ${branding.accent}
-    - Brand Mood: ${branding.mood}
-    - RULE: You MUST prioritize these colors for "fontColor" and "textBackgroundColor".
+    BRAND GUIDELINES (The Strategist):
+    - Primary: ${branding.primary}, Secondary: ${branding.secondary}, Accent: ${branding.accent}
+    - Vibe: ${branding.mood}
+    - Use these colors for "fontColor" and "textBackgroundColor".
     ` : ""}
 
     ${upcomingEvents.length > 0 ? `
-    CALENDAR CONTEXT (Occasional Post Logic):
-    - Upcoming Events in Pakistan: [${upcomingEvents.join(", ")}]
-    - RULE: If an event is relevant, use it to pivot your hooks and visual style.
+    CALENDAR CONTEXT: [${upcomingEvents.join(", ")}]
+    - Pivot your hooks/vibes if an event is relevant.
     ` : ""}
 
     ${campaignGoal ? `
-    STRATEGIC DIRECTIVE (User Intent):
-    - Goal: ${campaignGoal}
-    - CRITICAL RULE: This is your TOP PRIORITY. All hooks, captions, and vibes MUST center around this specific goal/offer.
+    STRATEGIC DIRECTIVE: ${campaignGoal}
+    - TOP PRIORITY. All content MUST center around this goal.
     ` : ""}
 
     YOUR TASK: Generate EXACTLY ${variationMix.length} UNIQUE production options. 
-    Each option must be distinct in vibe, text, and music.
-
-    VARIATION SEEDS (Strict Enforcement):
-${variationMix.map((v, i) => `    - Option ${i + 1} [${v.type}]: ${v.style}.`).join("\n")}
-
-    AESTHETIC RULES (The Stylist):
-    - Tone: Incorporate the "${pickedSpice}" theme into your color choices and copywriting.
-    - Fonts: Pick EXACTLY one from these sets per variation:
-        - Handwritten: [Permanent Marker, Gloria Hallelujah]
-        - Bold: [Fredoka One, Titan One]
-        - Editorial: [Abril Fatface, Ultra]
-        - Funky: [Bungee, Monoton, Creepster]
-    - Styling: Match Font Color to the mood and the theme. Use vibrant, unexpected combinations.
-
-    FORBIDDEN_BLOCKLIST (CONTRACT VIOLATION IF USED):
-    - RECENT_SONGS: [${usedSongs.join(", ")}]
-    - RECENT_HOOKS: [${usedHooks.join(", ")}]
-    - OVERLAP: Using any song or hook from this list will result in the entire batch being REJECTED.
-
-    VARIATION DIVERGENCE CONTRACT:
-    You are generating 3 "Reel archetypes". They MUST fundamentally diverge:
+    Each MUST be extremely attractive and divert from the norm.
     
-    1. ARYCHETYPE: THE VIRAL SAFE-BET (Var 1)
-       - Style: Follows the "${pickedSpice}" theme religiously.
-       - Vibe: High energy, safe, viral potential.
-       - Creative Risk: Low.
-    
-    2. ARCHETYPE: THE EXPERIMENTAL TRENDSETTER (Var 2)
-       - Style: Challenges the theme with a twist.
-       - Vibe: Edgy, unconventional, pattern-interrupting.
-       - Creative Risk: Medium.
-    
-    3. ARCHETYPE: THE "WEIRD" BOLD MOVE (Var 3)
-       - Style: Permission to be unusual. If it's for ${businessName}, think "What would a Gen Z creator do if they didn't care about rules?".
-       - Vibe: Abstract, aggressive transitions, "Post-ironic" or highly emotive.
-       - Creative Risk: MAXIMUM.
-
-    DIVERGENCE RULES:
-    - [SONG]: EVERY variation MUST use a DIFFERENT song from the trending list.
-    - [HOOK]: EVERY variation MUST use a DIFFERENT Opus.pro formula.
-    - [STYLE]: EVERY variation MUST use a DIFFERENT font and color palette.
-    - If Var 1 is "Cinematic", Var 2 CANNOT be "Cinematic".
-
-    AESTHETIC RULES (The Stylist):
-    - Tone: Incorporate the "${pickedSpice}" theme into your color choices and copywriting.
-    - Fonts: Pick EXACTLY one from these per variation (NO REUSE across the 3):
-        - Handwritten: [Permanent Marker, Gloria Hallelujah]
-        - Bold: [Fredoka One, Titan One]
-        - Editorial: [Abril Fatface, Ultra]
-        - Funky: [Bungee, Monoton, Creepster]
-
-    MUSIC RULES (The Dynamic DJ):
-    - Select EXACTLY from these hits: [${trendingSongs}]
-    - CRITICAL: NO REPETITION. Variation 1, 2, and 3 MUST each have a UNIQUE song from the list.
-    - NEGATIVE CONSTRAINT: DO NOT use any song listed in "Songs Used Recently".
-    - If you repeat a song, the entire batch is invalid.
-
-    DIRECTOR RULES:
-    - COLD OPEN: Prioritize starting the narrative with the "Big Result" or "Peak Vibe" before context.
-    - NEGATIVE CONSTRAINT: DO NOT reuse hooks from "Hooks Used Recently".
-    - CAPTION DIVERSITY: Captions must be completely different. No "Yum!" in every one. Write specific marketing copy for each mood. Use emojis liberally for HYPE, but be sober for DRAMATIC.
-
-    HOOK FORMULAS (Opus.pro Standard):
-    You MUST use a UNIQUE formula for EACH variation:
-    1. THE CONTRARIAN: "Everyone says [X], but [Y]"
-    2. THE MISTAKE: "Don't make the mistake I made with [Topic]"
-    3. THE NUMBERED LIST: "[3-7] [Things] that [Outcome]"
-    4. THE TIME-BASED: "How I [Result] in [Short Time]"
-    5. THE QUESTION: "Are you [Doing Something Wrong]?"
-
-    Return ONLY a JSON object with a key "options" containing an array of ${variationMix.length} AIReelDataV3 objects.
-    Fields: hook, title, caption, fontFamily, fontColor, textBackgroundColor, textPosition, musicMood, trendingAudioTip (UNIQUE), musicRationale, vibeScore, energyLevel, skipMediaIndices (CRITICAL: indices to IGNORE/CULL), smmAura, smmGimmick, visualStyle, narrative, transitionType, effectType.
+    Return ONLY a JSON object with a key "options" containing an array of AIReelDataV3 objects.
+    Fields: hook, title, caption, fontFamily, fontColor, textBackgroundColor, textPosition, musicMood, trendingAudioTip, musicRationale, vibeScore, energyLevel, skipMediaIndices, smmAura, smmGimmick, visualStyle, narrative, transitionType, effectType, layoutStyle.
     `;
 
     try {
@@ -349,13 +281,14 @@ ${variationMix.map((v, i) => `    - Option ${i + 1} [${v.type}]: ${v.style}.`).j
 
         // Map AIReelData to AIReelDataV3
         const shuffledGemini = geminiOptions.sort(() => Math.random() - 0.5);
-        return shuffledGemini.map((opt, i) => ({
+        return (shuffledGemini.map((opt, i) => ({
             ...opt,
-            skipMediaIndices: [], // Gemini's metadata generator doesn't do this yet
+            skipMediaIndices: [],
             smmAura: "Vibe checked by Gemini",
             smmGimmick: "Classic storytelling",
             transitionType: (opt as any).transitionType || "fade",
-            effectType: (opt as any).effectType || "zoomIn"
-        })) as AIReelDataV3[];
+            effectType: (opt as any).effectType || "zoomIn",
+            layoutStyle: "magazine"
+        })) as unknown) as AIReelDataV3[];
     }
 }

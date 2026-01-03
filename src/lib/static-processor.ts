@@ -13,7 +13,7 @@ export interface MediaItem {
 export async function renderStaticPost(
     mediaUrl: string,
     branding: { primaryColor: string, accentColor: string },
-    metadata: { hook: string, businessName: string, cta?: string, subheadline?: string, logoUrl?: string }
+    metadata: { hook: string, businessName: string, cta?: string, subheadline?: string, logoUrl?: string, layoutStyle?: string }
 ) {
     configCloudinary(); // Ensure Cloudinary is ready
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost"))
@@ -31,6 +31,9 @@ export async function renderStaticPost(
     renderUrl.searchParams.append("businessName", metadata.businessName)
     if (metadata.logoUrl) {
         renderUrl.searchParams.append("logoUrl", metadata.logoUrl)
+    }
+    if (metadata.layoutStyle) {
+        renderUrl.searchParams.append("layout", metadata.layoutStyle)
     }
 
     logger.info(`🎨 Generating Native Branded Post: ${renderUrl.toString()}`)
