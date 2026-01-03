@@ -25,7 +25,8 @@ export async function GET(req: NextRequest) {
         let base64Image = null;
         if (imgUrl && imgUrl.startsWith('http')) {
             try {
-                const imgRes = await fetch(imgUrl, { signal: AbortSignal.timeout(8000) });
+                // Increased timeout for Pollinations AI / External Assets
+                const imgRes = await fetch(imgUrl, { signal: AbortSignal.timeout(15000) });
                 if (imgRes.ok && imgRes.headers.get('content-type')?.startsWith('image/')) {
                     const arrayBuffer = await imgRes.arrayBuffer();
                     const uint8 = new Uint8Array(arrayBuffer);
@@ -74,199 +75,127 @@ export async function GET(req: NextRequest) {
                         overflow: 'hidden'
                     }}
                 >
-                    {/* Background Gimmick: Strong Diagonal / Split */}
+                    {/* Top Segment: Visual Character/Illustration */}
                     <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
+                        height: '55%',
                         width: '100%',
-                        height: '100%',
-                        backgroundColor: primaryColor,
-                        display: 'flex'
-                    }}>
-                        <div style={{
-                            position: 'absolute',
-                            top: -200,
-                            right: -200,
-                            width: 1000,
-                            height: 1000,
-                            backgroundColor: '#FFFFFF',
-                            borderRadius: '200px',
-                            transform: 'rotate(-15deg)',
-                            display: 'flex'
-                        }} />
-                    </div>
-
-                    {/* Branding Floating Badge */}
-                    <div style={{
-                        position: 'absolute',
-                        top: 40,
-                        left: 40,
+                        backgroundColor: '#F8FAFC',
                         display: 'flex',
+                        position: 'relative',
+                        justifyContent: 'center',
                         alignItems: 'center',
-                        gap: '15px',
-                        backgroundColor: 'white',
-                        padding: '10px 25px',
-                        borderRadius: '50px',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-                        zIndex: 100
-                    }}>
-                        {base64Logo ? (
-                            <img src={base64Logo} style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: '8px' }} />
-                        ) : null}
-                        <span style={{ fontSize: 20, fontWeight: '900', color: primaryColor }}>{businessName}</span>
-                    </div>
-
-                    {/* Left Side: Character / Illustration (The "Gimmick") */}
-                    <div style={{
-                        position: 'absolute',
-                        left: 40,
-                        top: 150,
-                        width: 500,
-                        height: 750,
-                        display: 'flex',
-                        zIndex: 20
+                        borderBottom: `8px solid ${primaryColor}`
                     }}>
                         {base64Image ? (
-                            <div style={{
-                                width: '100%',
-                                height: '100%',
-                                display: 'flex',
-                                position: 'relative'
-                            }}>
-                                {/* Decorative Ring */}
-                                <div style={{
-                                    position: 'absolute',
-                                    inset: -20,
-                                    border: `15px solid ${accentColor}`,
-                                    borderRadius: '50px',
-                                    opacity: 0.3,
-                                    display: 'flex'
-                                }} />
-
-                                <img
-                                    src={base64Image}
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover',
-                                        borderRadius: '40px',
-                                        boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-                                        border: '10px solid white'
-                                    }}
-                                />
-                            </div>
+                            <img
+                                src={base64Image}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover'
+                                }}
+                            />
                         ) : (
                             <div style={{
-                                width: '100%',
-                                height: '100%',
-                                backgroundColor: accentColor,
-                                borderRadius: '40px',
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}>
-                                <div style={{ fontSize: 100, fontWeight: '900', color: 'white', opacity: 0.5 }}>DREAM</div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Right Side: Promotion Content */}
-                    <div style={{
-                        position: 'absolute',
-                        right: 60,
-                        top: 250,
-                        width: 480,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        zIndex: 30
-                    }}>
-                        {/* Eyebrow Text */}
-                        <div style={{
-                            backgroundColor: accentColor,
-                            color: 'white',
-                            padding: '8px 20px',
-                            borderRadius: '10px',
-                            fontSize: 18,
-                            fontWeight: '900',
-                            alignSelf: 'flex-start',
-                            marginBottom: 20,
-                            letterSpacing: '0.1em'
-                        }}>LIMITED TIME OFFER</div>
-
-                        <div style={{
-                            fontSize: headline.length > 30 ? 60 : 85,
-                            fontWeight: 900,
-                            color: primaryColor,
-                            lineHeight: 0.95,
-                            marginBottom: 30,
-                            display: 'flex',
-                            flexDirection: 'column'
-                        }}>
-                            {headline.split(' ').map((word, i) => (
-                                <div key={i} style={{ display: 'flex' }}>{word}</div>
-                            ))}
-                        </div>
-
-                        <div style={{
-                            fontSize: 26,
-                            fontWeight: '500',
-                            color: '#4B5563',
-                            marginBottom: 60,
-                            lineHeight: 1.4,
-                            display: 'flex'
-                        }}>
-                            {subheadline}
-                        </div>
-
-                        {/* CTA Gimmick */}
-                        <div style={{
-                            backgroundColor: primaryColor,
-                            color: 'white',
-                            padding: '30px 60px',
-                            borderRadius: '20px',
-                            fontSize: 36,
-                            fontWeight: '900',
-                            display: 'flex',
-                            alignSelf: 'flex-start',
-                            boxShadow: `0 15px 40px ${primaryColor}40`,
-                            position: 'relative'
-                        }}>
-                            <div style={{ display: 'flex' }}>{cta}</div>
-                            {/* Decorative Arrow/Element */}
-                            <div style={{
-                                position: 'absolute',
-                                right: -25,
-                                top: -25,
-                                width: 50,
-                                height: 50,
-                                backgroundColor: accentColor,
-                                borderRadius: '50%',
-                                display: 'flex',
+                                flexDirection: 'column',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                border: '5px solid white'
+                                gap: '20px'
                             }}>
-                                <div style={{ width: 20, height: 20, borderTop: '4px solid white', borderRight: '4px solid white', transform: 'rotate(45deg)', marginLeft: -5 }} />
+                                <div style={{ fontSize: 120, fontWeight: '900', color: primaryColor, opacity: 0.1 }}>{businessName[0]}</div>
+                                <div style={{ fontSize: 24, fontWeight: '900', color: primaryColor, opacity: 0.3, letterSpacing: '0.2em' }}>DREAM STUDIO</div>
                             </div>
+                        )}
+
+                        {/* Branding Overlay (Top Left) */}
+                        <div style={{
+                            position: 'absolute',
+                            top: 40,
+                            left: 40,
+                            backgroundColor: 'white',
+                            padding: '12px 24px',
+                            borderRadius: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                            border: '1px solid #E2E8F0'
+                        }}>
+                            {base64Logo ? (
+                                <img src={base64Logo} style={{ width: 32, height: 32, objectFit: 'contain' }} />
+                            ) : null}
+                            <span style={{ fontSize: 18, fontWeight: '800', color: '#1E293B' }}>{businessName}</span>
                         </div>
                     </div>
 
-                    {/* Bottom Edge Decoration */}
+                    {/* Bottom Segment: Messaging */}
                     <div style={{
-                        position: 'absolute',
-                        bottom: 40,
-                        right: 60,
+                        flex: 1,
                         display: 'flex',
-                        color: primaryColor,
-                        opacity: 0.3,
-                        fontSize: 18,
-                        fontWeight: '700',
-                        letterSpacing: '0.2em'
+                        flexDirection: 'column',
+                        padding: '60px 80px',
+                        backgroundColor: 'white',
+                        justifyContent: 'space-between'
                     }}>
-                        {new Date().getFullYear()} • DREAM AI GENERATED
-                    </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div style={{
+                                fontSize: headline.length > 60 ? 42 : headline.length > 30 ? 54 : 68,
+                                fontWeight: '900',
+                                color: '#111827',
+                                lineHeight: 1.15,
+                                letterSpacing: '-0.02em',
+                                display: 'flex',
+                                flexWrap: 'wrap'
+                            }}>
+                                {headline}
+                            </div>
 
+                            <div style={{
+                                fontSize: 26,
+                                fontWeight: '500',
+                                color: '#4B5563',
+                                lineHeight: 1.5,
+                                maxWidth: '90%',
+                                display: 'flex'
+                            }}>
+                                {subheadline}
+                            </div>
+                        </div>
+
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginTop: '20px'
+                        }}>
+                            {/* CTA Button */}
+                            <div style={{
+                                backgroundColor: primaryColor,
+                                color: '#FFFFFF',
+                                padding: '22px 50px',
+                                borderRadius: '16px',
+                                fontSize: 30,
+                                fontWeight: '900',
+                                display: 'flex',
+                                boxShadow: `0 12px 20px -5px ${primaryColor}50`
+                            }}>
+                                {cta}
+                            </div>
+
+                            {/* Minimal Identity Badge */}
+                            <div style={{
+                                display: 'flex',
+                                color: '#9CA3AF',
+                                fontSize: 18,
+                                fontWeight: '700',
+                                letterSpacing: '0.15em',
+                                textTransform: 'uppercase'
+                            }}>
+                                {businessName} • {new Date().getFullYear()}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             ),
             {
