@@ -21,6 +21,7 @@ interface AIResult {
 export function GenerateButton({ businessId }: GenerateButtonProps) {
     const [loading, setLoading] = useState(false)
     const [results, setResults] = useState<AIResult[] | null>(null)
+    const [campaignGoal, setCampaignGoal] = useState("")
     const router = useRouter()
 
     const handleGenerate = async () => {
@@ -30,7 +31,7 @@ export function GenerateButton({ businessId }: GenerateButtonProps) {
             const res = await fetch("/api/process", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ businessId }),
+                body: JSON.stringify({ businessId, campaignGoal }),
             })
             const data = await res.json()
             // Data could be an array of reels or an object with message
@@ -50,23 +51,31 @@ export function GenerateButton({ businessId }: GenerateButtonProps) {
 
     return (
         <>
-            <button
-                onClick={handleGenerate}
-                disabled={loading}
-                className="px-6 py-3 bg-black text-white rounded-2xl font-bold text-sm hover:bg-zinc-800 transition-all shadow-xl shadow-black/10 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                {loading ? (
-                    <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        AI Director Working...
-                    </>
-                ) : (
-                    <>
-                        <Film className="w-4 h-4" />
-                        Generate AI Content
-                    </>
-                )}
-            </button>
+            <div className="flex flex-col gap-3">
+                <textarea
+                    placeholder="Describe a special offer or event (e.g., '50% off for New Year' or 'Grand Opening on Friday')..."
+                    className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all min-h-[100px] resize-none text-zinc-900"
+                    value={campaignGoal}
+                    onChange={(e) => setCampaignGoal(e.target.value)}
+                />
+                <button
+                    onClick={handleGenerate}
+                    disabled={loading}
+                    className="px-6 py-4 bg-black text-white rounded-2xl font-bold text-sm hover:bg-zinc-800 transition-all shadow-xl shadow-black/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full"
+                >
+                    {loading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            AI Director Working...
+                        </>
+                    ) : (
+                        <>
+                            <Sparkles className="w-4 h-4 text-purple-400" />
+                            Generate Branded Campaign
+                        </>
+                    )}
+                </button>
+            </div>
 
             {/* Result Modal / Overlay */}
             {results && (

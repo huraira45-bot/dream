@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Film, Image as ImageIcon, Calendar, Play, Globe, QrCode, Wand2, Share2 } from "lucide-react"
+import { ArrowLeft, Film, Image as ImageIcon, Calendar, Play, Globe, QrCode, Wand2, Share2, Palette, Sparkles, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BusinessQRCode } from "@/components/admin/business-qr"
 import { GenerateButton } from "@/components/admin/generate-button"
@@ -10,7 +10,6 @@ import { DeleteReelButton } from "@/components/admin/delete-reel-button"
 import { ScheduleReelButton } from "@/components/admin/schedule-reel-button"
 import { ReelStatusPoller } from "@/components/admin/reel-status-poller"
 import { getUpcomingEvents } from "@/lib/calendar"
-import { Loader2, Palette } from "lucide-react"
 
 export default async function BusinessDetail({
     params,
@@ -44,7 +43,7 @@ export default async function BusinessDetail({
     const drafts = business.reels.filter((r: any) => r.status === "DRAFT")
     const scheduled = business.reels.filter((r: any) => r.status === "SCHEDULED")
 
-    const upcomingEvents = await getUpcomingEvents(30) // Show next 30 days of Pakistani events
+    const upcomingEvents = await getUpcomingEvents(365) // Show whole year 2026
 
     return (
         <div className="space-y-8">
@@ -123,6 +122,26 @@ export default async function BusinessDetail({
                             <div className="h-12 w-full rounded-2xl border border-zinc-100" style={{ backgroundColor: (business as any).accentColor || "#FF0000" }} />
                         </div>
                     </div>
+
+                    {/* Canva Template Input */}
+                    <div className="mt-8 pt-8 border-t border-zinc-100">
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                <Sparkles className="w-4 h-4" />
+                            </div>
+                            <h3 className="font-bold text-zinc-900">Canva Connect</h3>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Global Brand Template ID</label>
+                            <input
+                                type="text"
+                                defaultValue={(business as any).canvaTemplateId || ""}
+                                placeholder="Paste Canva Template ID (e.g., 'DAE...')"
+                                className="w-full px-4 py-3 bg-zinc-50 border border-zinc-100 rounded-xl text-sm font-medium focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                            />
+                            <p className="text-[10px] text-zinc-400 italic">This template will be used for professional "POST" generations.</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Calendar Wisdom */}
@@ -134,16 +153,19 @@ export default async function BusinessDetail({
                         <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest text-purple-500">Upcoming Events</span>
                     </div>
 
-                    <div className="space-y-4">
-                        {upcomingEvents.slice(0, 2).map((event, idx) => (
-                            <div key={idx} className="flex items-center gap-4 p-4 bg-zinc-50 rounded-2xl group/event hover:bg-zinc-100 transition-colors">
-                                <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex flex-col items-center justify-center text-center">
+                    <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-200">
+                        {upcomingEvents.map((event, idx) => (
+                            <div key={idx} className="flex items-center gap-4 p-4 bg-zinc-50 rounded-2xl group/event hover:bg-zinc-100 transition-all border border-transparent hover:border-purple-200">
+                                <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex flex-col items-center justify-center text-center shrink-0 border border-zinc-100">
                                     <span className="text-[10px] font-black text-purple-600 uppercase tracking-tighter">{event.date.toLocaleString('default', { month: 'short' })}</span>
                                     <span className="text-lg font-black text-zinc-900 leading-none">{event.date.getDate()}</span>
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="font-bold text-zinc-900 truncate">{event.title}</h4>
-                                    <p className="text-xs text-zinc-500 line-clamp-1 italic">"{event.suggestionPrompt.substring(0, 40)}..."</p>
+                                    <h4 className="font-bold text-zinc-900 truncate flex items-center gap-2">
+                                        {event.title}
+                                        {event.category === 'National' && <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />}
+                                    </h4>
+                                    <p className="text-xs text-zinc-500 line-clamp-1 italic">"{event.suggestionPrompt.substring(0, 60)}..."</p>
                                 </div>
                             </div>
                         ))}

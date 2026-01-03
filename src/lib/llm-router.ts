@@ -49,7 +49,8 @@ export async function processMultiLLMCreativeFlow(
     usedHooks: string[] = [],
     mode: CreativeMode = CreativeMode.FULL_VISION,
     branding?: { primary: string, secondary: string, accent: string, mood: string },
-    upcomingEvents: string[] = []
+    upcomingEvents: string[] = [],
+    campaignGoal?: string
 ): Promise<AIReelDataV3[]> {
     logger.info(`Analyzing ${mediaUrls.length} media items with Gemini v2.1...`)
     const visualReport = await describeMedia(mediaUrls);
@@ -155,6 +156,12 @@ export async function processMultiLLMCreativeFlow(
     CALENDAR CONTEXT (Occasional Post Logic):
     - Upcoming Events in Pakistan: [${upcomingEvents.join(", ")}]
     - RULE: If an event is relevant, use it to pivot your hooks and visual style.
+    ` : ""}
+
+    ${campaignGoal ? `
+    STRATEGIC DIRECTIVE (User Intent):
+    - Goal: ${campaignGoal}
+    - CRITICAL RULE: This is your TOP PRIORITY. All hooks, captions, and vibes MUST center around this specific goal/offer.
     ` : ""}
 
     YOUR TASK: Generate EXACTLY ${variationMix.length} UNIQUE production options. 

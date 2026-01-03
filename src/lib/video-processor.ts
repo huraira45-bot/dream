@@ -11,8 +11,9 @@ import { processMultiLLMCreativeFlow } from "./llm-router"
 import { logger } from "./logger"
 import { extractBrandingFromLogo } from "./branding"
 import { getUpcomingEvents } from "./calendar"
+import { createCanvaDesignFromTemplate } from "./canva"
 
-export async function processReelForBusinessV2(businessId: string) {
+export async function processReelForBusinessV2(businessId: string, campaignGoal?: string) {
     // 1. Fetch unprocessed media including business details
     const business = await prisma.business.findUnique({
         where: { id: businessId },
@@ -110,7 +111,8 @@ export async function processReelForBusinessV2(businessId: string) {
         usedHooks,
         undefined, // mode (will be auto-detected in router)
         branding || undefined,
-        eventTitles
+        eventTitles,
+        campaignGoal
     )
     logger.info(`Creative flow complete. Variations generated: ${aiOptions.length}`)
 
@@ -165,17 +167,38 @@ export async function processReelForBusinessV2(businessId: string) {
         })
 
         // Trigger Shotstack Render
-        // 6. Trigger Render (Branch between Reel and Post)
+        // 6. Trigger Render (Branch between Reel, Canva, and Post)
         let renderId = "pending"
+        const { mood, ...brandingData } = (branding || { primary: "#000000", secondary: "#FFFFFF", accent: "#FF0000", mood: "Modern" })
+
         try {
             if (isReel) {
                 const response = await postToShotstack(finalMediaForRender, musicTrack.url, style, metadata)
                 renderId = response.id
                 console.log(`🎬 Variation ${i + 1}: Render Queued -> ${renderId}`)
+            } else if (business.canvaTemplateId) {
+                // Render via Canva if Template ID is available
+                console.log(`🎨 Variation ${i + 1}: Attempting Canva Autofill...`)
+                const canvaResponse = await createCanvaDesignFromTemplate(
+                    business.canvaTemplateId,
+                    {
+                        "headline": metadata.hook,
+                        "cta": metadata.title || "Buy Now",
+                        "image_1": finalMediaForRender[0]?.url || ""
+                    },
+                    `${business.name} - ${metadata.hook}`
+                )
+                if (canvaResponse) {
+                    renderId = canvaResponse.design_url || "canva_pending"
+                    console.log(`🎨 Variation ${i + 1}: Canva Design Created -> ${renderId}`)
+                } else {
+                    // Fallback to Shotstack if Canva fails or not configured
+                    const response = await renderStaticPost(finalMediaForRender[0].url, brandingData, metadata)
+                    renderId = response.id
+                }
             } else {
-                // For static posts, we pick the first/best item
+                // For regular static posts, use Shotstack
                 const mainItem = finalMediaForRender[0]
-                const { mood, ...brandingData } = (branding || { primary: "#000000", secondary: "#FFFFFF", accent: "#FF0000", mood: "Modern" })
                 const response = await renderStaticPost(mainItem.url, brandingData, metadata)
                 renderId = response.id
                 console.log(`🖼️ Variation ${i + 1}: Static Post Render Queued -> ${renderId}`)

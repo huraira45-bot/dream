@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
     try {
-        const { businessId } = await req.json()
+        const { businessId, campaignGoal } = await req.json()
         if (!businessId) {
             // Process ALL businesses if no ID provided (Cron job style)
             const businesses = await prisma.business.findMany()
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ processed: results.length, reels: results })
         }
 
-        const reel = await processReelForBusinessV2(businessId)
+        const reel = await processReelForBusinessV2(businessId, campaignGoal)
         return NextResponse.json(reel || { message: "No media to process" })
 
     } catch (error) {
