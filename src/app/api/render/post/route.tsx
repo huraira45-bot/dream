@@ -173,42 +173,6 @@ export async function GET(req: NextRequest) {
                         )}
                     </div>
 
-                    {/* Quality Stamp */}
-                    <div style={{
-                        position: 'absolute',
-                        top: 100,
-                        right: 120,
-                        width: 160,
-                        height: 160,
-                        backgroundColor: 'white',
-                        borderRadius: 80,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: `6px solid ${primaryColor}`,
-                        zIndex: 30
-                    }}>
-                        <div style={{ display: 'flex', fontSize: 22, fontWeight: 900, color: primaryColor }}>100%</div>
-                        <div style={{ display: 'flex', fontSize: 18, fontWeight: 700, color: '#666' }}>QUALITY</div>
-                    </div>
-
-                    {/* Floating Info */}
-                    <div style={{
-                        position: 'absolute',
-                        bottom: 120,
-                        left: 80,
-                        backgroundColor: 'white',
-                        padding: '12px 25px',
-                        borderRadius: '50px',
-                        border: `2px solid ${primaryColor}`,
-                        display: 'flex',
-                        zIndex: 40
-                    }}>
-                        <div style={{ display: 'flex', fontSize: 20, fontWeight: 'bold', color: primaryColor }}>
-                            {businessName.toUpperCase()} • OPEN NOW
-                        </div>
-                    </div>
                 </div>
             ),
             {

@@ -90,10 +90,13 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
         const filteredMedia = mediaItems.filter((_: any, idx: number) => !skipIndices.includes(idx))
         const finalMediaForRender = (filteredMedia.length > 0 ? filteredMedia : mediaItems).slice(0, 10)
 
-        let musicTrack = getMusicForMood(metadata.musicMood)
-        if (metadata.trendingAudioTip) {
-            const realAudioUrl = await findAndConvertAudio(metadata.trendingAudioTip)
-            if (realAudioUrl) musicTrack = { ...musicTrack, url: realAudioUrl, name: metadata.trendingAudioTip }
+        let musicTrack = { url: "", name: "No Music" }
+        if (forceType === "REEL") {
+            musicTrack = getMusicForMood(metadata.musicMood)
+            if (metadata.trendingAudioTip) {
+                const realAudioUrl = await findAndConvertAudio(metadata.trendingAudioTip)
+                if (realAudioUrl) musicTrack = { ...musicTrack, url: realAudioUrl, name: metadata.trendingAudioTip }
+            }
         }
 
         const reel = await prisma.generatedReel.create({
@@ -103,8 +106,8 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                 caption: metadata.caption,
                 url: `pending:init-${Date.now()}-${i}`,
                 type: forceType,
-                musicUrl: musicTrack.url,
-                trendingAudioTip: metadata.trendingAudioTip,
+                musicUrl: forceType === "REEL" ? musicTrack.url : null,
+                trendingAudioTip: forceType === "REEL" ? metadata.trendingAudioTip : null,
                 mediaItemIds: finalMediaForRender.map((m: any) => m.id)
             }
         })
