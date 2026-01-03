@@ -186,7 +186,8 @@ export async function processReelForBusinessV2(businessId: string, campaignGoal?
                         "cta": metadata.title || "Buy Now",
                         "image_1": finalMediaForRender[0]?.url || ""
                     },
-                    `${business.name} - ${metadata.hook}`
+                    `${business.name} - ${metadata.hook}`,
+                    business.canvaAccessToken
                 )
                 if (canvaResponse) {
                     renderId = canvaResponse.design_url || "canva_pending"

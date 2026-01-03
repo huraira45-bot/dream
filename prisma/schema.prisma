@@ -25,6 +25,8 @@ model Business {
   secondaryColor String?     // Secondary Hex
   accentColor    String?     // Accent Hex (Optional)
   canvaTemplateId String?    // Optional Canva Template for Autofill
+  canvaAccessToken String?   // OAuth Access Token
+  canvaRefreshToken String?  // OAuth Refresh Token
   createdAt  DateTime        @default(now())
   reels      GeneratedReel[]
   mediaItems MediaItem[]

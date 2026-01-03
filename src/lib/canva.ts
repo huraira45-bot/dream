@@ -9,11 +9,12 @@ const CANVA_API_BASE = "https://api.canva.com/rest/v1"
 export async function createCanvaDesignFromTemplate(
     templateId: string,
     data: { [key: string]: string },
-    title: string = "AI Generated Design"
+    title: string = "AI Generated Design",
+    accessToken?: string
 ) {
-    const apiKey = process.env.CANVA_API_KEY
+    const apiKey = accessToken || process.env.CANVA_API_KEY
     if (!apiKey) {
-        logger.warn("CANVA_API_KEY not found. Skipping Canva render.")
+        logger.warn("Canva access token not found. Skipping Canva render.")
         return null
     }
 

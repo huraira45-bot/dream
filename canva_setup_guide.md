@@ -5,20 +5,23 @@ Follow these steps to set up and authorize Canva Connect for our application.
 ## 1. Create an Integration in the Canva Developer Portal
 1. Go to the [Canva Developer Portal](https://www.canva.com/developers/integrations).
 2. Click **"Create an integration"**.
-3. Choose **"Private"** if this is for your internal team, or **"Public"** if you want to publish it later.
+3. Choose **"Private"**.
 4. Give your integration a name (e.g., "Dream Social Manager").
 
-## 2. Obtain Credentials
-1. In your integration settings, navigate to the **"Credentials"** section.
-2. Copy your **Client ID**.
-3. Generate and copy your **Client Secret**.
-   > [!IMPORTANT]
-   > The Client Secret is only displayed once. Store it securely!
+## 2. Your Credentials
+Use the credentials you provided in your `.env` file:
+```env
+CANVA_CLIENT_ID=OC-AZuCjVxGyacX
+CANVA_CLIENT_SECRET=YOUR_CANVA_CLIENT_SECRET_HERE
+```
 
 ## 3. Configure Authentication
-1. Go to the **"Authentication"** section.
+1. Go to the **"Authentication"** section in Canva.
 2. Add your **Redirect URL**:
-   - For local development: `http://localhost:3000/api/auth/canva/callback`
+   - **Production**: `https://dream-social.vercel.app/api/auth/canva/callback`
+   - **Local**: `http://localhost:3000/api/auth/canva/callback`
+   > [!NOTE]
+   > Replace `dream-social.vercel.app` with your actual deployment domain.
 3. Select the required **Scopes**:
    - `design:content:read`
    - `design:content:write`
