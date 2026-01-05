@@ -51,10 +51,13 @@ export async function processMultiLLMCreativeFlow(
     mode: CreativeMode = CreativeMode.FULL_VISION,
     branding?: { primary: string, secondary: string, accent: string, mood: string },
     upcomingEvents: string[] = [],
-    campaignGoal?: string
+    campaignGoal?: string,
+    styleDNA?: string
 ): Promise<AIReelDataV3[]> {
     logger.info(`Analyzing ${mediaUrls.length} media items with Gemini v2.1...`)
     const visualReport = await describeMedia(mediaUrls);
+
+    const parsedStyleDNA = styleDNA ? JSON.parse(styleDNA) : null;
 
     if (visualReport.includes("Visual analysis failed")) {
         mode = CreativeMode.NO_VISION;
@@ -162,6 +165,18 @@ export async function processMultiLLMCreativeFlow(
     ${campaignGoal ? `
     STRATEGIC DIRECTIVE: ${campaignGoal}
     - TOP PRIORITY. All content MUST center around this goal.
+    ` : ""}
+
+    ${parsedStyleDNA ? `
+    MIMETIC STYLE DNA DIRECTIVE (MANDATORY):
+    - You MUST mimic the typography and layout from these user-liked references:
+    - Typography Category: ${parsedStyleDNA.typography?.category}
+    - Typography Weight: ${parsedStyleDNA.typography?.weight}
+    - Layout Density: ${parsedStyleDNA.layout?.density}
+    - Layout Alignment: ${parsedStyleDNA.layout?.alignment}
+    - Special Elements to Replication: ${parsedStyleDNA.layout?.specialElements?.join(", ")}
+    - Tonal Direction: ${parsedStyleDNA.copy?.tone}
+    - Rule: Do NOT deviate from this aesthetic. The user has explicitly liked these styles.
     ` : ""}
 
     YOUR TASK: Generate EXACTLY ${variationMix.length} UNIQUE production options. 

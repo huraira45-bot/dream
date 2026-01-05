@@ -317,45 +317,56 @@ export async function generateReelMetadata(
 export async function validatePostVibe(
     logoUrl: string,
     postImageUrl: string,
-    businessName: string
+    businessName: string,
+    referenceUrls: string[] = []
 ): Promise<{ matches: boolean; reasoning: string }> {
     if (!model) return { matches: true, reasoning: "Critic Offline (Model Missing)" }
 
     console.log("--------------------------------------------------")
-    console.log("🔍 AGENT: THE HARSH CRITIC (Final Vibe Check)")
-    console.log(`Action: Comparing Logo vs. Generated Post for: ${businessName}`)
+    console.log("🔍 AGENT: THE HARSH CRITIC (Vibe Check 2.0)")
+    console.log(`Action: Validating Post against Logo & ${referenceUrls.length} Style References for: ${businessName}`)
 
     try {
-        const [logoRes, postRes] = await Promise.all([
-            fetch(logoUrl).then(r => r.arrayBuffer()),
-            fetch(postImageUrl).then(r => r.arrayBuffer())
+        const fetchImage = async (url: string) => {
+            const res = await fetch(url);
+            return await res.arrayBuffer();
+        };
+
+        const [logoRes, postRes, ...refRes] = await Promise.all([
+            fetchImage(logoUrl),
+            fetchImage(postImageUrl),
+            ...referenceUrls.map(url => fetchImage(url))
         ]);
 
         const prompt = `You are THE HARSH CRITIC. You are reviewing a final generated post for ${businessName}.
         
         INPUTS:
         1. The Business Logo (First Image)
-        2. The Generated Post (Second Image)
+        2. The Style References / User Likes (Next ${refRes.length} Images)
+        3. The Generated Post (Final Image)
         
         CRITERIA:
-        - COLOR HARMONY: Does the post respect the primary color palette of the logo?
-        - AESTHETIC HARMONY: Is the vibe (Modern, Editorial, Bold) consistent between logo and post?
-        - BRAND INTEGRITY: Does it look like the same company designed both?
+        - MIMICRY ACCURACY: Does the final post look like it belongs in the same "collection" as the Style References?
+        - TYPOGRAPHY CHECK: Is the font weight and category consistent with the user's likes?
+        - COLOR HARMONY: Does it respect the logo's palette while following the reference's composition?
         
         TASK:
-        Do NOT be lenient. If the colors feel off or the layout is generic compared to the logo's quality, fail it.
+        The user has explicitly shared the "Style References" as their preferred aesthetic. 
+        If the Generated Post feels generic, cluttery, or differs significantly in vibe from the references, FAIL it.
         
         JSON RESPONSE FORMAT:
         {
           "matches": boolean,
-          "reasoning": "brief explanation"
+          "reasoning": "Be specific about why it fails the style match"
         }`;
 
-        const result = await model.generateContent([
-            prompt,
+        const mediaParts = [
             { inlineData: { data: Buffer.from(logoRes).toString("base64"), mimeType: "image/png" } },
+            ...refRes.map(buffer => ({ inlineData: { data: Buffer.from(buffer).toString("base64"), mimeType: "image/png" } })),
             { inlineData: { data: Buffer.from(postRes).toString("base64"), mimeType: "image/png" } }
-        ]);
+        ];
+
+        const result = await model.generateContent([prompt, ...mediaParts]);
 
         const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
         logger.info(`🤖 Agent: THE HARSH CRITIC (RAW_RESPONSE): ${text}`);
@@ -369,5 +380,68 @@ export async function validatePostVibe(
     } catch (e: any) {
         logger.error(`Validation Error: ${e.message}`);
         return { matches: true, reasoning: "Fallback Success (Validation Failed)" }
+    }
+}
+
+/**
+ * THE STYLE PROFILER: DNA Extraction
+ * Analyzes 3 reference posts to create a "Style DNA" for the brand.
+ */
+export async function extractStyleDNA(imageUrls: string[]): Promise<string> {
+    if (!model) return "Standard editorial layout.";
+
+    console.log("--------------------------------------------------")
+    console.log("🧬 AGENT: THE STYLE PROFILER (Gemini Vision)")
+    console.log(`Action: Extracting DNA from ${imageUrls.length} reference posts...`)
+
+    try {
+        const mediaParts = await Promise.all(
+            imageUrls.map(async (url) => {
+                const response = await fetch(url);
+                const buffer = await response.arrayBuffer();
+                return {
+                    inlineData: {
+                        data: Buffer.from(buffer).toString("base64"),
+                        mimeType: "image/png"
+                    }
+                };
+            })
+        );
+
+        const prompt = `You are a MASTER BRAND STRATEGIST and TYPOGRAPHY EXPERT.
+        Analyze these reference posts which the user LIKES. 
+        Extract a "Style DNA" JSON that I can use to direct an AI to replicate this vibe.
+        
+        EXTRACT THE FOLLOWING DNA:
+        1. Typography DNA: (Font category: Serif/Sans/Bold/Elegant, Weight, Case: All-Caps/Mixed).
+        2. Layout DNA: (Density: High/Low, Alignment: Central/Left/Asymmetric, Padding vibes).
+        3. Visual DNA: (Overlay styles, Borders, Geometric shapes, Image filter vibes).
+        4. Copy DNA: (Short/Punchy, Long/Storytelling, Tone: Hype/Luxury/Minimal).
+        
+        OUTPUT FORMAT (Strict JSON):
+        {
+          "typography": { "category": string, "weight": string, "case": string },
+          "layout": { "density": string, "alignment": string, "specialElements": string[] },
+          "visual": { "colors": string[], "vibes": string[] },
+          "copy": { "tone": string, "length": string }
+        }
+        
+        Be precise. Don't be generic. If the reference is "Bold and Grungy", capture that.`;
+
+        const result = await model.generateContent([prompt, ...mediaParts.map(p => ({ inlineData: p.inlineData }))]);
+        const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+
+        console.log("🧬 STYLE DNA EXTRACTED successfully.");
+        console.log("--------------------------------------------------")
+
+        return text;
+    } catch (err: any) {
+        logger.error(`Style DNA Extraction Error: ${err.message}`);
+        return JSON.stringify({
+            typography: { category: "Modern Sans", weight: "Bold", case: "Mixed" },
+            layout: { density: "Balanced", alignment: "Left", specialElements: [] },
+            visual: { colors: ["#000000", "#FFFFFF"], vibes: ["Clean"] },
+            copy: { tone: "Professional", length: "Short" }
+        });
     }
 }

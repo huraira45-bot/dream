@@ -74,7 +74,8 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
         undefined,
         branding,
         eventTitles,
-        campaignGoal
+        campaignGoal,
+        business.styleContext
     )
 
     // 4. Mark items as processed
@@ -159,7 +160,12 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
 
                     // --- THE HARSH CRITIC: FINAL VIBE CHECK ---
                     if (business.logoUrl) {
-                        const check = await validatePostVibe(business.logoUrl, response.url, business.name);
+                        const check = await validatePostVibe(
+                            business.logoUrl,
+                            response.url,
+                            business.name,
+                            business.referencePosts // Vibe Check 2.0: Use User Likes
+                        );
                         if (check.matches) {
                             finalRenderResponse = response;
                             break;

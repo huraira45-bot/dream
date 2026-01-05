@@ -27,6 +27,8 @@ model Business {
   canvaTemplateId String?    // Optional Canva Template for Autofill
   canvaAccessToken String?   // OAuth Access Token
   canvaRefreshToken String?  // OAuth Refresh Token
+  referencePosts    String[]  @default([]) // 3 Reference "Likes" (URLs)
+  styleContext      String?   // JSON/String containing the Gemini-extracted Style DNA
   createdAt  DateTime        @default(now())
   reels      GeneratedReel[]
   mediaItems MediaItem[]
