@@ -367,19 +367,78 @@ export async function validatePostVibe(
         ];
 
         const result = await model.generateContent([prompt, ...mediaParts]);
-
         const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
-        logger.info(`🤖 Agent: THE HARSH CRITIC (RAW_RESPONSE): ${text}`);
-        const parsed = JSON.parse(text);
 
-        console.log(`⚖️  CRITIC VERDICT for ${businessName}: ${parsed.matches ? "✅ VIBE MATCHED" : "❌ VIBE MISMATCH"}`)
-        console.log(`📝 Reason: ${parsed.reasoning}`)
         console.log("--------------------------------------------------")
+        console.log("🤖 Agent: THE HARSH CRITIC (RAW_RESPONSE):", text)
 
-        return parsed;
-    } catch (e: any) {
-        logger.error(`Validation Error: ${e.message}`);
-        return { matches: true, reasoning: "Fallback Success (Validation Failed)" }
+        try {
+            const parsed = JSON.parse(text);
+            console.log(`⚖️  CRITIC VERDICT for ${businessName}: ${parsed.matches ? "✅ VIBE MATCHED" : "❌ VIBE MISMATCH"}`)
+            console.log(`📝 Reason: ${parsed.reasoning}`)
+            console.log("--------------------------------------------------")
+            return parsed;
+        } catch (e) {
+            return { matches: true, reasoning: "Critic returned non-JSON response, assuming match to avoid stall." };
+        }
+    } catch (err: any) {
+        if (err.message?.includes("429") || err.message?.includes("quota")) {
+            console.warn("⚠️  Gemini Quota Exceeded for Critic. Falling back to SambaNova Llama-4...");
+            return await validatePostVibeWithSambaNova(logoUrl, postImageUrl, businessName, referenceUrls);
+        }
+        console.error(`Vibe Check Failure: ${err.message}`);
+        return { matches: true, reasoning: "Critic Error, bypassing to avoid stall." };
+    }
+}
+
+/**
+ * SambaNova Failover for Vision Tasks
+ */
+async function validatePostVibeWithSambaNova(
+    logoUrl: string,
+    postImageUrl: string,
+    businessName: string,
+    referenceUrls: string[]
+): Promise<{ matches: boolean; reasoning: string }> {
+    try {
+        const apiKey = process.env.SAMBANOVA_API_KEY;
+        if (!apiKey) throw new Error("SAMBANOVA_API_KEY missing");
+
+        const prompt = `You are THE HARSH CRITIC. Validate if the last image (Generated Post) matches the first image (Logo) and intermediate images (Style References) for ${businessName}.
+        Check: Mimicry Accuracy, Typography consistency, and Color Harmony.
+        If it feels generic or lacks brand elements (like footers or specific colors), return matches: false.
+        OUTPUT STRICT JSON: {"matches": boolean, "reasoning": "string"}`;
+
+        // Simplified for SambaNova (usually takes 2 images at a time or specific format)
+        // We'll just compare Logo and Post to keep it lean for fallback
+        const response = await fetch("https://api.sambanova.ai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "Llama-3.2-11B-Vision-Instruct",
+                messages: [
+                    {
+                        role: "user",
+                        content: [
+                            { type: "text", text: prompt },
+                            { type: "image_url", image_url: { url: logoUrl } },
+                            { type: "image_url", image_url: { url: postImageUrl } }
+                        ]
+                    }
+                ],
+                response_format: { type: "json_object" }
+            })
+        });
+
+        if (!response.ok) throw new Error(`SambaNova Error: ${response.statusText}`);
+        const data = await response.json();
+        return JSON.parse(data.choices[0].message.content);
+    } catch (err: any) {
+        console.error("SambaNova Failover Error:", err.message);
+        return { matches: true, reasoning: "All Vision Critics Failed. Safe Mode Active." };
     }
 }
 

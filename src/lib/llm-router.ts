@@ -195,7 +195,10 @@ export async function processMultiLLMCreativeFlow(
     - Typography Category: ${parsedStyleDNA.typography?.category}
     - Layout Geometry: ${parsedStyleDNA.layout?.geometry}
     - Character Style: ${parsedStyleDNA.visual?.characterStyle}
-    - Rule: If the user liked 3D Characters and Ribbons, you MUST set layoutStyle to "advertisement" and geometryType to "ribbons".
+    - Layout Density: ${parsedStyleDNA.layout?.density}
+    - Rule: If Density is "High", do NOT pick "Minimalist" visual styles.
+    - Rule: If the user liked 3D Characters and Ribbons, you MUST set layoutStyle to "advertisement" and geometryType to "ribbons". 
+    - Rule: ALWAYS ensure the primary brand colors (from the logo) are utilized in the background or main elements.
     ` : ""}
 
     YOUR TASK: Generate EXACTLY ${variationMix.length} UNIQUE production options. 
