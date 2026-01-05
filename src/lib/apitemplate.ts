@@ -68,7 +68,8 @@ export async function renderWithAPITemplate(
     try {
         logger.info(`📤 APITemplate Request: ${JSON.stringify(payload, null, 2)}`);
 
-        const response = await fetch(API_URL, {
+        const requestUrl = `${API_URL}?template_id=${templateId}`;
+        const response = await fetch(requestUrl, {
             method: "POST",
             headers: {
                 "X-API-KEY": API_KEY,

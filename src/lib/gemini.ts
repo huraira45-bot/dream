@@ -348,11 +348,12 @@ export async function validatePostVibe(
         CRITERIA:
         - MIMICRY ACCURACY: Does the final post look like it belongs in the same "collection" as the Style References?
         - TYPOGRAPHY CHECK: Is the font weight and category consistent with the user's likes?
-        - COLOR HARMONY: Does it respect the logo's palette while following the reference's composition?
+        - COLOR HARMONY (FLEXIBLE): 
+            - If the post uses the logo's palette, ensure it's balanced.
+            - If the post uses FESTIVE or OFFER-based colors (e.g., Gold/Green for Eid, Bold Red for Sale) that are NOT in the logo, PASS it as long as the Logo is clearly visible and the design is premium. We want creative freedom!
         
         TASK:
-        The user has explicitly shared the "Style References" as their preferred aesthetic. 
-        If the Generated Post feels generic, cluttery, or differs significantly in vibe from the references, FAIL it.
+        Verify the vibe match. Reject only if it feels generic, unbalanced, or completely ignores the logo/reference quality. Do NOT reject solely because of extra "creative" colors like festive golds or sale reds.
         
         JSON RESPONSE FORMAT:
         {

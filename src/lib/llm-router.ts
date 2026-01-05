@@ -388,3 +388,59 @@ export async function recorrectCreativeFlow(
         return current;
     }
 }
+
+/**
+ * THE POST CREATOR: Specialized workflow for static branded posts.
+ * Focuses on Logo Analysis, Style DNA Mimicry, and Festive/Offer creativity.
+ */
+export async function generateBrandedPostMetadata(
+    businessName: string,
+    branding?: { primary: string, secondary: string, accent: string, mood: string },
+    styleDNA?: string,
+    campaignGoal?: string,
+    upcomingEvents: string[] = []
+): Promise<AIReelDataV3> {
+    logger.info(`🎨 AGENT: THE POST CREATOR (Creative Branch) for ${businessName}`);
+    const parsedStyleDNA = styleDNA ? JSON.parse(styleDNA) : null;
+
+    const prompt = `You are an ELITE BRAND DESIGNER. Your goal is to design a high-converting static social media post for ${businessName}.
+    
+    BRAND CONTEXT:
+    - Logo Colors: Primary(${branding?.primary}), Secondary(${branding?.secondary}), Accent(${branding?.accent})
+    - Mood: ${branding?.mood}
+    - Upcoming Events: [${upcomingEvents.join(", ") || "None"}]
+    - Campaign Goal: ${campaignGoal || "General Brand Awareness"}
+    
+    MIMETIC STYLE DNA (MANDATORY):
+    ${parsedStyleDNA ? `
+    - Typography: ${parsedStyleDNA.typography?.category}
+    - Layout: ${parsedStyleDNA.layout?.geometry}
+    - Character Style: ${parsedStyleDNA.visual?.characterStyle}
+    - Color Vibrancy: ${parsedStyleDNA.visual?.vibrancy}
+    ` : "No DNA found. Use high-impact professional design."}
+    
+    TASK:
+    1. Hook & Headline: Create something scroll-stopping.
+    2. Design: Choose a layout ("magazine", "poster", "advertisement") and geometry ("ribbons", "cards", "floating").
+    3. Creative Freedom: You are NOT restricted just to the logo colors. If there is a festive event (Eid, New Year) or an offer (Flash Sale), you MUST use appropriate festive colors (Eid=Gold/Green, Sale=Bold Red/Yellow) to enhance the "Vibe". 
+    4. Visual Depth: Describe an "illustrationSubject" for Pollinations AI. Include characters and descriptive backgrounds (e.g., "A happy professional holding a gift with festive tea lights in the background").
+    
+    Return ONLY a JSON object of AIReelDataV3. 
+    Fields musicMood, trendingAudioTip, and musicRationale should be "N/A" as this is a static post.
+    `;
+
+    try {
+        const result = await generateJSONWithLLM<AIReelDataV3>(prompt, {}, { temperature: 0.9 });
+
+        // Safety Cleanups
+        result.musicMood = "N/A";
+        result.trendingAudioTip = "N/A";
+        result.musicRationale = "Static Post Branch";
+
+        logger.info(`✅ POST CREATOR: Designed Branded Post [Hook: ${result.hook}]`);
+        return result;
+    } catch (err: any) {
+        logger.error(`Post Creator failed: ${err.message}`);
+        throw err;
+    }
+}

@@ -7,7 +7,7 @@ import cloudinary from "@/lib/cloudinary"
 import { postToShotstack } from "./shotstack"
 import { renderStaticPost } from "./static-processor"
 import { getStyleForVariation } from "./director"
-import { processMultiLLMCreativeFlow, recorrectCreativeFlow } from "./llm-router"
+import { processMultiLLMCreativeFlow, recorrectCreativeFlow, generateBrandedPostMetadata } from "./llm-router"
 import { logger } from "./logger"
 import { extractBrandingFromLogo } from "./branding"
 import { getUpcomingEvents } from "./calendar"
@@ -63,20 +63,34 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
     const upcomingEvents = await getUpcomingEvents(7)
     const eventTitles = upcomingEvents.map(e => e.title)
 
-    // 3. AI Creative Flow
-    const aiOptions = await processMultiLLMCreativeFlow(
-        business.name,
-        mediaItems.map((m: any) => m.url),
-        isReel,
-        business.region || "Pakistan",
-        usedSongs,
-        usedHooks,
-        undefined,
-        branding,
-        eventTitles,
-        campaignGoal,
-        business.styleContext
-    )
+    // 3. AI Creative Flow (Specialized Branching)
+    let aiOptions: any[] = [];
+    if (forceType === "POST") {
+        // High-Impact Specialized Generation for Static Posts
+        const metadata = await generateBrandedPostMetadata(
+            business.name,
+            branding,
+            business.styleContext,
+            campaignGoal,
+            eventTitles
+        );
+        aiOptions = [metadata]; // Static Posts generate 1 high-quality variation for now
+    } else {
+        // Multi-LLM diversity engine for Reels
+        aiOptions = await processMultiLLMCreativeFlow(
+            business.name,
+            mediaItems.map((m: any) => m.url),
+            isReel,
+            business.region || "Pakistan",
+            usedSongs,
+            usedHooks,
+            undefined,
+            branding,
+            eventTitles,
+            campaignGoal,
+            business.styleContext
+        );
+    }
 
     // 4. Mark items as processed
     await prisma.mediaItem.updateMany({

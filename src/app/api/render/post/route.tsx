@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        const BrandPattern = ({ color, opacity = 0.08 }: { color: string, opacity?: number }) => (
+        const BrandPattern = ({ color, opacity = 0.20 }: { color: string, opacity?: number }) => (
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', opacity, zIndex: 1 }}>
                 {/* Ornate Geometric Elements */}
                 <div style={{ position: 'absolute', top: '5%', left: '5%', width: '200px', height: '200px', border: `3px solid ${color}`, borderRadius: '50%', display: 'flex' }}></div>
