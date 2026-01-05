@@ -409,8 +409,7 @@ async function validatePostVibeWithSambaNova(
         If it feels generic or lacks brand elements (like footers or specific colors), return matches: false.
         OUTPUT STRICT JSON: {"matches": boolean, "reasoning": "string"}`;
 
-        // Simplified for SambaNova (usually takes 2 images at a time or specific format)
-        // We'll just compare Logo and Post to keep it lean for fallback
+        // Standardizing on the Maverick model which is more stable on the endpoint
         const response = await fetch("https://api.sambanova.ai/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -418,7 +417,7 @@ async function validatePostVibeWithSambaNova(
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "Llama-3.2-11B-Vision-Instruct",
+                model: "Llama-4-Maverick-17B-128E-Instruct",
                 messages: [
                     {
                         role: "user",
@@ -429,13 +428,17 @@ async function validatePostVibeWithSambaNova(
                         ]
                     }
                 ],
-                response_format: { type: "json_object" }
+                temperature: 0.1,
+                max_tokens: 1024
             })
         });
 
-        if (!response.ok) throw new Error(`SambaNova Error: ${response.statusText}`);
-        const data = await response.json();
-        return JSON.parse(data.choices[0].message.content);
+        const responseText = await response.text();
+        if (!response.ok) throw new Error(`SambaNova Error: ${response.statusText} - ${responseText.substring(0, 100)}`);
+
+        const data = JSON.parse(responseText);
+        const content = data.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
+        return JSON.parse(content);
     } catch (err: any) {
         console.error("SambaNova Failover Error:", err.message);
         return { matches: true, reasoning: "All Vision Critics Failed. Safe Mode Active." };

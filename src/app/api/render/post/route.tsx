@@ -64,10 +64,18 @@ export async function GET(req: NextRequest) {
 
         const BrandPattern = ({ color, opacity = 0.08 }: { color: string, opacity?: number }) => (
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', opacity, zIndex: 1 }}>
-                <div style={{ position: 'absolute', top: '10%', left: '10%', width: '150px', height: '150px', border: `2px solid ${color}`, borderRadius: '50%', transform: 'rotate(30deg)', display: 'flex' }}></div>
-                <div style={{ position: 'absolute', top: '20%', right: '15%', width: '80px', height: '80px', border: `2px solid ${color}`, borderRadius: '20px', transform: 'rotate(60deg)', display: 'flex' }}></div>
-                <div style={{ position: 'absolute', bottom: '25%', left: '20%', width: '120px', height: '120px', border: `2px solid ${color}`, borderRadius: '20px', transform: 'rotate(-45deg)', display: 'flex' }}></div>
-                <div style={{ position: 'absolute', bottom: '15%', right: '20%', width: '100px', height: '100px', border: `2px solid ${color}`, borderRadius: '50%', transform: 'rotate(15deg)', display: 'flex' }}></div>
+                {/* Ornate Geometric Elements */}
+                <div style={{ position: 'absolute', top: '5%', left: '5%', width: '200px', height: '200px', border: `3px solid ${color}`, borderRadius: '50%', display: 'flex' }}></div>
+                <div style={{ position: 'absolute', top: '15%', right: '10%', width: '100px', height: '100px', border: `2px solid ${color}`, borderRadius: '25px', display: 'flex', transform: 'rotate(45deg)' }}></div>
+                <div style={{ position: 'absolute', bottom: '20%', left: '15%', width: '150px', height: '150px', border: `4px solid ${color}`, borderRadius: '30px', display: 'flex', transform: 'rotate(-15deg)' }}></div>
+                <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: '120px', height: '120px', border: `2px solid ${color}`, borderRadius: '50%', display: 'flex' }}></div>
+
+                {/* Dotted Accent Lines (Standard in user references) */}
+                <div style={{ position: 'absolute', top: '40%', right: '20%', width: '150px', height: '2px', borderBottom: `2px dashed ${color}`, display: 'flex', opacity: 0.5 }}></div>
+                <div style={{ position: 'absolute', bottom: '40%', left: '10%', width: '3px', height: '100px', borderLeft: `2px dashed ${color}`, display: 'flex', opacity: 0.5 }}></div>
+
+                {/* Background Character Space (If high density) */}
+                <div style={{ position: 'absolute', top: '30%', left: '40%', width: '300px', height: '300px', border: `1px solid ${color}`, borderRadius: '40px', display: 'flex', opacity: 0.2, transform: 'rotate(15deg)' }}></div>
             </div>
         );
 
@@ -87,19 +95,14 @@ export async function GET(req: NextRequest) {
                 borderTop: `6px solid ${accentColor}`,
                 zIndex: 100
             }}>
-                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '20px' }}>
-                    <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '10px', display: 'flex' }}>
-                        {base64Logo && <img src={base64Logo} style={{ width: 40, height: 40, objectFit: 'contain' }} />}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: 18, fontWeight: '950', color: 'white' }}>{businessName.toUpperCase()}</span>
-                        <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', alignItems: 'center' }}>
-                            <div style={{ width: 8, height: 8, borderRadius: '4px', backgroundColor: accentColor, display: 'flex' }}></div>
-                            <span style={{ fontSize: 13, fontWeight: '700', color: '#94A3B8' }}>PREMIUM BRANDING SERVICE</span>
-                        </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontSize: 20, fontWeight: '950', color: 'white' }}>{businessName.toUpperCase()}</span>
+                    <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', alignItems: 'center' }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '4px', backgroundColor: accentColor, display: 'flex' }}></div>
+                        <span style={{ fontSize: 13, fontWeight: '700', color: '#94A3B8' }}>PREMIUM BRANDING SERVICE</span>
                     </div>
                 </div>
-                {/* Social/Contact Mocks for The Critic */}
+                {/* Social/Contact Mocks for The Critic - Professional Alignment */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                     <div style={{ display: 'flex', flexDirection: 'row', gap: '12px' }}>
                         {[1, 2, 3].map(i => (
@@ -108,7 +111,7 @@ export async function GET(req: NextRequest) {
                             </div>
                         ))}
                     </div>
-                    <span style={{ fontSize: 12, fontWeight: '700', color: 'white', opacity: 0.7 }}>{businessName.toLowerCase().replace(/\s/g, '')}.com</span>
+                    <span style={{ fontSize: 13, fontWeight: '700', color: 'white', opacity: 0.7 }}>{businessName.toLowerCase().replace(/\s/g, '')}.com</span>
                 </div>
             </div>
         );
@@ -179,9 +182,9 @@ export async function GET(req: NextRequest) {
 
         const renderAdvertisement = () => (
             <div style={{ height: '100%', width: '100%', display: 'flex', background: '#F8FAFC', position: 'relative' }}>
-                <BrandPattern color={accentColor} opacity={0.12} />
+                <BrandPattern color={accentColor} opacity={0.15} />
 
-                {/* Logo Overlay */}
+                {/* Logo Overlay - Top Left per Critic feedback */}
                 <div style={{ position: 'absolute', top: 40, left: 40, display: 'flex', zIndex: 100 }}>
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px', backgroundColor: 'white', padding: '10px 20px', borderRadius: '12px', border: `2px solid ${accentColor}` }}>
                         {base64Logo && <img src={base64Logo} style={{ width: 30, height: 30, objectFit: 'contain' }} />}
@@ -189,50 +192,58 @@ export async function GET(req: NextRequest) {
                     </div>
                 </div>
 
+                {/* DYNAMIC GEOMETRY: Ribbons/Splashes to eliminate "Bland" backgrounds */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex' }}>
-                    <div style={{ position: 'absolute', top: '-10%', left: '45%', width: '150%', height: '170%', backgroundColor: primaryColor, transform: 'rotate(28deg)', opacity: 0.2, display: 'flex' }}></div>
-                    <div style={{ position: 'absolute', top: '20%', left: '70%', width: '130%', height: '130%', backgroundColor: accentColor, transform: 'rotate(28deg)', opacity: 0.15, display: 'flex' }}></div>
+                    <div style={{ position: 'absolute', top: '-10%', left: '40%', width: '160%', height: '170%', backgroundColor: primaryColor, transform: 'rotate(30deg)', opacity: 0.22, display: 'flex' }}></div>
+                    <div style={{ position: 'absolute', top: '25%', left: '65%', width: '130%', height: '130%', backgroundColor: accentColor, transform: 'rotate(30deg)', opacity: 0.18, display: 'flex' }}></div>
+
+                    {geometry === 'ribbons' && (
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex' }}>
+                            <div style={{ position: 'absolute', top: '45%', left: '-10%', width: '120%', height: '60px', backgroundColor: primaryColor, transform: 'rotate(-15deg)', opacity: 0.15, display: 'flex' }}></div>
+                            <div style={{ position: 'absolute', top: '55%', left: '-10%', width: '120%', height: '40px', backgroundColor: accentColor, transform: 'rotate(-15deg)', opacity: 0.1, display: 'flex' }}></div>
+                        </div>
+                    )}
                 </div>
 
                 <div style={{
                     position: 'absolute',
-                    top: '10%',
-                    left: '4%',
-                    width: '70%',
-                    bottom: '15%',
+                    top: '12%',
+                    left: '5%',
+                    width: '65%',
+                    bottom: '18%',
                     background: accentColor,
-                    borderRadius: '80px',
+                    borderRadius: '70px',
                     display: 'flex',
                     flexDirection: 'column',
-                    padding: '85px 65px',
+                    padding: '80px 60px',
                     zIndex: 20,
-                    border: '3px solid rgba(255,255,255,0.5)'
+                    border: '4px solid rgba(255,255,255,0.6)'
                 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '22px' }}>
-                            <div style={{ padding: '18px', backgroundColor: 'white', borderRadius: '24px', display: 'flex' }}>
-                                {base64Logo && <img src={base64Logo} style={{ width: 65, height: 65, objectFit: 'contain' }} />}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '35px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '20px' }}>
+                            <div style={{ padding: '12px', backgroundColor: 'white', borderRadius: '18px', display: 'flex' }}>
+                                {base64Logo && <img src={base64Logo} style={{ width: 60, height: 60, objectFit: 'contain' }} />}
                             </div>
-                            <span style={{ fontSize: 32, fontWeight: '950', color: '#0F172A' }}>{businessName.toUpperCase()}</span>
+                            <span style={{ fontSize: 32, fontWeight: '1000', color: '#0F172A' }}>{businessName.toUpperCase()}</span>
                         </div>
-                        <div style={{ display: 'flex', fontSize: headline.length > 30 ? 75 : 95, fontWeight: '1000', color: '#0F172A', lineHeight: 0.85 }}>{headline}</div>
-                        <div style={{ display: 'flex', fontSize: 30, fontWeight: '700', color: 'rgba(15, 23, 42, 0.9)', lineHeight: 1.3, maxWidth: '100%', borderLeft: '10px solid #0F172A', paddingLeft: '35px' }}>{subheadline}</div>
+                        <div style={{ display: 'flex', fontSize: headline.length > 30 ? 70 : 90, fontWeight: '1000', color: '#0F172A', lineHeight: 0.82 }}>{headline}</div>
+                        <div style={{ display: 'flex', fontSize: 28, fontWeight: '700', color: 'rgba(15, 23, 42, 0.95)', lineHeight: 1.3, maxWidth: '100%', borderLeft: '11px solid #0F172A', paddingLeft: '30px' }}>{subheadline}</div>
                     </div>
                     <div style={{ marginTop: 'auto', display: 'flex' }}>
-                        <div style={{ display: 'flex', backgroundColor: '#0F172A', color: 'white', padding: '32px 85px', borderRadius: '25px', fontSize: 40, fontWeight: '950' }}>{cta}</div>
+                        <div style={{ display: 'flex', backgroundColor: '#0F172A', color: 'white', padding: '30px 80px', borderRadius: '22px', fontSize: 38, fontWeight: '950' }}>{cta}</div>
                     </div>
                 </div>
 
                 {base64Image ? (
                     <div style={{
                         position: 'absolute',
-                        right: '-15%',
-                        bottom: '8%',
-                        width: '70%',
-                        height: '85%',
+                        right: '-18%',
+                        bottom: '10%',
+                        width: '75%',
+                        height: '80%',
                         display: 'flex',
                         zIndex: 30,
-                        transform: 'scale(1.1)'
+                        transform: 'scale(1.2)'
                     }}>
                         <img src={base64Image} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </div>
