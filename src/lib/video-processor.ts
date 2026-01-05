@@ -162,7 +162,8 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                         logoUrl: business.logoUrl,
                         layoutStyle: (metadata as any).layoutStyle,
                         geometryType: (metadata as any).geometryType,
-                        illustrationSubject: (metadata as any).illustrationSubject
+                        illustrationSubject: (metadata as any).illustrationSubject,
+                        templateHint: (metadata as any).templateHint // Pass the external hint
                     })
 
                     // --- THE HARSH CRITIC: FINAL VIBE CHECK ---

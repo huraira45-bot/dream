@@ -1,5 +1,6 @@
 import cloudinary, { configCloudinary } from "./cloudinary"
 import { logger } from "./logger"
+import { renderWithAPITemplate, getAPITemplateMock } from "./apitemplate";
 
 export interface MediaItem {
     id: string
@@ -8,7 +9,7 @@ export interface MediaItem {
 }
 
 /**
- * Renders a static post using the native HTML-to-Image engine and uploads to Cloudinary.
+ * Renders a static post using either Native or External Engines (APITemplate.io).
  */
 export async function renderStaticPost(
     mediaUrl: string,
@@ -21,12 +22,46 @@ export async function renderStaticPost(
         logoUrl?: string,
         layoutStyle?: string,
         geometryType?: string,
-        illustrationSubject?: string
+        illustrationSubject?: string,
+        templateHint?: string // Hint for external engines
     }
 ) {
     configCloudinary(); // Ensure Cloudinary is ready
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost"))
-        ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")
+
+    // 1. Check for External Engine Hint
+    if (metadata.templateHint) {
+        logger.info(`🔌 Routing to EXTERNAL Engine (APITemplate.io): ${metadata.templateHint}`);
+        try {
+            const apiData = {
+                hook: metadata.hook,
+                title: metadata.businessName,
+                caption: metadata.subheadline || "",
+                fontColor: branding.primaryColor,
+                textBackgroundColor: branding.accentColor,
+                smmAura: "Premium Build"
+            } as any;
+
+            // We use the mock if the key is missing or for rapid testing, but the user provided a key.
+            // If the key is in env, this will work.
+            if (process.env.APITEMPLATE_API_KEY) {
+                const externalRes = await renderWithAPITemplate(apiData, metadata.templateHint, {
+                    "image_url": mediaUrl,
+                    "logo_url": metadata.logoUrl
+                });
+                return { id: externalRes.transaction_id, url: externalRes.download_url };
+            } else {
+                logger.warn("APITEMPLATE_API_KEY missing. Falling back to Mock for Demo.");
+                const mock = getAPITemplateMock(apiData);
+                return { id: mock.transaction_id, url: mock.download_url };
+            }
+        } catch (err: any) {
+            logger.warn(`⚠️ External Render Failed: ${err.message}. Falling back to Native...`);
+        }
+    }
+
+    const rawAppUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+    const appUrl = (!rawAppUrl.includes("localhost"))
+        ? rawAppUrl.replace(/\/$/, "")
         : "https://dream-eta-ruddy.vercel.app";
 
     // 1. Construct the Native Renderer URL

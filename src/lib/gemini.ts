@@ -400,9 +400,25 @@ async function validatePostVibeWithSambaNova(
     businessName: string,
     referenceUrls: string[]
 ): Promise<{ matches: boolean; reasoning: string }> {
+    const toBase64 = async (url: string) => {
+        try {
+            const res = await fetch(url);
+            const buffer = await res.arrayBuffer();
+            const contentType = res.headers.get("content-type") || "image/jpeg";
+            return `data:${contentType};base64,${Buffer.from(buffer).toString("base64")}`;
+        } catch (e) {
+            return url;
+        }
+    };
+
     try {
         const apiKey = process.env.SAMBANOVA_API_KEY;
         if (!apiKey) throw new Error("SAMBANOVA_API_KEY missing");
+
+        const [logoBase64, postBase64] = await Promise.all([
+            toBase64(logoUrl),
+            toBase64(postImageUrl)
+        ]);
 
         const prompt = `You are THE HARSH CRITIC. Validate if the last image (Generated Post) matches the first image (Logo) and intermediate images (Style References) for ${businessName}.
         Check: Mimicry Accuracy, Typography consistency, and Color Harmony.
@@ -423,8 +439,8 @@ async function validatePostVibeWithSambaNova(
                         role: "user",
                         content: [
                             { type: "text", text: prompt },
-                            { type: "image_url", image_url: { url: logoUrl } },
-                            { type: "image_url", image_url: { url: postImageUrl } }
+                            { type: "image_url", image_url: { url: logoBase64 } },
+                            { type: "image_url", image_url: { url: postBase64 } }
                         ]
                     }
                 ],
