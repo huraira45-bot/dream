@@ -264,7 +264,13 @@ export async function processMultiLLMCreativeFlow(
 
             // HARD REJECTION LOGIC (The Bad Cop)
             const hasForbiddenHook = result.options.some(opt =>
-                usedHooks.some(used => opt.hook.toLowerCase().includes(used.toLowerCase()))
+                usedHooks.some(used => {
+                    const uWords = used.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+                    const oWords = opt.hook.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+                    if (uWords.length === 0 || oWords.length === 0) return false;
+                    const overlap = uWords.filter(w => oWords.includes(w)).length / Math.max(uWords.length, oWords.length);
+                    return overlap > 0.8; // Reject only if 80% overlap of significant words
+                })
             );
             const hasForbiddenSong = result.options.some(opt =>
                 usedSongs.includes(opt.trendingAudioTip)

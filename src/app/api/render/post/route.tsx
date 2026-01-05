@@ -63,17 +63,11 @@ export async function GET(req: NextRequest) {
         }
 
         const BrandPattern = ({ color, opacity = 0.08 }: { color: string, opacity?: number }) => (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexWrap: 'wrap', opacity, zIndex: 1 }}>
-                {Array.from({ length: 12 }).map((_, i) => (
-                    <div key={i} style={{
-                        width: i % 2 === 0 ? '150px' : '80px',
-                        height: i % 2 === 0 ? '150px' : '80px',
-                        border: `2px solid ${color}`,
-                        borderRadius: i % 3 === 0 ? '50%' : '20px',
-                        margin: '40px',
-                        transform: `rotate(${i * 30}deg)`
-                    }}></div>
-                ))}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', opacity, zIndex: 1 }}>
+                <div style={{ position: 'absolute', top: '10%', left: '10%', width: '150px', height: '150px', border: `2px solid ${color}`, borderRadius: '50%', transform: 'rotate(30deg)' }}></div>
+                <div style={{ position: 'absolute', top: '20%', right: '15%', width: '80px', height: '80px', border: `2px solid ${color}`, borderRadius: '20px', transform: 'rotate(60deg)' }}></div>
+                <div style={{ position: 'absolute', bottom: '25%', left: '20%', width: '120px', height: '120px', border: `2px solid ${color}`, borderRadius: '20px', transform: 'rotate(-45deg)' }}></div>
+                <div style={{ position: 'absolute', bottom: '15%', right: '20%', width: '100px', height: '100px', border: `2px solid ${color}`, borderRadius: '50%', transform: 'rotate(15deg)' }}></div>
             </div>
         );
 
@@ -97,19 +91,19 @@ export async function GET(req: NextRequest) {
                         {base64Logo && <img src={base64Logo} style={{ width: 35, height: 35, objectFit: 'contain' }} />}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: 18, fontWeight: '950', color: 'white', letterSpacing: '0.05em' }}>{businessName.toUpperCase()}</span>
-                        <span style={{ fontSize: 12, fontWeight: '700', color: accentColor, letterSpacing: '0.1em' }}>OFFICIAL BRAND POST</span>
+                        <span style={{ fontSize: 18, fontWeight: '950', color: 'white' }}>{businessName.toUpperCase()}</span>
+                        <span style={{ fontSize: 12, fontWeight: '700', color: accentColor }}>OFFICIAL BRAND POST</span>
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
                     <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: accentColor }}></div>
-                    <span style={{ fontSize: 16, fontWeight: '800', color: '#94A3B8', letterSpacing: '0.15em' }}>PREMIUM QUALITY</span>
+                    <span style={{ fontSize: 16, fontWeight: '800', color: '#94A3B8' }}>PREMIUM QUALITY</span>
                 </div>
             </div>
         );
 
         const renderMagazine = () => (
-            <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#F8FAFC', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#F8FAFC', position: 'relative' }}>
                 <BrandPattern color={primaryColor} />
                 <div style={{ height: '52%', width: '100%', backgroundColor: '#E2E8F0', display: 'flex', position: 'relative', justifyContent: 'center', alignItems: 'center', zIndex: 10 }}>
                     {base64Image ? (
@@ -117,18 +111,18 @@ export async function GET(req: NextRequest) {
                     ) : (
                         <div style={{ width: '100%', height: '100%', background: `linear-gradient(45deg, ${primaryColor}, ${accentColor})`, opacity: 0.2 }}></div>
                     )}
-                    <div style={{ position: 'absolute', top: 40, left: 40, backgroundColor: 'white', padding: '15px 30px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '15px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)', border: `2px solid ${accentColor}` }}>
+                    <div style={{ position: 'absolute', top: 40, left: 40, backgroundColor: 'white', padding: '15px 30px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '15px', border: `2px solid ${accentColor}` }}>
                         {base64Logo && <img src={base64Logo} style={{ width: 40, height: 40, objectFit: 'contain' }} />}
                         <span style={{ fontSize: 20, fontWeight: '900', color: '#0F172A' }}>{businessName}</span>
                     </div>
                 </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '60px 80px', backgroundColor: 'white', position: 'relative', paddingBottom: '160px', zIndex: 20, borderTop: `8px solid ${primaryColor}` }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-                        <div style={{ fontSize: headline.length > 60 ? 42 : headline.length > 30 ? 58 : 74, fontWeight: '950', color: '#0F172A', lineHeight: 1.05, letterSpacing: '-0.04em' }}>{headline}</div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '60px 80px', backgroundColor: 'white', position: 'relative', zIndex: 20, borderTop: `8px solid ${primaryColor}` }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '25px', paddingBottom: '120px' }}>
+                        <div style={{ fontSize: headline.length > 60 ? 42 : headline.length > 30 ? 58 : 74, fontWeight: '950', color: '#0F172A', lineHeight: 1.05 }}>{headline}</div>
                         <div style={{ fontSize: 30, fontWeight: '600', color: '#475569', lineHeight: 1.4, maxWidth: '95%', borderLeft: `6px solid ${accentColor}`, paddingLeft: '25px' }}>{subheadline}</div>
                     </div>
-                    <div style={{ marginTop: 'auto', display: 'flex' }}>
-                        <div style={{ backgroundColor: primaryColor, color: '#FFFFFF', padding: '24px 60px', borderRadius: '20px', fontSize: 34, fontWeight: '950', boxShadow: `0 15px 30px -5px ${primaryColor}60`, border: `2px solid rgba(255,255,255,0.2)` }}>{cta}</div>
+                    <div style={{ position: 'absolute', bottom: '150px', left: '80px', display: 'flex' }}>
+                        <div style={{ backgroundColor: primaryColor, color: '#FFFFFF', padding: '24px 60px', borderRadius: '20px', fontSize: 34, fontWeight: '950' }}>{cta}</div>
                     </div>
                 </div>
                 <BrandFooter />
@@ -136,17 +130,17 @@ export async function GET(req: NextRequest) {
         );
 
         const renderPoster = () => (
-            <div style={{ height: '100%', width: '100%', display: 'flex', background: `linear-gradient(135deg, ${primaryColor} 0%, #0F172A 100%)`, position: 'relative', overflow: 'hidden', padding: '50px' }}>
-                <div style={{ flex: 1, backgroundColor: 'white', borderRadius: '50px', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', paddingBottom: '100px', border: `12px solid ${accentColor}` }}>
+            <div style={{ height: '100%', width: '100%', display: 'flex', background: primaryColor, position: 'relative', padding: '50px' }}>
+                <div style={{ flex: 1, backgroundColor: 'white', borderRadius: '50px', display: 'flex', flexDirection: 'column', position: 'relative', border: `12px solid ${accentColor}` }}>
                     <BrandPattern color={primaryColor} opacity={0.04} />
-                    {base64Image ? <img src={base64Image} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.12 }} /> : null}
+                    {base64Image ? <img src={base64Image} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.12 }} /> : null}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '80px', justifyContent: 'center', alignItems: 'center', textAlign: 'center', zIndex: 10 }}>
-                        <div style={{ padding: '25px', backgroundColor: '#F8FAFC', borderRadius: '30px', marginBottom: '50px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+                        <div style={{ padding: '25px', backgroundColor: '#F8FAFC', borderRadius: '30px', marginBottom: '50px' }}>
                             {base64Logo ? <img src={base64Logo} style={{ width: 120, height: 120, objectFit: 'contain' }} /> : null}
                         </div>
-                        <div style={{ fontSize: 95, fontWeight: '950', color: '#0F172A', lineHeight: 0.95, marginBottom: '50px', letterSpacing: '-0.03em' }}>{headline}</div>
+                        <div style={{ fontSize: 95, fontWeight: '950', color: '#0F172A', lineHeight: 0.95, marginBottom: '50px' }}>{headline}</div>
                         <div style={{ fontSize: 34, fontWeight: '600', color: '#475569', marginBottom: '70px', maxWidth: '85%' }}>{subheadline}</div>
-                        <div style={{ backgroundColor: primaryColor, color: 'white', padding: '35px 90px', borderRadius: '24px', fontSize: 42, fontWeight: '950', boxShadow: `0 25px 50px -12px ${primaryColor}50` }}>{cta}</div>
+                        <div style={{ backgroundColor: primaryColor, color: 'white', padding: '35px 90px', borderRadius: '24px', fontSize: 42, fontWeight: '950' }}>{cta}</div>
                     </div>
                     <BrandFooter />
                 </div>
@@ -156,78 +150,40 @@ export async function GET(req: NextRequest) {
         const geometry = searchParams.get('geometry') || 'cards';
 
         const renderAdvertisement = () => (
-            <div style={{ height: '100%', width: '100%', display: 'flex', background: `linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)`, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: '100%', display: 'flex', background: '#F8FAFC', position: 'relative' }}>
                 <BrandPattern color={accentColor} opacity={0.1} />
-                {/* Background Ribbons / Geometry */}
-                <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex' }}>
                     <div style={{ position: 'absolute', top: '-15%', left: '50%', width: '140%', height: '160%', backgroundColor: primaryColor, transform: 'rotate(25deg)', opacity: 0.18 }}></div>
                     <div style={{ position: 'absolute', top: '25%', left: '65%', width: '120%', height: '120%', backgroundColor: accentColor, transform: 'rotate(25deg)', opacity: 0.15 }}></div>
                     <div style={{ position: 'absolute', bottom: '-20%', left: '-15%', width: '120%', height: '50%', backgroundColor: primaryColor, transform: 'rotate(-8deg)', opacity: 0.12 }}></div>
                 </div>
 
-                {/* Left Content Card */}
                 <div style={{
                     position: 'absolute',
                     top: '8%',
                     left: '4%',
                     width: '68%',
                     bottom: '12%',
-                    background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}dd 100%)`,
+                    background: accentColor,
                     borderRadius: '70px',
                     display: 'flex',
                     flexDirection: 'column',
                     padding: '90px 70px',
-                    boxShadow: '0 60px 120px -40px rgba(0,0,0,0.3)',
                     zIndex: 20,
                     border: '2px solid rgba(255,255,255,0.4)'
                 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '45px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
-                            <div style={{ padding: '18px', backgroundColor: 'white', borderRadius: '24px', display: 'flex', boxShadow: '0 15px 30px -5px rgba(0,0,0,0.15)' }}>
-                                {base64Logo ? <img src={base64Logo} style={{ width: 60, height: 60, objectFit: 'contain' }} /> : null}
+                            <div style={{ padding: '18px', backgroundColor: 'white', borderRadius: '24px', display: 'flex' }}>
+                                {base64Logo && <img src={base64Logo} style={{ width: 60, height: 60, objectFit: 'contain' }} />}
                             </div>
-                            <span style={{ fontSize: 28, fontWeight: '950', color: '#0F172A', letterSpacing: '0.08em' }}>{businessName.toUpperCase()}</span>
+                            <span style={{ fontSize: 28, fontWeight: '950', color: '#0F172A' }}>{businessName.toUpperCase()}</span>
                         </div>
-
-                        <div style={{
-                            fontSize: headline.length > 30 ? 70 : 90,
-                            fontWeight: '950',
-                            color: '#0F172A',
-                            lineHeight: 0.9,
-                            textShadow: '0 12px 24px rgba(0,0,0,0.1)',
-                            letterSpacing: '-0.04em'
-                        }}>
-                            {headline}
-                        </div>
-
-                        <div style={{
-                            fontSize: 32,
-                            fontWeight: '700',
-                            color: 'rgba(15, 23, 42, 0.85)',
-                            lineHeight: 1.25,
-                            maxWidth: '98%',
-                            borderLeft: '8px solid #0F172A',
-                            paddingLeft: '35px'
-                        }}>
-                            {subheadline}
-                        </div>
+                        <div style={{ fontSize: headline.length > 30 ? 70 : 90, fontWeight: '950', color: '#0F172A', lineHeight: 0.9 }}>{headline}</div>
+                        <div style={{ fontSize: 32, fontWeight: '700', color: 'rgba(15, 23, 42, 0.85)', lineHeight: 1.25, maxWidth: '98%', borderLeft: '8px solid #0F172A', paddingLeft: '35px' }}>{subheadline}</div>
                     </div>
-
                     <div style={{ marginTop: 'auto' }}>
-                        <div style={{
-                            backgroundColor: '#0F172A',
-                            color: 'white',
-                            padding: '30px 80px',
-                            borderRadius: '24px',
-                            fontSize: 38,
-                            fontWeight: '950',
-                            display: 'flex',
-                            width: 'fit-content',
-                            boxShadow: '0 25px 50px -10px rgba(0,0,0,0.4)',
-                            letterSpacing: '0.04em'
-                        }}>
-                            {cta}
-                        </div>
+                        <div style={{ backgroundColor: '#0F172A', color: 'white', padding: '30px 80px', borderRadius: '24px', fontSize: 38, fontWeight: '950', display: 'flex', width: 'fit-content' }}>{cta}</div>
                     </div>
                 </div>
 
