@@ -41,6 +41,7 @@ export interface AIReelDataV3 {
     layoutStyle: "magazine" | "poster" | "advertisement" // Native Image Builder Layout
     geometryType: "ribbons" | "cards" | "floating" // Layout geometry style
     illustrationSubject: string // Subject for Pollinations AI (e.g. "Delivery guy on scooter")
+    templateHint?: string // Hint for external renderers (APITemplate/Bannerbear)
 }
 
 export async function processMultiLLMCreativeFlow(
@@ -174,11 +175,13 @@ export async function processMultiLLMCreativeFlow(
     - TOP PRIORITY. All content MUST center around this goal.
     ` : ""}
 
-    NATIVE IMAGE BUILDER INSTRUCTIONS (The Strategist):
     - You must choose a "layoutStyle":
         - "magazine": Minimal, editorial, split screen.
         - "poster": Big typography, background-focused.
         - "advertisement": High-impact card layout, background ribbons, 3D character focus.
+    
+    - EXTERNAL RENDERING HINT:
+        - If you think this content would look better on a premium external template (e.g., APITemplate.io), provide a "templateHint" (e.g., "minimalist_instagram_1", "bold_sale_announcement").
     
     - You must choose a "geometryType":
         - "ribbons": Sharp diagonal background stripes/ribbons (like the user reference).
