@@ -474,14 +474,14 @@ export async function extractStyleDNA(imageUrls: string[]): Promise<string> {
         EXTRACT THE FOLLOWING DNA:
         1. Typography DNA: (Font category: Serif/Sans/Bold/Elegant, Weight, Case: All-Caps/Mixed).
         2. Layout DNA: (Density: High/Low, Alignment: Central/Left/Asymmetric, Geometry: "Geometric Ribbons", "Clean Cards", "Floating Badges").
-        3. Visual/Character DNA: (Style: "3D Character Illustration", "Photorealistic", "Minimalist Clay", Colors, Vibes).
-        4. Detail DNA: (Background: "Solid with Ribbons", "Gradient", "Minimalist Studio", Call-to-action style).
+        3. Visual DNA: (Character Style: "3D Character Illustration", "Photorealistic", "Minimalist Clay", Colors, Vibes).
+        4. Aesthetic DNA: (Background: "Solid with Ribbons", "Gradient", "Textured/Patterned", Vibrancy: High/Low, Aesthetic Density: High/Moderate/Low).
         
         OUTPUT FORMAT (Strict JSON):
         {
           "typography": { "category": string, "weight": string, "case": string },
           "layout": { "density": string, "alignment": string, "geometry": string, "specialElements": string[] },
-          "visual": { "characterStyle": string, "colors": string[], "vibes": string[] },
+          "visual": { "characterStyle": string, "colors": string[], "vibes": string[], "vibrancy": string, "aestheticDensity": string },
           "copy": { "tone": string, "length": string }
         }
         

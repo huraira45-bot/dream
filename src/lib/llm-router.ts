@@ -195,8 +195,10 @@ export async function processMultiLLMCreativeFlow(
     - Typography Category: ${parsedStyleDNA.typography?.category}
     - Layout Geometry: ${parsedStyleDNA.layout?.geometry}
     - Character Style: ${parsedStyleDNA.visual?.characterStyle}
-    - Layout Density: ${parsedStyleDNA.layout?.density}
-    - Rule: If Density is "High", do NOT pick "Minimalist" visual styles.
+    - Aesthetic Density: ${parsedStyleDNA.visual?.aestheticDensity || parsedStyleDNA.layout?.density}
+    - Color Vibrancy: ${parsedStyleDNA.visual?.vibrancy}
+    - Rule: If Aesthetic Density is "High", you MUST pick a visually rich layout (e.g., "advertisement").
+    - Rule: If Vibrancy is "High", you MUST use background color splashes (secondary/accent colors).
     - Rule: If the user liked 3D Characters and Ribbons, you MUST set layoutStyle to "advertisement" and geometryType to "ribbons". 
     - Rule: ALWAYS ensure the primary brand colors (from the logo) are utilized in the background or main elements.
     ` : ""}
