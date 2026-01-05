@@ -425,8 +425,9 @@ export async function generateBrandedPostMetadata(
     ` : "No DNA found. Use high-impact professional design."}
     
     TASK:
-    1. Hook & Headline: Create something scroll-stopping. 
-       - CONTEXTUAL RULE: If "Upcoming Events" contains something like "PSL", "Eid", or a "Sale", you MUST incorporate that excitement directly into the Hook or Headline. E.g., "Ready for PSL with Pirch Piyale?".
+    1. Hook & Headline: Create something scroll-stopping and HIGH CONVERSION.
+       - OFFER RULE: You MUST emphasize specific offers. Use percentages (e.g., "50% OFF", "BUY 1 GET 1") or "FREE" deals (e.g., "FREE DELIVERY", "FREE GIFT") in the headline. 
+       - CONTEXTUAL RULE: If "Upcoming Events" contains something like "PSL", "Eid", or a "Sale", you MUST incorporate that excitement directly into the Hook or Headline. E.g., "PSL FLASH SALE: 30% OFF!".
     2. Design (STRICT ENUMS): 
        - layoutStyle: "magazine" | "poster" | "advertisement"
        - geometryType: "ribbons" | "cards"

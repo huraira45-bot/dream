@@ -151,7 +151,6 @@ export async function GET(req: NextRequest) {
                         <div style={{ display: 'flex', backgroundColor: primaryColor, color: '#FFFFFF', padding: '24px 55px', borderRadius: '18px', fontSize: 32, fontWeight: '950' }}>{cta}</div>
                     </div>
                 </div>
-                <BrandFooter />
             </div>
         );
 
@@ -179,7 +178,6 @@ export async function GET(req: NextRequest) {
                         <div style={{ display: 'flex', fontSize: 36, fontWeight: '800', color: '#1E293B', maxWidth: '85%', lineHeight: 1.2 }}>{subheadline}</div>
                         <div style={{ display: 'flex', backgroundColor: primaryColor, color: 'white', padding: '35px 85px', borderRadius: '25px', fontSize: 44, fontWeight: '950', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>{cta}</div>
                     </div>
-                    <BrandFooter />
                 </div>
             </div>
         );
@@ -254,7 +252,6 @@ export async function GET(req: NextRequest) {
                         <img src={base64Image} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </div>
                 ) : null}
-                <BrandFooter />
             </div>
         );
 
