@@ -152,26 +152,27 @@ export async function GET(req: NextRequest) {
 
         const renderPoster = () => (
             <div style={{ height: '100%', width: '100%', display: 'flex', background: primaryColor, position: 'relative', padding: '45px' }}>
-                <div style={{ flex: 1, backgroundColor: 'white', borderRadius: '60px', display: 'flex', flexDirection: 'column', position: 'relative', border: `14px solid ${accentColor}` }}>
-                    <BrandPattern color={primaryColor} opacity={0.06} />
+                <div style={{ flex: 1, backgroundColor: '#FFFFFF', borderRadius: '60px', display: 'flex', flexDirection: 'column', position: 'relative', border: `14px solid ${accentColor}`, overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: `linear-gradient(135deg, white 0%, ${accentColor} 300%)`, opacity: 0.5, zIndex: 0 }}></div>
+                    <BrandPattern color={primaryColor} opacity={0.15} />
 
                     {/* Logo Overlay */}
                     <div style={{ position: 'absolute', top: 40, left: 40, display: 'flex', zIndex: 50 }}>
-                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px', backgroundColor: '#F8FAFC', padding: '10px 20px', borderRadius: '12px', border: `1.5px solid ${primaryColor}` }}>
+                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px', backgroundColor: '#F8FAFC', padding: '10px 20px', borderRadius: '12px', border: `2.5px solid ${primaryColor}`, boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
                             {base64Logo && <img src={base64Logo} style={{ width: 30, height: 30, objectFit: 'contain' }} />}
                             <span style={{ fontSize: 16, fontWeight: '900', color: '#0F172A' }}>{businessName}</span>
                         </div>
                     </div>
 
-                    {base64Image ? <img src={base64Image} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.15 }} /> : null}
+                    {base64Image ? <img src={base64Image} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.25 }} /> : null}
 
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '80px', justifyContent: 'center', alignItems: 'center', textAlign: 'center', zIndex: 10, gap: '40px' }}>
-                        <div style={{ display: 'flex', padding: '25px', backgroundColor: '#F8FAFC', borderRadius: '35px' }}>
+                        <div style={{ display: 'flex', padding: '25px', backgroundColor: 'white', borderRadius: '35px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
                             {base64Logo ? <img src={base64Logo} style={{ width: 140, height: 140, objectFit: 'contain' }} /> : null}
                         </div>
-                        <div style={{ display: 'flex', fontSize: 90, fontWeight: '950', color: '#0F172A', lineHeight: 0.9 }}>{headline}</div>
-                        <div style={{ display: 'flex', fontSize: 36, fontWeight: '700', color: '#334155', maxWidth: '85%' }}>{subheadline}</div>
-                        <div style={{ display: 'flex', backgroundColor: primaryColor, color: 'white', padding: '35px 85px', borderRadius: '25px', fontSize: 44, fontWeight: '950' }}>{cta}</div>
+                        <div style={{ display: 'flex', fontSize: 90, fontWeight: '1000', color: '#0F172A', lineHeight: 0.85, textShadow: '0 2px 10px rgba(255,255,255,0.8)' }}>{headline}</div>
+                        <div style={{ display: 'flex', fontSize: 36, fontWeight: '800', color: '#1E293B', maxWidth: '85%', lineHeight: 1.2 }}>{subheadline}</div>
+                        <div style={{ display: 'flex', backgroundColor: primaryColor, color: 'white', padding: '35px 85px', borderRadius: '25px', fontSize: 44, fontWeight: '950', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>{cta}</div>
                     </div>
                     <BrandFooter />
                 </div>
@@ -194,13 +195,13 @@ export async function GET(req: NextRequest) {
 
                 {/* DYNAMIC GEOMETRY: Ribbons/Splashes to eliminate "Bland" backgrounds */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex' }}>
-                    <div style={{ position: 'absolute', top: '-10%', left: '40%', width: '160%', height: '170%', backgroundColor: primaryColor, transform: 'rotate(30deg)', opacity: 0.22, display: 'flex' }}></div>
-                    <div style={{ position: 'absolute', top: '25%', left: '65%', width: '130%', height: '130%', backgroundColor: accentColor, transform: 'rotate(30deg)', opacity: 0.18, display: 'flex' }}></div>
+                    <div style={{ position: 'absolute', top: '-10%', left: '40%', width: '160%', height: '170%', backgroundColor: primaryColor, transform: 'rotate(30deg)', opacity: 0.4, display: 'flex' }}></div>
+                    <div style={{ position: 'absolute', top: '25%', left: '65%', width: '130%', height: '130%', backgroundColor: accentColor, transform: 'rotate(30deg)', opacity: 0.35, display: 'flex' }}></div>
 
                     {geometry === 'ribbons' && (
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex' }}>
-                            <div style={{ position: 'absolute', top: '45%', left: '-10%', width: '120%', height: '60px', backgroundColor: primaryColor, transform: 'rotate(-15deg)', opacity: 0.15, display: 'flex' }}></div>
-                            <div style={{ position: 'absolute', top: '55%', left: '-10%', width: '120%', height: '40px', backgroundColor: accentColor, transform: 'rotate(-15deg)', opacity: 0.1, display: 'flex' }}></div>
+                            <div style={{ position: 'absolute', top: '45%', left: '-10%', width: '120%', height: '100px', backgroundColor: primaryColor, transform: 'rotate(-15deg)', opacity: 0.4, display: 'flex' }}></div>
+                            <div style={{ position: 'absolute', top: '55%', left: '-10%', width: '120%', height: '80px', backgroundColor: accentColor, transform: 'rotate(-15deg)', opacity: 0.3, display: 'flex' }}></div>
                         </div>
                     )}
                 </div>

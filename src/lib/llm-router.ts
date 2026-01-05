@@ -375,7 +375,12 @@ export async function recorrectCreativeFlow(
     
     TASK:
     Generate a NEW, FIXED AIReelDataV3 object that addresses all critic concerns.
-    Ensure "layoutStyle" and "geometryType" are updated if needed.
+    
+    STRICT ENUM CONSTRAINTS:
+    - layoutStyle: "magazine" | "poster" | "advertisement"
+    - geometryType: "ribbons" | "cards"
+    
+    Ensure "layoutStyle" and "geometryType" are updated if needed. For "Red and Yellow" bold brands, use "advertisement" + "ribbons".
     
     Return ONLY a JSON object of AIReelDataV3. No preamble.`;
 
@@ -421,7 +426,9 @@ export async function generateBrandedPostMetadata(
     
     TASK:
     1. Hook & Headline: Create something scroll-stopping.
-    2. Design: Choose a layout ("magazine", "poster", "advertisement") and geometry ("ribbons", "cards", "floating").
+    2. Design (STRICT ENUMS): 
+       - layoutStyle: "magazine" | "poster" | "advertisement"
+       - geometryType: "ribbons" | "cards"
     3. Creative Freedom: You are NOT restricted just to the logo colors. If there is a festive event (Eid, New Year) or an offer (Flash Sale), you MUST use appropriate festive colors (Eid=Gold/Green, Sale=Bold Red/Yellow) to enhance the "Vibe". 
     4. Visual Depth: Describe an "illustrationSubject" for Pollinations AI. Include characters and descriptive backgrounds (e.g., "A happy professional holding a gift with festive tea lights in the background").
     
