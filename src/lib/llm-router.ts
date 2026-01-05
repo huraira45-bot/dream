@@ -93,14 +93,19 @@ export async function processMultiLLMCreativeFlow(
         "Minimalist Zen", "Aggressive Street Style", "Luxury Gold & Velvet", "Retro 90s Vibe",
         "Ethereal Glow", "Industrial Grunge", "Playful Kawaii", "Sophisticated Editorial"
     ];
-    const pickedSpice = creativeSpice[Math.floor(Math.random() * creativeSpice.length)];
+    let pickedSpice = creativeSpice[Math.floor(Math.random() * creativeSpice.length)];
+
+    // CRITICAL FIX: If Style DNA is present, it MUST override the random spice
+    if (parsedStyleDNA) {
+        pickedSpice = "MIMETIC BRAND DNA (Follow User References)";
+    }
 
     let variationMix = [
-        { type: "DRAMATIC/CINEMATIC", style: "High contrast, bold serif fonts, epic hook, intense music" },
-        { type: "POV/VLOG", style: "Hand-written fonts, relatable/funny hook, 'Day in life' vibe, chill/lofi music" },
-        { type: "HYPE/TREND", style: "Bright colors, bold rounded fonts, fast-paced hook, high-energy viral music" },
-        { type: "MINIMALIST/AESTHETIC", style: "Clean typography, soft lighting, quiet hooks, atmospheric sounds" },
-        { type: "CHAOTIC/FAST", style: "Glitches, neon colors, aggressive hooks, hard-hitting bass" }
+        { type: "DRAMATIC/CINEMATIC", style: parsedStyleDNA ? "Epic hook, intense music, follow Style DNA for visual" : "High contrast, bold serif fonts, epic hook, intense music" },
+        { type: "POV/VLOG", style: parsedStyleDNA ? "Relatable/funny hook, 'Day in life' vibe, follow Style DNA for visual" : "Hand-written fonts, relatable/funny hook, 'Day in life' vibe, chill/lofi music" },
+        { type: "HYPE/TREND", style: parsedStyleDNA ? "Fast-paced hook, high-energy viral music, follow Style DNA for visual" : "Bright colors, bold rounded fonts, fast-paced hook, high-energy viral music" },
+        { type: "MINIMALIST/AESTHETIC", style: parsedStyleDNA ? "Quiet hooks, atmospheric sounds, follow Style DNA for visual" : "Clean typography, soft lighting, quiet hooks, atmospheric sounds" },
+        { type: "CHAOTIC/FAST", style: parsedStyleDNA ? "Aggressive hooks, hard-hitting bass, follow Style DNA for visual" : "Glitches, neon colors, aggressive hooks, hard-hitting bass" }
     ].sort(() => 0.5 - Math.random()).slice(0, 3);
 
     if (mode === CreativeMode.NO_VISION) {
