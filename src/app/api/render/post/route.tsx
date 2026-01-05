@@ -82,36 +82,41 @@ export async function GET(req: NextRequest) {
         const BrandFooter = () => (
             <div style={{
                 position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: '110px',
-                backgroundColor: '#0F172A',
+                bottom: 40,
+                left: 50,
+                right: 50,
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
-                padding: '0 60px',
                 justifyContent: 'space-between',
-                borderTop: `6px solid ${accentColor}`,
                 zIndex: 100
             }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span style={{ fontSize: 20, fontWeight: '950', color: 'white' }}>{businessName.toUpperCase()}</span>
-                    <div style={{ display: 'flex', flexDirection: 'row', gap: '8px', alignItems: 'center' }}>
-                        <div style={{ width: 8, height: 8, borderRadius: '4px', backgroundColor: accentColor, display: 'flex' }}></div>
-                        <span style={{ fontSize: 13, fontWeight: '700', color: '#94A3B8' }}>PREMIUM BRANDING SERVICE</span>
-                    </div>
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: '12px',
+                    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+                    padding: '8px 20px',
+                    borderRadius: '12px',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255,255,255,0.1)'
+                }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '4px', backgroundColor: accentColor, display: 'flex' }}></div>
+                    <span style={{ fontSize: 14, fontWeight: '800', color: 'white' }}>{businessName.toUpperCase()}</span>
                 </div>
-                {/* Social/Contact Mocks for The Critic - Professional Alignment */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'row', gap: '12px' }}>
-                        {[1, 2, 3].map(i => (
-                            <div key={i} style={{ width: 22, height: 22, borderRadius: '6px', border: '1.5px solid rgba(255,255,255,0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                <div style={{ width: 10, height: 2, backgroundColor: 'white', borderRadius: '1px', display: 'flex' }}></div>
-                            </div>
-                        ))}
-                    </div>
-                    <span style={{ fontSize: 13, fontWeight: '700', color: 'white', opacity: 0.7 }}>{businessName.toLowerCase().replace(/\s/g, '')}.com</span>
+
+                <div style={{
+                    display: 'flex',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    padding: '8px 15px',
+                    borderRadius: '10px',
+                    fontSize: 12,
+                    fontWeight: '700',
+                    color: '#0F172A',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                }}>
+                    {businessName.toLowerCase().replace(/\s/g, '')}.com
                 </div>
             </div>
         );

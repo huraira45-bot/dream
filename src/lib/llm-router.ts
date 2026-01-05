@@ -425,7 +425,8 @@ export async function generateBrandedPostMetadata(
     ` : "No DNA found. Use high-impact professional design."}
     
     TASK:
-    1. Hook & Headline: Create something scroll-stopping.
+    1. Hook & Headline: Create something scroll-stopping. 
+       - CONTEXTUAL RULE: If "Upcoming Events" contains something like "PSL", "Eid", or a "Sale", you MUST incorporate that excitement directly into the Hook or Headline. E.g., "Ready for PSL with Pirch Piyale?".
     2. Design (STRICT ENUMS): 
        - layoutStyle: "magazine" | "poster" | "advertisement"
        - geometryType: "ribbons" | "cards"
