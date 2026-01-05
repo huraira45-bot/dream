@@ -26,15 +26,23 @@ export async function GET(req: NextRequest) {
         // Font Loading Helper
         const getFont = async (name: string) => {
             const fonts: Record<string, string> = {
-                'Montserrat': 'https://github.com/google/fonts/raw/main/ofl/montserrat/Montserrat-Bold.ttf',
-                'Playfair Display': 'https://github.com/google/fonts/raw/main/ofl/playfairdisplay/PlayfairDisplay-Bold.ttf',
-                'Bebas Neue': 'https://github.com/google/fonts/raw/main/ofl/bebasneue/BebasNeue-Regular.ttf',
-                'Outfit': 'https://github.com/google/fonts/raw/main/ofl/outfit/Outfit-Bold.ttf',
-                'Inter': 'https://github.com/google/fonts/raw/main/ofl/inter/Inter-Bold.ttf'
+                'Montserrat': 'https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat-Bold.ttf',
+                'Playfair Display': 'https://raw.githubusercontent.com/google/fonts/main/ofl/playfairdisplay/PlayfairDisplay-Bold.ttf',
+                'Bebas Neue': 'https://raw.githubusercontent.com/google/fonts/main/ofl/bebasneue/BebasNeue-Regular.ttf',
+                'Outfit': 'https://raw.githubusercontent.com/google/fonts/main/ofl/outfit/Outfit-Bold.ttf',
+                'Inter': 'https://raw.githubusercontent.com/google/fonts/main/ofl/inter/Inter-Bold.ttf'
             };
             const url = fonts[name] || fonts['Montserrat'];
-            const res = await fetch(url);
-            return await res.arrayBuffer();
+            try {
+                const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+                if (!res.ok) throw new Error(`Font fetch failed: ${res.status}`);
+                return await res.arrayBuffer();
+            } catch (err) {
+                console.error(`Font load failed for ${name}, falling back to default:`, err);
+                // Fallback: This will still fail if Montserrat itself fails, but it's a start
+                const fallbackRes = await fetch(fonts['Montserrat'], { signal: AbortSignal.timeout(5000) });
+                return await fallbackRes.arrayBuffer();
+            }
         };
 
         const [activeFontData] = await Promise.all([getFont(fontFamily)]);
