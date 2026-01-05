@@ -28,15 +28,22 @@ export async function renderWithAPITemplate(
     logger.info(`Routing brain output to APITemplate.io [Template: ${templateId}]`);
 
     // Mapping Brain (AIReelDataV3) -> APITemplate JSON Properties
+    // Based on documentation: field names must match the element names in the template editor
     const payload = {
         template_id: templateId,
         data: {
+            // General naming conventions found in standard APITemplate samples
             "headline": data.hook,
+            "text_headline": data.hook,
             "subheadline": data.title,
-            "cta": data.caption.substring(0, 50), // APITemplate often has length limits on text boxes
+            "text_subheadline": data.title,
+            "cta": data.caption.substring(0, 50),
+            "text_cta": data.caption.substring(0, 50),
             "footer_text": data.smmAura,
+            "text_footer": data.smmAura,
             "primary_color": data.fontColor || "#000000",
             "accent_color": data.textBackgroundColor || "#FF4D4D",
+            "text_quote": data.hook, // Found in the documentation sample
             ...overrides
         },
         metadata: {

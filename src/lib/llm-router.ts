@@ -181,8 +181,9 @@ export async function processMultiLLMCreativeFlow(
         - "advertisement": High-impact card layout, background ribbons, 3D character focus.
     
     - EXTERNAL RENDERING HINT:
-        - If you think this content would look better on a premium external template (e.g., APITemplate.io), provide a "templateHint" (e.g., "minimalist_instagram_1", "bold_sale_announcement").
-    
+        - If you think this content would look better on a premium external template (e.g., APITemplate.io), provide a "templateHint" (e.g., "minimalist_instagram_1").
+        - VERY IMPORTANT: APITemplate field names must match the template's element names (e.g., "text_quote", "text_headline", "image_1", "logo_1"). 
+        - You can suggest these in the "caption" or as part of the creative strategy if you want to override specific elements.
     - You must choose a "geometryType":
         - "ribbons": Sharp diagonal background stripes/ribbons (like the user reference).
         - "cards": Central content cards with shadows.
