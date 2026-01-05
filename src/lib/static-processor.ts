@@ -59,9 +59,8 @@ export async function renderStaticPost(
         }
     }
 
-    const rawAppUrl = process.env.NEXT_PUBLIC_APP_URL || "";
-    const appUrl = (!rawAppUrl.includes("localhost"))
-        ? rawAppUrl.replace(/\/$/, "")
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost"))
+        ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")
         : "https://dream-eta-ruddy.vercel.app";
 
     // 1. Construct the Native Renderer URL
