@@ -139,16 +139,14 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                 let mediaUrl = finalMediaForRender[0]?.url
                 const styleDNA = business.styleContext ? JSON.parse(business.styleContext) : null;
 
-                // FALLBACK: If no media OR if the LLM specifically asks for an illustration
-                if (!mediaUrl || (metadata as any).illustrationSubject) {
-                    logger.info(`✨ Generating mimetic illustration for: ${business.name}`)
-                    const subject = (metadata as any).illustrationSubject || metadata.hook;
-                    mediaUrl = await generateFreeIllustration(
-                        subject,
-                        branding?.mood,
-                        styleDNA?.visual?.characterStyle
-                    )
-                }
+                // FORCE: Always generate a mimetic illustration for Static Posts to ensure high-impact backgrounds
+                logger.info(`✨ Generating mandatory mimetic illustration for: ${business.name}`)
+                const subject = (metadata as any).illustrationSubject || metadata.hook;
+                mediaUrl = await generateFreeIllustration(
+                    subject,
+                    branding?.mood,
+                    styleDNA?.visual?.characterStyle
+                )
 
                 const nativeBranding = {
                     primaryColor: branding?.primary || "#000000",

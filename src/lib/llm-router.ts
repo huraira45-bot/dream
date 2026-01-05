@@ -379,6 +379,7 @@ export async function recorrectCreativeFlow(
     STRICT ENUM CONSTRAINTS:
     - layoutStyle: "magazine" | "poster" | "advertisement"
     - geometryType: "ribbons" | "cards"
+    - fontFamily: "Montserrat" | "Playfair Display" | "Bebas Neue" | "Outfit" | "Inter"
     
     Ensure "layoutStyle" and "geometryType" are updated if needed. For "Red and Yellow" bold brands, use "advertisement" + "ribbons".
     
@@ -431,6 +432,7 @@ export async function generateBrandedPostMetadata(
     2. Design (STRICT ENUMS): 
        - layoutStyle: "magazine" | "poster" | "advertisement"
        - geometryType: "ribbons" | "cards"
+       - fontFamily: "Montserrat" | "Playfair Display" | "Bebas Neue" | "Outfit" | "Inter"
     3. Creative Freedom: You are NOT restricted just to the logo colors. If there is a festive event (Eid, New Year) or an offer (Flash Sale), you MUST use appropriate festive colors (Eid=Gold/Green, Sale=Bold Red/Yellow) to enhance the "Vibe". 
     4. Visual Depth: Describe an "illustrationSubject" for Pollinations AI. Include characters and descriptive backgrounds (e.g., "A happy professional holding a gift with festive tea lights in the background").
     

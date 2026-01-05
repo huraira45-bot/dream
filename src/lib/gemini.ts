@@ -347,14 +347,15 @@ export async function validatePostVibe(
         
         CRITERIA:
         - MIMICRY ACCURACY: Does the final post look like it belongs in the same "collection" as the Style References?
-        - TYPOGRAPHY CHECK: Is the font weight and category consistent with the user's likes?
-        - COLOR HARMONY (MAXIMUM FLEXIBILITY): 
-            - You MUST allow for shades and colors that are NOT in the logo if they relate to an EVENT or VIBE (e.g., PSL Green, Festive Gold, Sale Orange, Teal for Modernity).
-            - As long as the LOGO is present and the DESIGN IS PREMIUM/ATTRACTIVE, it should PASS. 
-            - Do NOT be a "Color Cop". We value scroll-stopping creativity over strict hex code matching.
+        - TYPOGRAPHY CHECK: Is the font category consistent with the user's likes?
+        - COLOR HARMONY (HYPER-FLEXIBLE): 
+            - You ONLY need a "subtle touch" of brand identity (e.g., the logo being present).
+            - The overall color palette can be 90% DIFFERENT from the logo if it relates to an EVENT or VIBE (e.g., PSL Green, Festive Gold, Neon).
+            - As long as the post is PREMIUM, HIGH-QUALITY, and ATTRACTIVE, it should PASS. 
+            - UNLOCK CREATIVITY: Do NOT reject for color mismatches. Different colors are GOOD.
         
         TASK:
-        Verify the vibe match. Fail ONLY if the design is ugly, generic, or completely ignores the quality of the references. Different colors/shades are ENCOURAGED if they feel festive or fresh.
+        Verify the vibe match. Fail ONLY if the design is ugly, broken, or completely generic/low-quality. High-contrast and creative variations are ENCOURAGED.
         
         JSON RESPONSE FORMAT:
         {
@@ -435,13 +436,14 @@ async function validatePostVibeWithSambaNova(
         const prompt = `You are THE HARSH CRITIC. Validate if the last image (Generated Post) matches the first image (Logo) for ${businessName}.
         Check: Mimicry Accuracy, Typography consistency, and Color Harmony.
         
-        COLOR HARMONY (MAXIMUM FLEXIBILITY):
-        - You MUST allow for shades and colors that are NOT in the logo if they relate to an EVENT or VIBE (e.g., PSL Green, Festive Gold, Sale Orange).
+        COLOR HARMONY (HYPER-FLEXIBLE):
+        - Only a "subtle touch" of brand identity is required.
+        - The color palette can be 90% DIFFERENT if it's for an event (e.g. PSL Green, Gold).
         - Different shades and bold creative colors are ENCOURAGED.
         - As long as the LOGO is present and the DESIGN IS PREMIUM, it should PASS. 
         
         TASK:
-        Verify the vibe match. Fail ONLY if the design is ugly or completely ignores the quality of the references. Do NOT be strict about brand colors.
+        Verify the vibe match. Fail ONLY if the design is ugly or low-quality. Do NOT be strict about brand colors.
         
         OUTPUT STRICT JSON:
         {

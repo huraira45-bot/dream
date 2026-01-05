@@ -23,6 +23,7 @@ export async function renderStaticPost(
         layoutStyle?: string,
         geometryType?: string,
         illustrationSubject?: string,
+        fontFamily?: string,
         templateHint?: string // Hint for external engines
     }
 ) {
@@ -83,6 +84,9 @@ export async function renderStaticPost(
     }
     if (metadata.illustrationSubject) {
         renderUrl.searchParams.append("illustrationSubject", metadata.illustrationSubject)
+    }
+    if (metadata.fontFamily) {
+        renderUrl.searchParams.append("fontFamily", metadata.fontFamily)
     }
 
     logger.info(`🎨 Generating Native Branded Post: ${renderUrl.toString()}`)

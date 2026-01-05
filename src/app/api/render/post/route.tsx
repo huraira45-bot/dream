@@ -20,7 +20,24 @@ export async function GET(req: NextRequest) {
         const accentColor = searchParams.get('accentColor') || '#FF4D4D';
         const businessName = sanitizeText(searchParams.get('businessName') || 'The Brand');
         const logoUrl = searchParams.get('logoUrl');
-        const layout = searchParams.get('layout') || 'magazine'; // magazine | poster | clean
+        const layout = searchParams.get('layout') || 'magazine';
+        const fontFamily = searchParams.get('fontFamily') || 'Montserrat';
+
+        // Font Loading Helper
+        const getFont = async (name: string) => {
+            const fonts: Record<string, string> = {
+                'Montserrat': 'https://github.com/google/fonts/raw/main/ofl/montserrat/Montserrat-Bold.ttf',
+                'Playfair Display': 'https://github.com/google/fonts/raw/main/ofl/playfairdisplay/PlayfairDisplay-Bold.ttf',
+                'Bebas Neue': 'https://github.com/google/fonts/raw/main/ofl/bebasneue/BebasNeue-Regular.ttf',
+                'Outfit': 'https://github.com/google/fonts/raw/main/ofl/outfit/Outfit-Bold.ttf',
+                'Inter': 'https://github.com/google/fonts/raw/main/ofl/inter/Inter-Bold.ttf'
+            };
+            const url = fonts[name] || fonts['Montserrat'];
+            const res = await fetch(url);
+            return await res.arrayBuffer();
+        };
+
+        const [activeFontData] = await Promise.all([getFont(fontFamily)]);
 
         // Robust Image Fetching at the Edge
         let base64Image = null;
@@ -141,7 +158,7 @@ export async function GET(req: NextRequest) {
                     )}
                 </div>
 
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '60px 70px', backgroundColor: 'white', position: 'relative', zIndex: 20, borderTop: `10px solid ${primaryColor}` }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '60px 70px', backgroundColor: 'white', position: 'relative', zIndex: 20, borderTop: `10px solid ${primaryColor}`, fontFamily }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '130px' }}>
                         <div style={{ display: 'flex', fontSize: headline.length > 60 ? 44 : 64, fontWeight: '950', color: '#0F172A', lineHeight: 1.0 }}>{headline}</div>
                         <div style={{ display: 'flex', fontSize: 28, fontWeight: '600', color: '#475569', lineHeight: 1.4, maxWidth: '95%', borderLeft: `8px solid ${accentColor}`, paddingLeft: '25px' }}>{subheadline}</div>
@@ -156,7 +173,7 @@ export async function GET(req: NextRequest) {
 
         const renderPoster = () => (
             <div style={{ height: '100%', width: '100%', display: 'flex', background: primaryColor, position: 'relative', padding: '45px' }}>
-                <div style={{ flex: 1, backgroundColor: '#FFFFFF', borderRadius: '60px', display: 'flex', flexDirection: 'column', position: 'relative', border: `14px solid ${accentColor}`, overflow: 'hidden' }}>
+                <div style={{ flex: 1, backgroundColor: '#FFFFFF', borderRadius: '60px', display: 'flex', flexDirection: 'column', position: 'relative', border: `14px solid ${accentColor}`, overflow: 'hidden', fontFamily }}>
                     <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: `linear-gradient(135deg, white 0%, ${accentColor} 300%)`, opacity: 0.5, zIndex: 0 }}></div>
                     <BrandPattern color={primaryColor} opacity={0.15} />
 
@@ -168,7 +185,7 @@ export async function GET(req: NextRequest) {
                         </div>
                     </div>
 
-                    {base64Image ? <img src={base64Image} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.25 }} /> : null}
+                    {base64Image ? <img src={base64Image} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55 }} /> : null}
 
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '80px', justifyContent: 'center', alignItems: 'center', textAlign: 'center', zIndex: 10, gap: '40px' }}>
                         <div style={{ display: 'flex', padding: '25px', backgroundColor: 'white', borderRadius: '35px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
@@ -221,7 +238,8 @@ export async function GET(req: NextRequest) {
                     flexDirection: 'column',
                     padding: '80px 60px',
                     zIndex: 20,
-                    border: '4px solid rgba(255,255,255,0.6)'
+                    border: '4px solid rgba(255,255,255,0.6)',
+                    fontFamily
                 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '35px' }}>
                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '20px' }}>
@@ -260,6 +278,13 @@ export async function GET(req: NextRequest) {
             {
                 width: 1080,
                 height: 1080,
+                fonts: [
+                    {
+                        name: fontFamily,
+                        data: activeFontData,
+                        style: 'normal',
+                    },
+                ],
             }
         );
     } catch (e: any) {
