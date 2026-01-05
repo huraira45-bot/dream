@@ -348,17 +348,18 @@ export async function validatePostVibe(
         CRITERIA:
         - MIMICRY ACCURACY: Does the final post look like it belongs in the same "collection" as the Style References?
         - TYPOGRAPHY CHECK: Is the font weight and category consistent with the user's likes?
-        - COLOR HARMONY (FLEXIBLE): 
-            - If the post uses the logo's palette, ensure it's balanced.
-            - If the post uses FESTIVE or OFFER-based colors (e.g., Gold/Green for Eid, Bold Red for Sale) that are NOT in the logo, PASS it as long as the Logo is clearly visible and the design is premium. We want creative freedom!
+        - COLOR HARMONY (MAXIMUM FLEXIBILITY): 
+            - You MUST allow for shades and colors that are NOT in the logo if they relate to an EVENT or VIBE (e.g., PSL Green, Festive Gold, Sale Orange, Teal for Modernity).
+            - As long as the LOGO is present and the DESIGN IS PREMIUM/ATTRACTIVE, it should PASS. 
+            - Do NOT be a "Color Cop". We value scroll-stopping creativity over strict hex code matching.
         
         TASK:
-        Verify the vibe match. Reject only if it feels generic, unbalanced, or completely ignores the logo/reference quality. Do NOT reject solely because of extra "creative" colors like festive golds or sale reds.
+        Verify the vibe match. Fail ONLY if the design is ugly, generic, or completely ignores the quality of the references. Different colors/shades are ENCOURAGED if they feel festive or fresh.
         
         JSON RESPONSE FORMAT:
         {
           "matches": boolean,
-          "reasoning": "Be specific about why it fails the style match",
+          "reasoning": "Be specific. Mention if you liked the creative color choices.",
           "suggestions": {
              "colorFix": "string",
              "typographyFix": "string",
@@ -434,12 +435,13 @@ async function validatePostVibeWithSambaNova(
         const prompt = `You are THE HARSH CRITIC. Validate if the last image (Generated Post) matches the first image (Logo) for ${businessName}.
         Check: Mimicry Accuracy, Typography consistency, and Color Harmony.
         
-        COLOR HARMONY (FLEXIBLE):
-        - If the post uses the logo's palette, ensure it's balanced.
-        - If the post uses FESTIVE or OFFER-based colors (e.g., Gold/Green for Eid, Bold Red for Sale) that are NOT in the logo, PASS it as long as the Logo is clearly visible and the design is premium. We want creative freedom!
+        COLOR HARMONY (MAXIMUM FLEXIBILITY):
+        - You MUST allow for shades and colors that are NOT in the logo if they relate to an EVENT or VIBE (e.g., PSL Green, Festive Gold, Sale Orange).
+        - Different shades and bold creative colors are ENCOURAGED.
+        - As long as the LOGO is present and the DESIGN IS PREMIUM, it should PASS. 
         
         TASK:
-        Verify the vibe match. Reject only if it feels generic, unbalanced, or completely ignores the logo/reference quality. Do NOT reject solely because of extra "creative" colors like festive golds or sale reds.
+        Verify the vibe match. Fail ONLY if the design is ugly or completely ignores the quality of the references. Do NOT be strict about brand colors.
         
         OUTPUT STRICT JSON:
         {
