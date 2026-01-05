@@ -13,7 +13,16 @@ export interface MediaItem {
 export async function renderStaticPost(
     mediaUrl: string,
     branding: { primaryColor: string, accentColor: string },
-    metadata: { hook: string, businessName: string, cta?: string, subheadline?: string, logoUrl?: string, layoutStyle?: string }
+    metadata: {
+        hook: string,
+        businessName: string,
+        cta?: string,
+        subheadline?: string,
+        logoUrl?: string,
+        layoutStyle?: string,
+        geometryType?: string,
+        illustrationSubject?: string
+    }
 ) {
     configCloudinary(); // Ensure Cloudinary is ready
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost"))
@@ -34,6 +43,12 @@ export async function renderStaticPost(
     }
     if (metadata.layoutStyle) {
         renderUrl.searchParams.append("layout", metadata.layoutStyle)
+    }
+    if (metadata.geometryType) {
+        renderUrl.searchParams.append("geometry", metadata.geometryType)
+    }
+    if (metadata.illustrationSubject) {
+        renderUrl.searchParams.append("illustrationSubject", metadata.illustrationSubject)
     }
 
     logger.info(`🎨 Generating Native Branded Post: ${renderUrl.toString()}`)

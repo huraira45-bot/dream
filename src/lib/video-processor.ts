@@ -122,13 +122,18 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                 renderId = response.id
             } else {
                 // PIVOT: Native Brand Engine (HTML-to-Image)
-                // This replaces the complex Canva/Shotstack flow with a robust, free, and branded local generator.
                 let mediaUrl = finalMediaForRender[0]?.url
+                const styleDNA = business.styleContext ? JSON.parse(business.styleContext) : null;
 
-                // FALLBACK: If no media, generate a free 3D illustration
-                if (!mediaUrl) {
-                    logger.info(`✨ No media found for post, generating free illustration for: ${business.name}`)
-                    mediaUrl = await generateFreeIllustration(metadata.hook, branding?.mood)
+                // FALLBACK: If no media OR if the LLM specifically asks for an illustration
+                if (!mediaUrl || (metadata as any).illustrationSubject) {
+                    logger.info(`✨ Generating mimetic illustration for: ${business.name}`)
+                    const subject = (metadata as any).illustrationSubject || metadata.hook;
+                    mediaUrl = await generateFreeIllustration(
+                        subject,
+                        branding?.mood,
+                        styleDNA?.visual?.characterStyle
+                    )
                 }
 
                 const nativeBranding = {
@@ -155,7 +160,9 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                         cta: sanitize(metadata.title || "Learn More"),
                         subheadline: sanitize(metadata.caption || ""),
                         logoUrl: business.logoUrl,
-                        layoutStyle: (metadata as any).layoutStyle
+                        layoutStyle: (metadata as any).layoutStyle,
+                        geometryType: (metadata as any).geometryType,
+                        illustrationSubject: (metadata as any).illustrationSubject
                     })
 
                     // --- THE HARSH CRITIC: FINAL VIBE CHECK ---

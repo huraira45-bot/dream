@@ -6,18 +6,27 @@ import { logger } from "./logger"
  */
 export async function generateFreeIllustration(
     subject: string,
-    mood: string = "Modern"
+    mood: string = "Modern",
+    characterStyle: string = "3D character illustration"
 ): Promise<string> {
     // 1. Build a high-quality prompt for the 3D Illustration style
-    const baseStyle = "3D character, clean clay illustration style, professional studio lighting, vibrant colors, centered composition, high resolution, soft shadows, minimalist background, 1080x1080 square format";
-    const prompt = `${subject}, ${mood} theme, ${baseStyle}`;
+    // We emphasize the "characterStyle" requested by the DNA Profiler
+    const baseStyle = `${characterStyle}, clean professional 3D render, Disney/Pixar style quality, studio lighting, vibrant colors, centered composition, soft shadows, solid minimalist background, 1080x1080 square format`;
 
-    // 2. Pollinations AI URL format: https://pollinations.ai/p/[PROMPT]?width=1080&height=1080&model=flux&seed=[RANDOM]
+    // Specifically handle the "delivery" or "scooter" context if hinted
+    let refinedSubject = subject;
+    if (subject.toLowerCase().includes("delivery")) {
+        refinedSubject = `${subject} on a yellow 3D scooter, happy professional pose`;
+    }
+
+    const prompt = `${refinedSubject}, ${mood} theme, ${baseStyle}`;
+
+    // 2. Pollinations AI URL format
     const encodedPrompt = encodeURIComponent(prompt);
     const seed = Math.floor(Math.random() * 1000000);
     const pollinationsUrl = `https://pollinations.ai/p/${encodedPrompt}?width=1080&height=1080&model=flux&seed=${seed}`;
 
-    logger.info(`🎨 Generated Illustration URL: ${pollinationsUrl}`);
+    logger.info(`🎨 Generated Mimetic Illustration URL: ${pollinationsUrl}`);
 
     // Note: We don't necessarily need to fetch/upload here because the Native Brand Engine 
     // will fetch it during the ImageResponse render.

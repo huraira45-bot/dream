@@ -212,8 +212,103 @@ export async function GET(req: NextRequest) {
             </div>
         );
 
+        const geometry = searchParams.get('geometry') || 'cards';
+
+        const renderAdvertisement = () => (
+            <div style={{ height: '100%', width: '100%', display: 'flex', backgroundColor: '#F8FAFC', position: 'relative', overflow: 'hidden' }}>
+                {/* Background Ribbons / Geometry */}
+                {geometry === 'ribbons' && (
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
+                        <div style={{ position: 'absolute', top: '-10%', left: '60%', width: '100%', height: '150%', backgroundColor: primaryColor, transform: 'rotate(25deg)', opacity: 0.1 }}></div>
+                        <div style={{ position: 'absolute', top: '20%', left: '70%', width: '80%', height: '100%', backgroundColor: accentColor, transform: 'rotate(25deg)', opacity: 0.05 }}></div>
+                        <div style={{ position: 'absolute', bottom: '-20%', left: '-10%', width: '100%', height: '40%', backgroundColor: primaryColor, transform: 'rotate(-5deg)', opacity: 0.05 }}></div>
+                    </div>
+                )}
+
+                {/* Central / Left Card */}
+                <div style={{
+                    position: 'absolute',
+                    top: '15%',
+                    left: '8%',
+                    width: '60%',
+                    bottom: '15%',
+                    backgroundColor: accentColor,
+                    borderRadius: '50px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    padding: '60px',
+                    boxShadow: '0 40px 100px -20px rgba(0,0,0,0.15)',
+                    zIndex: 20
+                }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                            {base64Logo ? <img src={base64Logo} style={{ width: 60, height: 60, objectFit: 'contain' }} /> : null}
+                            <span style={{ fontSize: 24, fontWeight: '900', color: 'white', letterSpacing: '0.1em' }}>{businessName}</span>
+                        </div>
+
+                        <div style={{
+                            fontSize: headline.length > 30 ? 60 : 80,
+                            fontWeight: '900',
+                            color: 'white',
+                            lineHeight: 1,
+                            textShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                        }}>
+                            {headline}
+                        </div>
+
+                        <div style={{
+                            fontSize: 28,
+                            fontWeight: '600',
+                            color: 'rgba(255,255,255,0.9)',
+                            lineHeight: 1.4,
+                            maxWidth: '90%'
+                        }}>
+                            {subheadline}
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{
+                            backgroundColor: 'white',
+                            color: accentColor,
+                            padding: '24px 60px',
+                            borderRadius: '20px',
+                            fontSize: 32,
+                            fontWeight: '900',
+                            boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+                        }}>
+                            {cta}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Overlapping Hero Image (3D Character) */}
+                {base64Image ? (
+                    <div style={{
+                        position: 'absolute',
+                        right: '-5%',
+                        bottom: '5%',
+                        width: '55%',
+                        height: '75%',
+                        display: 'flex',
+                        zIndex: 30
+                    }}>
+                        <img
+                            src={base64Image}
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',
+                                filter: 'drop-shadow(0 30px 50px rgba(0,0,0,0.3))'
+                            }}
+                        />
+                    </div>
+                ) : null}
+            </div>
+        );
+
         return new ImageResponse(
-            layout === 'poster' ? renderPoster() : renderMagazine(),
+            layout === 'advertisement' ? renderAdvertisement() : layout === 'poster' ? renderPoster() : renderMagazine(),
             {
                 width: 1080,
                 height: 1080,

@@ -408,25 +408,25 @@ export async function extractStyleDNA(imageUrls: string[]): Promise<string> {
             })
         );
 
-        const prompt = `You are a MASTER BRAND STRATEGIST and TYPOGRAPHY EXPERT.
+        const prompt = `You are a MASTER BRAND STRATEGIST and PRE-VISUALIZATION EXPERT.
         Analyze these reference posts which the user LIKES. 
         Extract a "Style DNA" JSON that I can use to direct an AI to replicate this vibe.
         
         EXTRACT THE FOLLOWING DNA:
         1. Typography DNA: (Font category: Serif/Sans/Bold/Elegant, Weight, Case: All-Caps/Mixed).
-        2. Layout DNA: (Density: High/Low, Alignment: Central/Left/Asymmetric, Padding vibes).
-        3. Visual DNA: (Overlay styles, Borders, Geometric shapes, Image filter vibes).
-        4. Copy DNA: (Short/Punchy, Long/Storytelling, Tone: Hype/Luxury/Minimal).
+        2. Layout DNA: (Density: High/Low, Alignment: Central/Left/Asymmetric, Geometry: "Geometric Ribbons", "Clean Cards", "Floating Badges").
+        3. Visual/Character DNA: (Style: "3D Character Illustration", "Photorealistic", "Minimalist Clay", Colors, Vibes).
+        4. Detail DNA: (Background: "Solid with Ribbons", "Gradient", "Minimalist Studio", Call-to-action style).
         
         OUTPUT FORMAT (Strict JSON):
         {
           "typography": { "category": string, "weight": string, "case": string },
-          "layout": { "density": string, "alignment": string, "specialElements": string[] },
-          "visual": { "colors": string[], "vibes": string[] },
+          "layout": { "density": string, "alignment": string, "geometry": string, "specialElements": string[] },
+          "visual": { "characterStyle": string, "colors": string[], "vibes": string[] },
           "copy": { "tone": string, "length": string }
         }
         
-        Be precise. Don't be generic. If the reference is "Bold and Grungy", capture that.`;
+        If you see 3D characters or delivery scooters like in the reference, make sure to mark characterStyle as "3D Character Illustration".`;
 
         const result = await model.generateContent([prompt, ...mediaParts.map(p => ({ inlineData: p.inlineData }))]);
         const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
@@ -439,8 +439,8 @@ export async function extractStyleDNA(imageUrls: string[]): Promise<string> {
         logger.error(`Style DNA Extraction Error: ${err.message}`);
         return JSON.stringify({
             typography: { category: "Modern Sans", weight: "Bold", case: "Mixed" },
-            layout: { density: "Balanced", alignment: "Left", specialElements: [] },
-            visual: { colors: ["#000000", "#FFFFFF"], vibes: ["Clean"] },
+            layout: { density: "Balanced", alignment: "Left", geometry: "Clean Cards", specialElements: [] },
+            visual: { characterStyle: "Minimalist Clay", colors: ["#000000", "#FFFFFF"], vibes: ["Clean"] },
             copy: { tone: "Professional", length: "Short" }
         });
     }

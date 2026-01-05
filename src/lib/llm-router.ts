@@ -38,7 +38,9 @@ export interface AIReelDataV3 {
     narrative: string
     transitionType: "fade" | "wipeRight" | "wipeLeft" | "slideRight" | "slideLeft" | "zoom"
     effectType: "zoomIn" | "zoomOut" | "slideLeft" | "slideRight" | "none"
-    layoutStyle: "magazine" | "poster" // Native Image Builder Layout
+    layoutStyle: "magazine" | "poster" | "advertisement" // Native Image Builder Layout
+    geometryType: "ribbons" | "cards" | "floating" // Layout geometry style
+    illustrationSubject: string // Subject for Pollinations AI (e.g. "Delivery guy on scooter")
 }
 
 export async function processMultiLLMCreativeFlow(
@@ -172,16 +174,28 @@ export async function processMultiLLMCreativeFlow(
     - TOP PRIORITY. All content MUST center around this goal.
     ` : ""}
 
+    NATIVE IMAGE BUILDER INSTRUCTIONS (The Strategist):
+    - You must choose a "layoutStyle":
+        - "magazine": Minimal, editorial, split screen.
+        - "poster": Big typography, background-focused.
+        - "advertisement": High-impact card layout, background ribbons, 3D character focus.
+    
+    - You must choose a "geometryType":
+        - "ribbons": Sharp diagonal background stripes/ribbons (like the user reference).
+        - "cards": Central content cards with shadows.
+        - "floating": Floating badges and stickers for features/discounts.
+
+    ILLUSTRATION DIRECTIVE (For Pollinations AI):
+    - If no media is available, you MUST provide an "illustrationSubject".
+    - If the Style DNA mentions "3D Character", the subject should be descriptive: e.g., "Professional delivery guy on a yellow 3D scooter".
+
     ${parsedStyleDNA ? `
     MIMETIC STYLE DNA DIRECTIVE (MANDATORY):
     - You MUST mimic the typography and layout from these user-liked references:
     - Typography Category: ${parsedStyleDNA.typography?.category}
-    - Typography Weight: ${parsedStyleDNA.typography?.weight}
-    - Layout Density: ${parsedStyleDNA.layout?.density}
-    - Layout Alignment: ${parsedStyleDNA.layout?.alignment}
-    - Special Elements to Replication: ${parsedStyleDNA.layout?.specialElements?.join(", ")}
-    - Tonal Direction: ${parsedStyleDNA.copy?.tone}
-    - Rule: Do NOT deviate from this aesthetic. The user has explicitly liked these styles.
+    - Layout Geometry: ${parsedStyleDNA.layout?.geometry}
+    - Character Style: ${parsedStyleDNA.visual?.characterStyle}
+    - Rule: If the user liked 3D Characters and Ribbons, you MUST set layoutStyle to "advertisement" and geometryType to "ribbons".
     ` : ""}
 
     YOUR TASK: Generate EXACTLY ${variationMix.length} UNIQUE production options. 
