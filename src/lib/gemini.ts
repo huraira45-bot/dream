@@ -357,7 +357,13 @@ export async function validatePostVibe(
         JSON RESPONSE FORMAT:
         {
           "matches": boolean,
-          "reasoning": "Be specific about why it fails the style match"
+          "reasoning": "Be specific about why it fails the style match",
+          "suggestions": {
+             "colorFix": "string",
+             "typographyFix": "string",
+             "layoutFix": "string",
+             "vibeFix": "string"
+          }
         }`;
 
         const mediaParts = [

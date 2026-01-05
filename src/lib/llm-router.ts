@@ -2,6 +2,7 @@ import { generateReelMetadata, describeMedia } from "./gemini";
 import { generateJSONWithLLM } from "./openai";
 import { getTrendingSongsForRegion } from "./trends";
 import { logger } from "./logger";
+import { RECOMMENDED_TEMPLATES } from "./apitemplate";
 
 enum CreativeMode {
     FULL_VISION = "FULL_VISION",
@@ -181,7 +182,8 @@ export async function processMultiLLMCreativeFlow(
         - "advertisement": High-impact card layout, background ribbons, 3D character focus.
     
     - EXTERNAL RENDERING HINT:
-        - If you think this content would look better on a premium external template (e.g., APITemplate.io), provide a "templateHint" (e.g., "minimalist_instagram_1").
+        - If you think this content would look better on a premium external template (e.g., APITemplate.io), provide a "templateHint".
+        - KNOWN TEMPLATES YOU CAN USE: ${RECOMMENDED_TEMPLATES.map(t => t.id).join(", ")}
         - VERY IMPORTANT: APITemplate field names must match the template's element names (e.g., "text_quote", "text_headline", "image_1", "logo_1"). 
         - You can suggest these in the "caption" or as part of the creative strategy if you want to override specific elements.
     - You must choose a "geometryType":
@@ -339,5 +341,50 @@ export async function processMultiLLMCreativeFlow(
             effectType: (opt as any).effectType || "zoomIn",
             layoutStyle: "magazine"
         })) as unknown) as AIReelDataV3[];
+    }
+}
+
+/**
+ * THE RE-CORRECTOR: AI-Driven Self-Correction Flow
+ * Takes a failed creative plan and fixes it based on Harsh Critic feedback.
+ */
+export async function recorrectCreativeFlow(
+    current: AIReelDataV3,
+    criticFeedback: string,
+    criticSuggestions: Record<string, string>,
+    businessName: string
+): Promise<AIReelDataV3> {
+    logger.info(`🛠️  AI RE-CORRECTOR: Fixing creative based on feedback for ${businessName}...`);
+
+    const correctionPrompt = `You are a MASTER CORRECTOR. A previous creative post for "${businessName}" was REJECTED by THE HARSH CRITIC.
+    
+    PREVIOUS PLAN:
+    - Hook: ${current.hook}
+    - Layout: ${current.layoutStyle}
+    - Geometry: ${current.geometryType}
+    - Colors: ${current.fontColor} on ${current.textBackgroundColor}
+    
+    CRITIC FEEDBACK (Why it failed):
+    ${criticFeedback}
+    
+    ACTIONABLE SUGGESTIONS TO FIX IT:
+    - Color Fix: ${criticSuggestions.colorFix}
+    - Typography Fix: ${criticSuggestions.typographyFix}
+    - Layout Fix: ${criticSuggestions.layoutFix}
+    - Vibe Fix: ${criticSuggestions.vibeFix}
+    
+    TASK:
+    Generate a NEW, FIXED AIReelDataV3 object that addresses all critic concerns.
+    Ensure "layoutStyle" and "geometryType" are updated if needed.
+    
+    Return ONLY a JSON object of AIReelDataV3. No preamble.`;
+
+    try {
+        const result = await generateJSONWithLLM<AIReelDataV3>(correctionPrompt, {}, { temperature: 0.7 });
+        logger.info(`✅ AI RE-CORRECTOR: Applied fixes for ${businessName}. Ready for retry.`);
+        return result;
+    } catch (err: any) {
+        logger.warn(`Correction AI failed: ${err.message}. Using last known state.`);
+        return current;
     }
 }

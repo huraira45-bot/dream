@@ -4,6 +4,13 @@ import { logger } from "./logger";
 const API_KEY = process.env.APITEMPLATE_API_KEY;
 const API_URL = "https://api.apitemplate.io/v1/create";
 
+export const RECOMMENDED_TEMPLATES = [
+    { id: "instagram-positive-quote-white", name: "Modern Quote (White)" },
+    { id: "bold_sale_announcement", name: "Bold Sale Announcement" },
+    { id: "minimalist_instagram_1", name: "Minimalist Aesthetic" },
+    { id: "premium_lifestyle_post", name: "Premium Lifestyle" }
+];
+
 export interface APITemplateResponse {
     status: string;
     download_url: string;

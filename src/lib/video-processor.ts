@@ -7,7 +7,7 @@ import cloudinary from "@/lib/cloudinary"
 import { postToShotstack } from "./shotstack"
 import { renderStaticPost } from "./static-processor"
 import { getStyleForVariation } from "./director"
-import { processMultiLLMCreativeFlow } from "./llm-router"
+import { processMultiLLMCreativeFlow, recorrectCreativeFlow } from "./llm-router"
 import { logger } from "./logger"
 import { extractBrandingFromLogo } from "./branding"
 import { getUpcomingEvents } from "./calendar"
@@ -147,7 +147,7 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
 
                 while (attempts < MAX_ATTEMPTS) {
                     attempts++;
-                    logger.info(`🚀 [Attempt ${attempts}] Routing to Native Brand Engine...`)
+                    logger.info(`🚀 [Attempt ${attempts}] Triggering Branded Render...`)
 
                     const sanitize = (val: any) => {
                         const str = String(val || "");
@@ -179,10 +179,15 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                             break;
                         } else {
                             logger.warn(`❌ Vibe Mismatch on Attempt ${attempts}: ${check.reasoning}`);
-                            // If it fails, we slightly tweak the "spice" for the next attempt by changing layout if it was magazine
+                            // --- SMART RE-CORRECTION ---
                             if (attempts < MAX_ATTEMPTS) {
-                                (metadata as any).layoutStyle = (metadata as any).layoutStyle === 'magazine' ? 'poster' : 'magazine';
-                                logger.info(`🔄 Retrying with flipped layout: ${(metadata as any).layoutStyle}`);
+                                metadata = await recorrectCreativeFlow(
+                                    metadata,
+                                    check.reasoning,
+                                    (check as any).suggestions || {},
+                                    business.name
+                                );
+                                logger.info(`🔄 Retrying with AI-Corrected Plan...`);
                             } else {
                                 finalRenderResponse = response; // Fallback to last one
                             }
