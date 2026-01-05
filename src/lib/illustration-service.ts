@@ -14,9 +14,9 @@ export async function generateFreeIllustration(
     const baseStyle = `${characterStyle}, clean professional 3D render, Disney/Pixar style quality, studio lighting, vibrant colors, centered composition, soft shadows, solid minimalist background, 1080x1080 square format`;
 
     // Specifically handle the "delivery" or "scooter" context if hinted
-    let refinedSubject = subject;
-    if (subject.toLowerCase().includes("delivery")) {
-        refinedSubject = `${subject} on a yellow 3D scooter, happy professional pose`;
+    let refinedSubject = subject || "Modern professional brand illustration";
+    if (refinedSubject.toLowerCase().includes("delivery")) {
+        refinedSubject = `${refinedSubject} on a yellow 3D scooter, happy professional pose`;
     }
 
     const prompt = `${refinedSubject}, ${mood} theme, ${baseStyle}`;

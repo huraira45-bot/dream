@@ -430,15 +430,37 @@ export async function generateBrandedPostMetadata(
     `;
 
     try {
-        const result = await generateJSONWithLLM<AIReelDataV3>(prompt, {}, { temperature: 0.9 });
+        const result = await generateJSONWithLLM<any>(prompt, {}, { temperature: 0.9 });
 
-        // Safety Cleanups
-        result.musicMood = "N/A";
-        result.trendingAudioTip = "N/A";
-        result.musicRationale = "Static Post Branch";
+        // --- ROBUST FIELD MAPPING & DEFAULTING ---
+        const finalMetadata: AIReelDataV3 = {
+            hook: result.hook || result.headline || result.main_hook || "Special Offer Just For You!",
+            title: result.title || result.cta || result.button_text || "Order Now",
+            caption: result.caption || result.subheadline || result.description || "Limited time offer. Follow us for more updates.",
+            fontFamily: result.fontFamily || "Montserrat",
+            fontColor: result.fontColor || branding?.primary || "#000000",
+            textBackgroundColor: result.textBackgroundColor || branding?.accent || "#FFFFFF",
+            textPosition: result.textPosition || "bottom",
+            musicMood: "N/A",
+            trendingAudioTip: "N/A",
+            musicRationale: "Static Post Branch",
+            vibeScore: result.vibeScore || 8,
+            energyLevel: result.energyLevel || "moderate",
+            skipMediaIndices: [],
+            smmAura: result.smmAura || result.aura || "Professional & Clean",
+            smmGimmick: result.smmGimmick || "Direct Value Proposition",
+            visualStyle: result.visualStyle || "Modern Branded",
+            narrative: result.narrative || "Showcasing brand value.",
+            transitionType: "fade",
+            effectType: "none",
+            layoutStyle: result.layoutStyle || "magazine",
+            geometryType: result.geometryType || "cards",
+            illustrationSubject: result.illustrationSubject || result.hook || result.headline || "Branded lifestyle illustration",
+            templateHint: result.templateHint
+        };
 
-        logger.info(`✅ POST CREATOR: Designed Branded Post [Hook: ${result.hook}]`);
-        return result;
+        logger.info(`✅ POST CREATOR: Designed Branded Post [Hook: ${finalMetadata.hook}]`);
+        return finalMetadata;
     } catch (err: any) {
         logger.error(`Post Creator failed: ${err.message}`);
         throw err;
