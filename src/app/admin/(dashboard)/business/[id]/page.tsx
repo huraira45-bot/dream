@@ -11,6 +11,7 @@ import { ScheduleReelButton } from "@/components/admin/schedule-reel-button"
 import { ReelStatusPoller } from "@/components/admin/reel-status-poller"
 import { getUpcomingEvents } from "@/lib/calendar"
 import { LogoManager } from "@/components/admin/logo-manager"
+import { StyleDNAEditor } from "@/components/admin/style-dna-editor"
 
 export default async function BusinessDetail({
     params,
@@ -131,6 +132,13 @@ export default async function BusinessDetail({
                                 </div>
                             </div>
                         </div>
+
+                        {/* Style DNA Editor */}
+                        <StyleDNAEditor
+                            businessId={business.id}
+                            currentReferences={(business as any).referencePosts}
+                            currentDNA={(business as any).styleContext || undefined}
+                        />
 
                         {/* Canva Template Input */}
                         <div className="pt-8 border-t border-zinc-100">
