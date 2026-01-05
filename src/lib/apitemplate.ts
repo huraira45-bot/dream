@@ -2,7 +2,7 @@ import { AIReelDataV3 } from "./llm-router";
 import { logger } from "./logger";
 
 const API_KEY = process.env.APITEMPLATE_API_KEY;
-const API_URL = "https://api.apitemplate.io/v1/create";
+const API_URL = "https://rest.apitemplate.io/v2/create-image";
 
 export const RECOMMENDED_TEMPLATES = [
     { id: "instagram-positive-quote-white", name: "Modern Quote (White)" },
@@ -14,14 +14,20 @@ export const RECOMMENDED_TEMPLATES = [
 export interface APITemplateResponse {
     status: string;
     download_url: string;
-    primary_url: string;
     transaction_id: string;
     template_id: string;
 }
 
+interface APITemplateOverride {
+    name: string;
+    text?: string;
+    src?: string;
+    [key: string]: any;
+}
+
 /**
- * APITemplate.io Integration Service
- * Connects the "Brain" (Llama 3.3/Gemini) to external visual templates.
+ * APITemplate.io Integration Service (v2 Upgrade)
+ * Connects the "Brain" to external visual templates.
  */
 export async function renderWithAPITemplate(
     data: AIReelDataV3,
@@ -32,36 +38,36 @@ export async function renderWithAPITemplate(
         throw new Error("APITEMPLATE_API_KEY is missing in environment variables.");
     }
 
-    logger.info(`Routing brain output to APITemplate.io [Template: ${templateId}]`);
+    logger.info(`🔌 Routing to APITemplate.io v2 [Template: ${templateId}]`);
 
-    // Mapping Brain (AIReelDataV3) -> APITemplate JSON Properties
-    // Based on documentation: field names must match the element names in the template editor
+    // Standard v2 Payload Construction
+    // We Map high-level data keys to potential element names in the template
+    const overrideList: APITemplateOverride[] = [
+        { name: "headline", text: data.hook },
+        { name: "subheadline", text: data.title },
+        { name: "cta_text", text: data.caption.substring(0, 50) },
+        { name: "business_name", text: data.smmAura }
+    ];
+
+    // Merge in programmatic overrides (images, logos)
+    if (overrides.image_url) {
+        overrideList.push({ name: "main_image", src: overrides.image_url });
+        overrideList.push({ name: "image_1", src: overrides.image_url });
+    }
+    if (overrides.logo_url) {
+        overrideList.push({ name: "logo", src: overrides.logo_url });
+    }
+
     const payload = {
         template_id: templateId,
-        data: {
-            // General naming conventions found in standard APITemplate samples
-            "headline": data.hook,
-            "text_headline": data.hook,
-            "subheadline": data.title,
-            "text_subheadline": data.title,
-            "cta": data.caption.substring(0, 50),
-            "text_cta": data.caption.substring(0, 50),
-            "footer_text": data.smmAura,
-            "text_footer": data.smmAura,
-            "primary_color": data.fontColor || "#000000",
-            "accent_color": data.textBackgroundColor || "#FF4D4D",
-            "text_quote": data.hook, // Found in the documentation sample
-            ...overrides
-        },
-        metadata: {
-            "business_name": "Dream AI",
-            "variation_hook": data.hook
-        },
-        export_type: "jpeg",
-        expiration: 60 // Minutes
+        overrides: overrideList,
+        output_format: "jpeg",
+        expiration: 60
     };
 
     try {
+        logger.info(`📤 APITemplate Request: ${JSON.stringify(payload, null, 2)}`);
+
         const response = await fetch(API_URL, {
             method: "POST",
             headers: {
@@ -71,16 +77,18 @@ export async function renderWithAPITemplate(
             body: JSON.stringify(payload)
         });
 
+        const responseText = await response.text();
+        logger.info(`📥 APITemplate Raw Response: ${responseText}`);
+
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`APITemplate API Error: ${errorData.message || response.statusText}`);
+            throw new Error(`APITemplate API Error (${response.status}): ${responseText}`);
         }
 
-        const result = await response.json();
-        logger.info(`Successfully rendered image via APITemplate.io: ${result.download_url}`);
+        const result = JSON.parse(responseText);
+        logger.info(`✅ APITemplate Success: ${result.download_url}`);
         return result;
     } catch (error: any) {
-        logger.error(`Failed to connect APITemplate.io: ${error.message}`);
+        logger.error(`❌ APITemplate Failure: ${error.message}`);
         throw error;
     }
 }
@@ -92,7 +100,6 @@ export function getAPITemplateMock(data: AIReelDataV3): APITemplateResponse {
     return {
         status: "success",
         download_url: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=1080&q=80",
-        primary_url: "https://dream-app.com/mock-render",
         transaction_id: "mock_" + Date.now(),
         template_id: "temp_default_1"
     };

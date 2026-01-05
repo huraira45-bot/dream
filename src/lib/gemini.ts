@@ -319,7 +319,7 @@ export async function validatePostVibe(
     postImageUrl: string,
     businessName: string,
     referenceUrls: string[] = []
-): Promise<{ matches: boolean; reasoning: string }> {
+): Promise<{ matches: boolean; reasoning: string; suggestions?: Record<string, string> }> {
     if (!model) return { matches: true, reasoning: "Critic Offline (Model Missing)" }
 
     console.log("--------------------------------------------------")
@@ -373,19 +373,23 @@ export async function validatePostVibe(
         ];
 
         const result = await model.generateContent([prompt, ...mediaParts]);
-        const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+        const text = result.response.text();
 
         console.log("--------------------------------------------------")
         console.log("🤖 Agent: THE HARSH CRITIC (RAW_RESPONSE):", text)
 
         try {
-            const parsed = JSON.parse(text);
+            const parsed = robustExtractJSON(text);
             console.log(`⚖️  CRITIC VERDICT for ${businessName}: ${parsed.matches ? "✅ VIBE MATCHED" : "❌ VIBE MISMATCH"}`)
             console.log(`📝 Reason: ${parsed.reasoning}`)
             console.log("--------------------------------------------------")
             return parsed;
         } catch (e) {
-            return { matches: true, reasoning: "Critic returned non-JSON response, assuming match to avoid stall." };
+            return {
+                matches: true,
+                reasoning: "Critic returned non-JSON, assuming match.",
+                suggestions: { vibeFix: "Review manual alignment" }
+            };
         }
     } catch (err: any) {
         if (err.message?.includes("429") || err.message?.includes("quota")) {
@@ -405,7 +409,7 @@ async function validatePostVibeWithSambaNova(
     postImageUrl: string,
     businessName: string,
     referenceUrls: string[]
-): Promise<{ matches: boolean; reasoning: string }> {
+): Promise<{ matches: boolean; reasoning: string; suggestions?: Record<string, string> }> {
     const toBase64 = async (url: string) => {
         try {
             const res = await fetch(url);
@@ -426,10 +430,21 @@ async function validatePostVibeWithSambaNova(
             toBase64(postImageUrl)
         ]);
 
-        const prompt = `You are THE HARSH CRITIC. Validate if the last image (Generated Post) matches the first image (Logo) and intermediate images (Style References) for ${businessName}.
+        const prompt = `You are THE HARSH CRITIC. Validate if the last image (Generated Post) matches the first image (Logo) for ${businessName}.
         Check: Mimicry Accuracy, Typography consistency, and Color Harmony.
         If it feels generic or lacks brand elements (like footers or specific colors), return matches: false.
-        OUTPUT STRICT JSON: {"matches": boolean, "reasoning": "string"}`;
+        
+        OUTPUT STRICT JSON:
+        {
+          "matches": boolean,
+          "reasoning": "string",
+          "suggestions": {
+             "colorFix": "string",
+             "typographyFix": "string",
+             "layoutFix": "string",
+             "vibeFix": "string"
+          }
+        }`;
 
         // Standardizing on the Maverick model which is more stable on the endpoint
         const response = await fetch("https://api.sambanova.ai/v1/chat/completions", {
@@ -459,12 +474,33 @@ async function validatePostVibeWithSambaNova(
         if (!response.ok) throw new Error(`SambaNova Error: ${response.statusText} - ${responseText.substring(0, 100)}`);
 
         const data = JSON.parse(responseText);
-        const content = data.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
-        return JSON.parse(content);
+        const rawContent = data.choices[0].message.content;
+
+        try {
+            return robustExtractJSON(rawContent);
+        } catch (e) {
+            throw new Error("Failed to extract JSON from SambaNova");
+        }
     } catch (err: any) {
         console.error("SambaNova Failover Error:", err.message);
-        return { matches: true, reasoning: "All Vision Critics Failed. Safe Mode Active." };
+        // If it still fails, return a safe match to avoid stalling the pipeline
+        return {
+            matches: true,
+            reasoning: `SambaNova failed: ${err.message}. Assuming match.`,
+            suggestions: { colorFix: "N/A", typographyFix: "N/A", layoutFix: "N/A", vibeFix: "N/A" }
+        };
     }
+}
+
+/**
+ * Robust JSON Extraction Helper
+ */
+function robustExtractJSON(text: string): any {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+        throw new Error("No JSON found in text");
+    }
+    return JSON.parse(jsonMatch[0]);
 }
 
 /**
