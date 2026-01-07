@@ -68,8 +68,14 @@ export async function GET(req: NextRequest) {
 
             // Source 3: Absolute Last Resort (Montserrat from known stable raw URL)
             const fallbackUrl = 'https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/static/Montserrat-Bold.ttf';
-            const finalRes = await fetch(fallbackUrl);
-            return await finalRes.arrayBuffer();
+            try {
+                const finalRes = await fetch(fallbackUrl);
+                if (finalRes.ok) return await finalRes.arrayBuffer();
+                throw new Error(`Fallback HTTP Status: ${finalRes.status}`);
+            } catch (finalErr) {
+                console.error("TOTAL FONT FAILURE:", finalErr);
+                throw new Error("CRITICAL: All font sources failed (FS, CDN, Fallback).");
+            }
         };
 
         const [activeFontData] = await Promise.all([getFont(fontFamily)]);
@@ -78,16 +84,10 @@ export async function GET(req: NextRequest) {
         let base64Image = null;
         if (imgUrl && imgUrl.startsWith('http')) {
             try {
-                // Increased timeout for Pollinations AI / External Assets
                 const imgRes = await fetch(imgUrl, { signal: AbortSignal.timeout(15000) });
                 if (imgRes.ok && imgRes.headers.get('content-type')?.startsWith('image/')) {
                     const arrayBuffer = await imgRes.arrayBuffer();
-                    const uint8 = new Uint8Array(arrayBuffer);
-                    let binary = '';
-                    for (let i = 0; i < uint8.length; i++) {
-                        binary += String.fromCharCode(uint8[i]);
-                    }
-                    const base64String = btoa(binary);
+                    const base64String = Buffer.from(arrayBuffer).toString('base64');
                     base64Image = `data:${imgRes.headers.get('content-type')};base64,${base64String}`;
                 }
             } catch (err) {
@@ -101,12 +101,7 @@ export async function GET(req: NextRequest) {
                 const logoRes = await fetch(logoUrl, { signal: AbortSignal.timeout(5000) });
                 if (logoRes.ok && logoRes.headers.get('content-type')?.startsWith('image/')) {
                     const arrayBuffer = await logoRes.arrayBuffer();
-                    const uint8 = new Uint8Array(arrayBuffer);
-                    let binary = '';
-                    for (let i = 0; i < uint8.length; i++) {
-                        binary += String.fromCharCode(uint8[i]);
-                    }
-                    const base64String = btoa(binary);
+                    const base64String = Buffer.from(arrayBuffer).toString('base64');
                     base64Logo = `data:${logoRes.headers.get('content-type')};base64,${base64String}`;
                 }
             } catch (err) {
@@ -323,6 +318,7 @@ export async function GET(req: NextRequest) {
             }
         );
     } catch (e: any) {
-        return new Response(`Error: ${e.message}`, { status: 500 });
+        console.error("RENDERER CRASH:", e);
+        return new Response(`Native Renderer Crash: ${e.message}\nStack: ${e.stack}`, { status: 500 });
     }
 }
