@@ -21,10 +21,11 @@ export async function generateFreeIllustration(
 
     const prompt = `${refinedSubject}, ${mood} theme, ${baseStyle}`;
 
-    // 2. Pollinations AI URL format
+    // 2. Pollinations AI URL format - Using optimized parameters
     const encodedPrompt = encodeURIComponent(prompt);
     const seed = Math.floor(Math.random() * 1000000);
-    const pollinationsUrl = `https://pollinations.ai/p/${encodedPrompt}?width=1080&height=1080&model=flux&seed=${seed}`;
+    // nologo=true removes watermark, enhance=true lets AI refine aesthetics
+    const pollinationsUrl = `https://pollinations.ai/p/${encodedPrompt}?width=1080&height=1080&model=flux&seed=${seed}&nologo=true&enhance=true`;
 
     logger.info(`🎨 Generated Mimetic Illustration URL: ${pollinationsUrl}`);
 

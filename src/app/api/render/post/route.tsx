@@ -1,7 +1,9 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 // Helper to strip emojis and non-standard characters that crash Satori
 function sanitizeText(text: string): string {
@@ -24,6 +26,7 @@ export async function GET(req: NextRequest) {
         const fontFamily = searchParams.get('fontFamily') || 'Montserrat';
 
         // Font Loading Helper
+        // Font Loading Helper (Node.js version using fs)
         const getFont = async (name: string) => {
             const fontFiles: Record<string, string> = {
                 'Montserrat': 'Montserrat-Bold.ttf',
@@ -34,22 +37,19 @@ export async function GET(req: NextRequest) {
             };
             const fileName = fontFiles[name] || fontFiles['Montserrat'];
 
-            // Resolve local URL
-            const appUrl = (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost"))
-                ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")
-                : "https://dream-eta-ruddy.vercel.app";
-
-            const url = `${appUrl}/fonts/${fileName}`;
-
             try {
-                const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
-                if (!res.ok) throw new Error(`Font fetch failed: ${res.status}`);
-                return await res.arrayBuffer();
+                // Use absolute path for Node.js runtime
+                const fontPath = path.join(process.cwd(), 'public', 'fonts', fileName);
+                if (!fs.existsSync(fontPath)) {
+                    throw new Error(`Font file not found: ${fontPath}`);
+                }
+                const fontData = fs.readFileSync(fontPath);
+                return fontData.buffer.slice(fontData.byteOffset, fontData.byteOffset + fontData.byteLength);
             } catch (err) {
-                console.error(`Font load failed for ${name}, falling back to Montserrat:`, err);
-                const fallbackUrl = `${appUrl}/fonts/Montserrat-Bold.ttf`;
-                const fallbackRes = await fetch(fallbackUrl, { signal: AbortSignal.timeout(5000) });
-                return await fallbackRes.arrayBuffer();
+                console.error(`Font file load failed for ${name}, falling back to Montserrat:`, err);
+                const fallbackPath = path.join(process.cwd(), 'public', 'fonts', 'Montserrat-Bold.ttf');
+                const fallbackData = fs.readFileSync(fallbackPath);
+                return fallbackData.buffer.slice(fallbackData.byteOffset, fallbackData.byteOffset + fallbackData.byteLength);
             }
         };
 
