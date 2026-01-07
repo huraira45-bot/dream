@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
 
         // Font Loading Helper
         // Font Loading Helper (Node.js version using fs)
+        // Font Loading Helper (Hyper-Robust)
         const getFont = async (name: string) => {
             const fontFiles: Record<string, string> = {
                 'Montserrat': 'Montserrat-Bold.ttf',
@@ -37,20 +38,38 @@ export async function GET(req: NextRequest) {
             };
             const fileName = fontFiles[name] || fontFiles['Montserrat'];
 
+            // Source 1: Local Filesystem (Fastest)
             try {
-                // Use absolute path for Node.js runtime
                 const fontPath = path.join(process.cwd(), 'public', 'fonts', fileName);
-                if (!fs.existsSync(fontPath)) {
-                    throw new Error(`Font file not found: ${fontPath}`);
+                if (fs.existsSync(fontPath)) {
+                    const fontData = fs.readFileSync(fontPath);
+                    return fontData.buffer.slice(fontData.byteOffset, fontData.byteOffset + fontData.byteLength);
                 }
-                const fontData = fs.readFileSync(fontPath);
-                return fontData.buffer.slice(fontData.byteOffset, fontData.byteOffset + fontData.byteLength);
-            } catch (err) {
-                console.error(`Font file load failed for ${name}, falling back to Montserrat:`, err);
-                const fallbackPath = path.join(process.cwd(), 'public', 'fonts', 'Montserrat-Bold.ttf');
-                const fallbackData = fs.readFileSync(fallbackPath);
-                return fallbackData.buffer.slice(fallbackData.byteOffset, fallbackData.byteOffset + fallbackData.byteLength);
+            } catch (fsErr) {
+                console.warn(`FS load failed for ${name}:`, fsErr);
             }
+
+            // Source 2: Reliable CDN (Stable Fallback)
+            const cdnUrls: Record<string, string> = {
+                'Montserrat': 'https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/static/Montserrat-Bold.ttf',
+                'Playfair Display': 'https://raw.githubusercontent.com/google/fonts/main/ofl/playfairdisplay/static/PlayfairDisplay-Bold.ttf',
+                'Bebas Neue': 'https://raw.githubusercontent.com/google/fonts/main/ofl/bebasneue/BebasNeue-Regular.ttf',
+                'Outfit': 'https://raw.githubusercontent.com/google/fonts/main/ofl/outfit/static/Outfit-Bold.ttf',
+                'Inter': 'https://raw.githubusercontent.com/google/fonts/main/ofl/inter/static/Inter-Bold.ttf'
+            };
+
+            const url = cdnUrls[name] || cdnUrls['Montserrat'];
+            try {
+                const res = await fetch(url, { signal: AbortSignal.timeout(7000) });
+                if (res.ok) return await res.arrayBuffer();
+            } catch (fetchErr) {
+                console.error(`CDN Fetch failed for ${name}:`, fetchErr);
+            }
+
+            // Source 3: Absolute Last Resort (Montserrat from known stable raw URL)
+            const fallbackUrl = 'https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/static/Montserrat-Bold.ttf';
+            const finalRes = await fetch(fallbackUrl);
+            return await finalRes.arrayBuffer();
         };
 
         const [activeFontData] = await Promise.all([getFont(fontFamily)]);

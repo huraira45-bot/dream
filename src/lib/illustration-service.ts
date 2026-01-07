@@ -11,12 +11,12 @@ export async function generateFreeIllustration(
 ): Promise<string> {
     // 1. Build a high-quality prompt for the 3D Illustration style
     // We emphasize the "characterStyle" requested by the DNA Profiler
-    const baseStyle = `${characterStyle}, clean professional 3D render, Disney/Pixar style quality, studio lighting, vibrant colors, centered composition, soft shadows, solid minimalist background, 1080x1080 square format`;
+    const baseStyle = `${characterStyle}, 3D render, Pixar style, studio lighting, vibrant, 1080x1080`;
 
     // Specifically handle the "delivery" or "scooter" context if hinted
-    let refinedSubject = subject || "Modern professional brand illustration";
+    let refinedSubject = subject || "Modern brand illustration";
     if (refinedSubject.toLowerCase().includes("delivery")) {
-        refinedSubject = `${refinedSubject} on a yellow 3D scooter, happy professional pose`;
+        refinedSubject = `Happy delivery character on yellow 3D scooter`;
     }
 
     const prompt = `${refinedSubject}, ${mood} theme, ${baseStyle}`;
