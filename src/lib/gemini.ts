@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { getTrendingSongsForRegion } from "./trends"
 import { logger } from "./logger"
+import { LightningLogger } from "./lightning"
 
 const apiKey = process.env.GEMINI_API_KEY
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
@@ -32,7 +33,8 @@ interface AIReelData {
     effectType: "zoomIn" | "zoomOut" | "slideLeft" | "slideRight" | "none"
 }
 
-export async function describeMedia(imageUrls: string[]): Promise<string> {
+export async function describeMedia(imageUrls: string[], traceId?: string): Promise<string> {
+    const lightning = new LightningLogger(traceId);
     if (!model) return "No visual data available."
 
     console.log("--------------------------------------------------")
@@ -107,9 +109,12 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
         [TOP_PICKS: original_indices]
         Summary: (Evocative description).`
 
-        logger.info(`Sending ${validParts.length} samples to Gemini...`)
+        logger.info(`Sending ${validParts.length} samples to Gemini... (Trace: ${lightning.getTraceId()})`)
         const result = await model.generateContent([prompt, ...validParts.map(p => ({ inlineData: p.inlineData }))])
         const analysis = result.response.text()
+
+        await lightning.logDecision("The Harsh Critic (Vision)", { mediaCount: validParts.length }, analysis, prompt);
+
         logger.info("Critic Report: Analysis complete.")
         return analysis
     } catch (e: any) {
@@ -170,6 +175,9 @@ export async function describeMedia(imageUrls: string[]): Promise<string> {
             if (!response.ok) throw new Error(data.error?.message || "SambaNova API error");
 
             const analysis = data.choices[0].message.content;
+
+            await lightning.logDecision("The Harsh Critic (Vision Fallback)", { mediaCount: limitedParts.length }, analysis, promptText);
+
             logger.info("SambaNova Critic Report: Llama-4 analysis complete.");
             return analysis;
         } catch (sambaErr: any) {
@@ -186,8 +194,12 @@ export async function generateReelMetadata(
     isReel: boolean,
     mediaTypes: string[],
     region: string = "Pakistan",
-    visualContext: string = ""
-): Promise<AIReelData[]> {
+    visualContext: string = "",
+    traceId?: string
+): Promise<{ data: AIReelData[], traceId: string }> {
+    const lightning = new LightningLogger(traceId)
+    const currentTraceId = lightning.getTraceId()
+
     const format = isReel ? "high-energy dynamic video reel" : "sleek, curated carousel post"
     const trendingHits = await getTrendingSongsForRegion(region)
     const trendingSongs = trendingHits.join(", ")
@@ -247,7 +259,11 @@ export async function generateReelMetadata(
         const result = await model.generateContent(prompt)
         const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim()
         const parsed = JSON.parse(text)
-        return Array.isArray(parsed) ? parsed.slice(0, 3) : [parsed]
+        const variations = Array.isArray(parsed) ? parsed.slice(0, 3) : [parsed]
+
+        await lightning.logDecision("Production Team", { businessName, isReel }, variations, prompt);
+
+        return { data: variations, traceId: currentTraceId }
     } catch (error: any) {
         logger.error(`Gemini Metadata Error: ${error.message}. Attempting Groq fallback...`)
 
@@ -277,9 +293,12 @@ export async function generateReelMetadata(
                 if (response.ok) {
                     const content = data.choices[0].message.content;
                     const parsed = JSON.parse(content);
-                    // Handle wrap-around if LLM returns an object with 'options' key instead of raw array
                     const finalArray = Array.isArray(parsed) ? parsed : (parsed.options || [parsed]);
-                    return finalArray.slice(0, 3);
+                    const variations = finalArray.slice(0, 3);
+
+                    await lightning.logDecision("Production Team (Groq Fallback)", { businessName, isReel }, variations, prompt);
+
+                    return { data: variations, traceId: currentTraceId };
                 }
             } catch (groqErr: any) {
                 logger.error(`Groq Metadata Error: ${groqErr.message}`);
@@ -288,8 +307,7 @@ export async function generateReelMetadata(
 
         // Fallback with limited but safe data (Shuffled for diversity)
         const shuffledHits = [...trendingHits].sort(() => Math.random() - 0.5);
-
-        return Array.from({ length: 3 }).map((_, i) => ({
+        const fallbackData = Array.from({ length: 3 }).map((_, i) => ({
             hook: i === 0 ? "YOU NEED TO SEE THIS" : (i === 1 ? "POV: BEST VIBES" : "DON'T MISS OUT"),
             title: `Discover ${businessName}`,
             caption: `The best vibe in town! ✨ #Dream #${businessName.replace(/\s/g, "")}`,
@@ -306,7 +324,9 @@ export async function generateReelMetadata(
             narrative: "An energetic look at the business.",
             transitionType: "fade" as const,
             effectType: "zoomIn" as const
-        }))
+        }));
+
+        return { data: fallbackData, traceId: currentTraceId };
     }
 }
 
@@ -318,8 +338,10 @@ export async function validatePostVibe(
     logoUrl: string,
     postImageUrl: string,
     businessName: string,
-    referenceUrls: string[] = []
+    referenceUrls: string[] = [],
+    traceId?: string
 ): Promise<{ matches: boolean; reasoning: string; suggestions?: Record<string, string> }> {
+    const lightning = new LightningLogger(traceId);
     if (!model) return { matches: true, reasoning: "Critic Offline (Model Missing)" }
 
     console.log("--------------------------------------------------")
@@ -378,6 +400,8 @@ export async function validatePostVibe(
         const result = await model.generateContent([prompt, ...mediaParts]);
         const text = result.response.text();
 
+        await lightning.logDecision("The Harsh Critic (Vibe Check)", { businessName, refCount: referenceUrls.length }, text, prompt);
+
         console.log("--------------------------------------------------")
         console.log("🤖 Agent: THE HARSH CRITIC (RAW_RESPONSE):", text)
 
@@ -411,8 +435,10 @@ async function validatePostVibeWithSambaNova(
     logoUrl: string,
     postImageUrl: string,
     businessName: string,
-    referenceUrls: string[]
+    referenceUrls: string[],
+    traceId?: string
 ): Promise<{ matches: boolean; reasoning: string; suggestions?: Record<string, string> }> {
+    const lightning = new LightningLogger(traceId);
     const toBase64 = async (url: string) => {
         try {
             const res = await fetch(url);
@@ -487,6 +513,8 @@ async function validatePostVibeWithSambaNova(
         const data = JSON.parse(responseText);
         const rawContent = data.choices[0].message.content;
 
+        await lightning.logDecision("The Harsh Critic (SambaNova Vibe Check Fallback)", { businessName }, rawContent, prompt);
+
         try {
             return robustExtractJSON(rawContent);
         } catch (e) {
@@ -518,7 +546,8 @@ function robustExtractJSON(text: string): any {
  * THE STYLE PROFILER: DNA Extraction
  * Analyzes 3 reference posts to create a "Style DNA" for the brand.
  */
-export async function extractStyleDNA(imageUrls: string[]): Promise<string> {
+export async function extractStyleDNA(imageUrls: string[], traceId?: string): Promise<string> {
+    const lightning = new LightningLogger(traceId);
     if (!model) return "Standard editorial layout.";
 
     console.log("--------------------------------------------------")
@@ -561,6 +590,8 @@ export async function extractStyleDNA(imageUrls: string[]): Promise<string> {
 
         const result = await model.generateContent([prompt, ...mediaParts.map(p => ({ inlineData: p.inlineData }))]);
         const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+
+        await lightning.logDecision("The Style Profiler", { imageUrlsCount: imageUrls.length }, text, prompt);
 
         console.log("🧬 STYLE DNA EXTRACTED successfully.");
         console.log("--------------------------------------------------")

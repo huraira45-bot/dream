@@ -66,10 +66,26 @@ model GeneratedReel {
   scheduledAt    DateTime?
   title          String?
   caption        String?
-  musicUrl       String? // The internal royalty-free track
-  trendingAudioTip String? // The suggested real-world IG song
+  musicUrl       String? 
+  trendingAudioTip String?
   mediaItemIds   String[]  @default([])
+  feedbackScore  Float?     // 1.0 for like, -1.0 for dislike
+  dislikeCategory String?    // "Hook", "Visuals", "Music", "Branding"
+  dislikeReason   String?    // Text explanation
+  traceId        String?    // Link to Agent Spans
   createdAt      DateTime  @default(now())
+}
+
+model AgentLightningSpan {
+  id          String   @id @default(cuid())
+  traceId     String   // Groups multiple spans
+  agentName   String   // e.g. "Harsh Critic"
+  input       String?  // JSON
+  output      String?  // JSON
+  promptUsed  String?  // Actual prompt
+  reward      Float?   // Set by user feedback later
+  startTime   DateTime @default(now())
+  endTime     DateTime?
 }
 model MusicTrend {
   id        String   @id @default(cuid())

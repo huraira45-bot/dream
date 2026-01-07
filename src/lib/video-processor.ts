@@ -65,19 +65,22 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
 
     // 3. AI Creative Flow (Specialized Branching)
     let aiOptions: any[] = [];
+    let activeTraceId: string | undefined = undefined;
+
     if (forceType === "POST") {
         // High-Impact Specialized Generation for Static Posts
-        const metadata = await generateBrandedPostMetadata(
+        const result = await generateBrandedPostMetadata(
             business.name,
             branding,
             business.styleContext,
             campaignGoal,
             eventTitles
         );
-        aiOptions = [metadata]; // Static Posts generate 1 high-quality variation for now
+        aiOptions = [result.data];
+        activeTraceId = result.traceId;
     } else {
         // Multi-LLM diversity engine for Reels
-        aiOptions = await processMultiLLMCreativeFlow(
+        const result = await processMultiLLMCreativeFlow(
             business.name,
             mediaItems.map((m: any) => m.url),
             isReel,
@@ -90,6 +93,8 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
             campaignGoal,
             business.styleContext
         );
+        aiOptions = result.options;
+        activeTraceId = result.traceId;
     }
 
     // 4. Mark items as processed
@@ -123,8 +128,9 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                 type: forceType,
                 musicUrl: forceType === "REEL" ? musicTrack.url : null,
                 trendingAudioTip: forceType === "REEL" ? metadata.trendingAudioTip : null,
-                mediaItemIds: finalMediaForRender.map((m: any) => m.id)
-            }
+                mediaItemIds: finalMediaForRender.map((m: any) => m.id),
+                traceId: activeTraceId
+            } as any
         })
 
         let renderId = "pending"
@@ -184,7 +190,8 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                             business.logoUrl,
                             response.url,
                             business.name,
-                            business.referencePosts // Vibe Check 2.0: Use User Likes
+                            business.referencePosts, // Vibe Check 2.0: Use User Likes
+                            activeTraceId
                         );
                         if (check.matches) {
                             finalRenderResponse = response;
@@ -197,7 +204,8 @@ async function processMediaOrchestration(businessId: string, forceType: "REEL" |
                                     metadata,
                                     check.reasoning,
                                     (check as any).suggestions || {},
-                                    business.name
+                                    business.name,
+                                    activeTraceId
                                 );
                                 logger.info(`🔄 Retrying with AI-Corrected Plan...`);
                             } else {

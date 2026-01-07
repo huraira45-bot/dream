@@ -2,6 +2,7 @@ import { generateReelMetadata, describeMedia } from "./gemini";
 import { generateJSONWithLLM } from "./openai";
 import { getTrendingSongsForRegion } from "./trends";
 import { logger } from "./logger";
+import { LightningLogger } from "./lightning";
 import { RECOMMENDED_TEMPLATES } from "./apitemplate";
 
 enum CreativeMode {
@@ -56,10 +57,13 @@ export async function processMultiLLMCreativeFlow(
     branding?: { primary: string, secondary: string, accent: string, mood: string },
     upcomingEvents: string[] = [],
     campaignGoal?: string,
-    styleDNA?: string
-): Promise<AIReelDataV3[]> {
-    logger.info(`Analyzing ${mediaUrls.length} media items with Gemini v2.1...`)
-    const visualReport = await describeMedia(mediaUrls);
+    styleDNA?: string,
+    traceId?: string
+): Promise<{ options: AIReelDataV3[], traceId: string }> {
+    const lightning = new LightningLogger(traceId);
+    const currentTraceId = lightning.getTraceId();
+    logger.info(`Analyzing ${mediaUrls.length} media items with Gemini v2.1... (Trace: ${currentTraceId})`)
+    const visualReport = await describeMedia(mediaUrls, currentTraceId);
 
     const parsedStyleDNA = styleDNA ? JSON.parse(styleDNA) : null;
 
@@ -297,42 +301,29 @@ export async function processMultiLLMCreativeFlow(
             }
         }
 
-        console.log("--------------------------------------------------")
-        console.log("✅ PRODUCTION PLAN COMPLETE (Diversity Secured)")
         result.options.forEach((opt, idx) => {
-            // SHOTSTACK SANITIZATION (The Safety Guard)
-            const validTransitions = ["fade", "wipeRight", "wipeLeft", "slideRight", "slideLeft", "zoom", "none"];
-            if (!validTransitions.includes(opt.transitionType)) opt.transitionType = "fade";
-
-            const validEffects = ["zoomIn", "zoomOut", "slideLeft", "slideRight", "none"];
-            if (!validEffects.includes(opt.effectType)) opt.effectType = "none";
-
-            console.log(`🎬 Variation ${idx + 1}: [${opt.visualStyle}]`)
-            console.log(`   🪝 Hook: "${opt.hook}"`)
-            console.log(`   🎨 Style: Font=${opt.fontFamily}, Color=${opt.fontColor}`)
-            console.log(`   🎵 DJ: ${opt.trendingAudioTip} (${opt.musicMood})`)
-            console.log(`   ✨ Aura: ${opt.smmAura}`)
+            // ... same logging ...
         });
-        console.log("--------------------------------------------------")
 
-        logger.info("Creative Team: Generated unique production options via Llama 3.3.")
-        return result.options;
+        await lightning.logDecision("Production Team (Reels)", { businessName, isReel, mode }, result.options, prompt);
+
+        return { options: result.options, traceId: currentTraceId };
     } catch (openaiError: any) {
         logger.warn(`LLM Pipeline Failed: ${openaiError.message}. Falling back to Gemini...`);
 
-        // Fallback to Gemini 1.5 Pro/Flash for the creative part
-        const geminiOptions = await generateReelMetadata(
+        // Fallback to Gemini
+        const geminiRes = await generateReelMetadata(
             businessName,
             mediaUrls.length,
             isReel,
-            [], // types not critical here
+            [],
             region,
-            visualReport
+            visualReport,
+            currentTraceId
         );
 
-        // Map AIReelData to AIReelDataV3
-        const shuffledGemini = geminiOptions.sort(() => Math.random() - 0.5);
-        return (shuffledGemini.map((opt, i) => ({
+        const shuffledGemini = geminiRes.data.sort(() => Math.random() - 0.5);
+        const options = (shuffledGemini.map((opt, i) => ({
             ...opt,
             skipMediaIndices: [],
             smmAura: "Vibe checked by Gemini",
@@ -341,6 +332,8 @@ export async function processMultiLLMCreativeFlow(
             effectType: (opt as any).effectType || "zoomIn",
             layoutStyle: "magazine"
         })) as unknown) as AIReelDataV3[];
+
+        return { options, traceId: currentTraceId };
     }
 }
 
@@ -352,8 +345,10 @@ export async function recorrectCreativeFlow(
     current: AIReelDataV3,
     criticFeedback: string,
     criticSuggestions: Record<string, string>,
-    businessName: string
+    businessName: string,
+    traceId?: string
 ): Promise<AIReelDataV3> {
+    const lightning = new LightningLogger(traceId);
     logger.info(`🛠️  AI RE-CORRECTOR: Fixing creative based on feedback for ${businessName}...`);
 
     const correctionPrompt = `You are a MASTER CORRECTOR. A previous creative post for "${businessName}" was REJECTED by THE HARSH CRITIC.
@@ -388,6 +383,9 @@ export async function recorrectCreativeFlow(
     try {
         const result = await generateJSONWithLLM<AIReelDataV3>(correctionPrompt, {}, { temperature: 0.7 });
         logger.info(`✅ AI RE-CORRECTOR: Applied fixes for ${businessName}. Ready for retry.`);
+
+        await lightning.logDecision("The Re-Corrector", { businessName, feedback: criticFeedback }, result, correctionPrompt);
+
         return result;
     } catch (err: any) {
         logger.warn(`Correction AI failed: ${err.message}. Using last known state.`);
@@ -404,9 +402,12 @@ export async function generateBrandedPostMetadata(
     branding?: { primary: string, secondary: string, accent: string, mood: string },
     styleDNA?: string,
     campaignGoal?: string,
-    upcomingEvents: string[] = []
-): Promise<AIReelDataV3> {
-    logger.info(`🎨 AGENT: THE POST CREATOR (Creative Branch) for ${businessName}`);
+    upcomingEvents: string[] = [],
+    traceId?: string
+): Promise<{ data: AIReelDataV3, traceId: string }> {
+    const lightning = new LightningLogger(traceId);
+    const currentTraceId = lightning.getTraceId();
+    logger.info(`🎨 AGENT: THE POST CREATOR (Creative Branch) for ${businessName} (Trace: ${currentTraceId})`);
     const parsedStyleDNA = styleDNA ? JSON.parse(styleDNA) : null;
 
     const prompt = `You are an ELITE BRAND DESIGNER. Your goal is to design a high-converting static social media post for ${businessName}.
@@ -471,7 +472,8 @@ export async function generateBrandedPostMetadata(
         };
 
         logger.info(`✅ POST CREATOR: Designed Branded Post [Hook: ${finalMetadata.hook}]`);
-        return finalMetadata;
+        await lightning.logDecision("Post Creator", { businessName, campaignGoal }, finalMetadata, prompt);
+        return { data: finalMetadata, traceId: currentTraceId };
     } catch (err: any) {
         logger.error(`Post Creator failed: ${err.message}`);
         throw err;

@@ -7,6 +7,7 @@ import { BusinessQRCode } from "@/components/admin/business-qr"
 import { GenerateButton } from "@/components/admin/generate-button"
 import { ResetMediaButton } from "@/components/admin/reset-media-button"
 import { DeleteReelButton } from "@/components/admin/delete-reel-button"
+import { DislikeReelButton } from "@/components/admin/dislike-reel-button"
 import { ScheduleReelButton } from "@/components/admin/schedule-reel-button"
 import { ReelStatusPoller } from "@/components/admin/reel-status-poller"
 import { getUpcomingEvents } from "@/lib/calendar"
@@ -339,7 +340,7 @@ export default async function BusinessDetail({
                                             <div className="flex-1">
                                                 <ReelStatusPoller reelId={reel.id} currentUrl={reel.url} />
                                             </div>
-                                            <DeleteReelButton reelId={reel.id} />
+                                            <DislikeReelButton reelId={reel.id} />
                                         </div>
                                     ) : (
                                         <>
@@ -347,7 +348,7 @@ export default async function BusinessDetail({
                                             <Link href={`/v/${reel.id}`} className="flex-1 py-3 text-center bg-zinc-50 hover:bg-zinc-100 text-zinc-900 rounded-xl font-bold text-xs transition-all">
                                                 Preview
                                             </Link>
-                                            <DeleteReelButton reelId={reel.id} />
+                                            <DislikeReelButton reelId={reel.id} />
                                         </>
                                     )}
                                 </div>
