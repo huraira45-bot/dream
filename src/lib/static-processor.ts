@@ -64,11 +64,15 @@ export async function renderStaticPost(
         ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")
         : "https://dream-eta-ruddy.vercel.app";
 
-    // 1. Construct the Native Renderer URL
+    // 1. Construct the Native Renderer URL with Strict Truncation
     const renderUrl = new URL(`${appUrl}/api/render/post`)
-    renderUrl.searchParams.append("headline", metadata.hook)
-    renderUrl.searchParams.append("subheadline", metadata.subheadline || "")
-    renderUrl.searchParams.append("cta", metadata.cta || "Check it out")
+
+    // Limits: Headline 80, Subheadline 160, CTA 25 (Prevent URL bloat & UI overflow)
+    const truncate = (text: string, limit: number) => text.length > limit ? text.substring(0, limit - 3) + "..." : text;
+
+    renderUrl.searchParams.append("headline", truncate(metadata.hook, 80))
+    renderUrl.searchParams.append("subheadline", truncate(metadata.subheadline || "", 160))
+    renderUrl.searchParams.append("cta", truncate(metadata.cta || "Check it out", 25))
     renderUrl.searchParams.append("imgUrl", mediaUrl)
     renderUrl.searchParams.append("primaryColor", branding.primaryColor)
     renderUrl.searchParams.append("accentColor", branding.accentColor)
@@ -81,9 +85,6 @@ export async function renderStaticPost(
     }
     if (metadata.geometryType) {
         renderUrl.searchParams.append("geometry", metadata.geometryType)
-    }
-    if (metadata.illustrationSubject) {
-        renderUrl.searchParams.append("illustrationSubject", metadata.illustrationSubject)
     }
     if (metadata.fontFamily) {
         renderUrl.searchParams.append("fontFamily", metadata.fontFamily)
