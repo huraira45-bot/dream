@@ -25,22 +25,30 @@ export async function GET(req: NextRequest) {
 
         // Font Loading Helper
         const getFont = async (name: string) => {
-            const fonts: Record<string, string> = {
-                'Montserrat': 'https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat-Bold.ttf',
-                'Playfair Display': 'https://raw.githubusercontent.com/google/fonts/main/ofl/playfairdisplay/PlayfairDisplay-Bold.ttf',
-                'Bebas Neue': 'https://raw.githubusercontent.com/google/fonts/main/ofl/bebasneue/BebasNeue-Regular.ttf',
-                'Outfit': 'https://raw.githubusercontent.com/google/fonts/main/ofl/outfit/Outfit-Bold.ttf',
-                'Inter': 'https://raw.githubusercontent.com/google/fonts/main/ofl/inter/Inter-Bold.ttf'
+            const fontFiles: Record<string, string> = {
+                'Montserrat': 'Montserrat-Bold.ttf',
+                'Playfair Display': 'PlayfairDisplay-Bold.ttf',
+                'Bebas Neue': 'BebasNeue-Regular.ttf',
+                'Outfit': 'Outfit-Bold.ttf',
+                'Inter': 'Inter-Bold.ttf'
             };
-            const url = fonts[name] || fonts['Montserrat'];
+            const fileName = fontFiles[name] || fontFiles['Montserrat'];
+
+            // Resolve local URL
+            const appUrl = (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost"))
+                ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")
+                : "https://dream-eta-ruddy.vercel.app";
+
+            const url = `${appUrl}/fonts/${fileName}`;
+
             try {
                 const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
                 if (!res.ok) throw new Error(`Font fetch failed: ${res.status}`);
                 return await res.arrayBuffer();
             } catch (err) {
-                console.error(`Font load failed for ${name}, falling back to default:`, err);
-                // Fallback: This will still fail if Montserrat itself fails, but it's a start
-                const fallbackRes = await fetch(fonts['Montserrat'], { signal: AbortSignal.timeout(5000) });
+                console.error(`Font load failed for ${name}, falling back to Montserrat:`, err);
+                const fallbackUrl = `${appUrl}/fonts/Montserrat-Bold.ttf`;
+                const fallbackRes = await fetch(fallbackUrl, { signal: AbortSignal.timeout(5000) });
                 return await fallbackRes.arrayBuffer();
             }
         };
